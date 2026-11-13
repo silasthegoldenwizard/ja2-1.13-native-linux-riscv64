@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "candidate_kind": "private-source-sync proposal; overlay and patch; held",
+  "upstream_repository": "https://github.com/1dot13/source",
+  "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
+  "frozen_candidate_commit": "71964acea1349ed138011077d10363c694b0c4b5",
+  "frozen_candidate_tree": "edda7a5a0f08f3bc312f2a79f9ed5d71c5fdbe1a",
+  "checkpoint": "native-video-manager-20261112",
+  "notice_insertion_date": "2026-11-12",
+  "overlay_preparation_date": "2026-11-13",
+  "sdl3": {
+    "repository": "https://github.com/libsdl-org/SDL",
+    "version": "3.4.20",
+    "tag": "release-3.4.20",
+    "commit": "f00dc919ca35b9756316e86c4777392de442f9b2",
+    "source_edits": false,
+    "required_cmake_target": "SDL3::SDL3",
+    "verified_configuration": {
+      "SDL_X11": "ON",
+      "SDL_X11_SHARED": "OFF",
+      "SDL_SHARED": "ON"
+    },
+    "notice_path": "notices/SDL3-LICENSE.txt",
+    "notice_sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd"
+  },
+  "raknet_in_payload": false,
+  "bfvfs_patch_and_linking_content_in_payload": true,
+  "publication_permission": "bounded assessment supports authorized private noncommercial sync after exact payload review; no public release authority",
+  "assessment_sha256": "49e91b0beaff13ca95cb8e1963da0824d38962d21f5af22adbceb79c439d9a55"
+}
