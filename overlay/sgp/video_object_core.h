@@ -11,10 +11,26 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: sgp/video_object_core.h
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #ifndef SGP_VIDEO_OBJECT_CORE_H
 #define SGP_VIDEO_OBJECT_CORE_H
 
 // Production v1.13 object ownership/manager interface, without video surfaces.
 #include "vobject.h"
+
+// Original interactive-structure hit test, with bottom-up y coordinates.
+// Literal index zero is opaque; transparent runs are not. Invalid metadata
+// and points outside the actual ETRLE region return FALSE.
+// The original EOL boundary rule also rejects column0 after the first row.
+BOOLEAN CheckVideoObjectScreenCoordinateInData(HVOBJECT, UINT16, INT32, INT32);
 
 #endif

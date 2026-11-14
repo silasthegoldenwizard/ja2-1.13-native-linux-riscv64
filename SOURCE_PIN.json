@@ -1,30 +1,43 @@
 {
-  "schema": 1,
-  "candidate_kind": "private-source-sync proposal; overlay and patch; held",
+  "schema": 2,
+  "checkpoint": "native-a9-victory-20261114",
+  "preparation_date": "2026-11-14",
+  "status": "frozen source-only snapshot for the private repository; publication delivery recorded separately",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
-  "frozen_candidate_commit": "71964acea1349ed138011077d10363c694b0c4b5",
-  "frozen_candidate_tree": "edda7a5a0f08f3bc312f2a79f9ed5d71c5fdbe1a",
-  "checkpoint": "native-video-manager-20261112",
-  "notice_insertion_date": "2026-11-12",
-  "overlay_preparation_date": "2026-11-13",
+  "previous_private_commit": "b1bc53dfd519a543eed1e31267cc325fd0370b41",
+  "previous_private_tree": "24537b39e85b0241e7351175ecece85feeffe225",
   "sdl3": {
     "repository": "https://github.com/libsdl-org/SDL",
-    "version": "3.4.20",
     "tag": "release-3.4.20",
     "commit": "f00dc919ca35b9756316e86c4777392de442f9b2",
-    "source_edits": false,
-    "required_cmake_target": "SDL3::SDL3",
-    "verified_configuration": {
-      "SDL_X11": "ON",
-      "SDL_X11_SHARED": "OFF",
-      "SDL_SHARED": "ON"
-    },
-    "notice_path": "notices/SDL3-LICENSE.txt",
-    "notice_sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd"
+    "configuration": "shared X11 with SDL_X11_SHARED=OFF; external SDK, not uploaded"
   },
-  "raknet_in_payload": false,
-  "bfvfs_patch_and_linking_content_in_payload": true,
-  "publication_permission": "bounded assessment supports authorized private noncommercial sync after exact payload review; no public release authority",
-  "assessment_sha256": "49e91b0beaff13ca95cb8e1963da0824d38962d21f5af22adbceb79c439d9a55"
+  "ffmpeg": {
+    "version": "7.1.5",
+    "source_url": "https://ffmpeg.org/releases/ffmpeg-7.1.5.tar.xz",
+    "source_archive_sha256": "de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f",
+    "release_signing_fingerprint": "FCF986EA15E6E293A5644F10B4322F04D67658D8",
+    "signature_verified_in_existing_receipt": true,
+    "configuration": "decoder-only LGPL shared; network, autodetection, GPL and nonfree disabled; external SDK, not uploaded"
+  },
+  "freetype": {
+    "version": "2.15.0",
+    "source_url": "https://downloads.sourceforge.net/freetype/freetype-2.15.0.tar.xz",
+    "source_archive_sha256": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5",
+    "publisher_checksum_verified_in_existing_receipt": true,
+    "signature_verified": false,
+    "configuration": "external SDK, not uploaded"
+  },
+  "raknet": {
+    "repository": "https://github.com/catacs/gameprojectx",
+    "commit": "a4c67c6c89b4e83b6d8455ac5e84719e288546f7",
+    "component": "Libs/RakNet/Source",
+    "actual_component_bytes_in_proposed_upload": false,
+    "references_in_engine_build_and_callers": true,
+    "status": "component-specific local hold; modified headers and native SDK adaptations absent; full engine build gap"
+  },
+  "known_issue": "Unexercised source-supported lit-door stale pBaseStructure grid read after deletion in InternalSwapStructureForPartner; no new runtime crash reproduced or export-side fix.",
+  "verification": "Exact source reconstruction only; no new build/runtime or RISC-V result for notice-adjusted export",
+  "component_terms": "Historical/inferred engine contribution basis remains qualified; bfVFS LGPL 2.1-or-later and other component terms remain separately scoped"
 }

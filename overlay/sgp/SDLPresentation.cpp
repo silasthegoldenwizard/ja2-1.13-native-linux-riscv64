@@ -10,6 +10,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: sgp/SDLPresentation.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "SDLPresentation.h"
 #include "himage.h"
 #include <limits>
@@ -27,8 +37,10 @@ bool sgp::SDLPresentation::Open(const char* title, int width, int height, int sc
     initialized_ = true;
     window_ = SDL_CreateWindow(title ? title : "JA2 v1.13 native Linux", width * scale, height * scale, 0);
     if (!window_) { Close(); return false; }
+    if (!SDL_SyncWindow(window_)) { Close(); return false; }
     width_ = width;
     height_ = height;
+    quit_ = false;
     ConfigureRGB565ImageFormat();
     return true;
 }
@@ -61,13 +73,53 @@ bool sgp::SDLPresentation::SaveWindowSurface(const char* bmpPath)
 
 bool sgp::SDLPresentation::QuitRequested()
 {
-    if (!window_) return true;
+    PumpEvents();
+    return !window_ || quit_;
+}
+
+bool sgp::SDLPresentation::InputInfo(SDL_WindowID& id, int& w, int& h, int& ww, int& wh) const
+{
+    if (!window_ || !SDL_IsMainThread() || !SDL_GetWindowSize(window_,&ww,&wh)) return false;
+    id=SDL_GetWindowID(window_); w=width_; h=height_; return id!=0 && ww>0 && wh>0;
+}
+
+bool sgp::SDLPresentation::AttachInput(PresentationEventSink fn, void* context)
+{
+    if (!window_ || !SDL_IsMainThread() || !fn || !context) return false;
+    if (sink_) return sink_==fn && sinkContext_==context;
+    sink_=fn; sinkContext_=context; return true;
+}
+
+void sgp::SDLPresentation::DetachInput(PresentationEventSink fn, void* context)
+{
+    if (sink_==fn && sinkContext_==context) { sink_=nullptr; sinkContext_=nullptr; }
+}
+
+void sgp::SDLPresentation::PumpEvents()
+{
+    if (!window_ || pumping_ || !SDL_IsMainThread()) return;
+    pumping_=true;
     SDL_Event event;
-    while (SDL_PollEvent(&event))
-        if (event.type == SDL_EVENT_QUIT ||
-            (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window_)))
-            return true;
-    return false;
+    // The only application SDL polling loop. Never return early on quit.
+    while (SDL_PollEvent(&event)) {
+        SDL_WindowID id=0;
+        switch(event.type) {
+        case SDL_EVENT_QUIT: break;
+        case SDL_EVENT_KEY_DOWN: case SDL_EVENT_KEY_UP: id=event.key.windowID; break;
+        case SDL_EVENT_MOUSE_MOTION: id=event.motion.windowID; break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN: case SDL_EVENT_MOUSE_BUTTON_UP: id=event.button.windowID; break;
+        case SDL_EVENT_MOUSE_WHEEL: id=event.wheel.windowID; break;
+        case SDL_EVENT_WINDOW_FOCUS_GAINED: case SDL_EVENT_WINDOW_FOCUS_LOST:
+        case SDL_EVENT_WINDOW_HIDDEN: case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+        case SDL_EVENT_WINDOW_DESTROYED: id=event.window.windowID; break;
+        default: continue;
+        }
+        if (event.type!=SDL_EVENT_QUIT && (!window_ || id!=SDL_GetWindowID(window_))) continue;
+        if (event.type==SDL_EVENT_QUIT || event.type==SDL_EVENT_WINDOW_CLOSE_REQUESTED || event.type==SDL_EVENT_WINDOW_DESTROYED) quit_=true;
+        const auto fn=sink_; void* context=sinkContext_;
+        if (fn) fn(context,&event);
+    }
+    pumping_=false;
 }
 
 const char* sgp::SDLPresentation::VideoDriver() const
@@ -78,6 +130,10 @@ const char* sgp::SDLPresentation::VideoDriver() const
 
 void sgp::SDLPresentation::Close()
 {
+    const auto fn=sink_; void* context=sinkContext_;
+    sink_=nullptr; sinkContext_=nullptr;
+    quit_=true;
+    if (fn) fn(context,nullptr);
     if (window_) SDL_DestroyWindow(window_);
     window_ = nullptr;
     if (initialized_) SDL_QuitSubSystem(SDL_INIT_VIDEO);

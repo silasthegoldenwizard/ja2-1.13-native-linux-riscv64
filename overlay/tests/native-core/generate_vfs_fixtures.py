@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""Generate tiny, synthetic bfVFS test inputs; never read game resources.
+
+SLF disk offsets are literal Windows-layout bytes, independent of C++ sizeof.
+See VFS_FIXTURES.md for provenance, expected behavior, and limitations.
+"""
 # P710 native notice preparation: tests/native-core/generate_vfs_fixtures.py
 # New candidate test/build/documentation/metadata path.
 # Native adaptation recorded in the 2026-11-12 checkpoint.
@@ -9,11 +14,14 @@
 # Existing source bytes and original notices retained; no additional rights are granted.
 # This record does not establish license applicability, compliance or distribution permission.
 
-"""Generate tiny, synthetic bfVFS test inputs; never read game resources.
+# P710 native snapshot update: tests/native-core/generate_vfs_fixtures.py
+# Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-14.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
-SLF disk offsets are literal Windows-layout bytes, independent of C++ sizeof.
-See VFS_FIXTURES.md for provenance, expected behavior, and limitations.
-"""
 
 import argparse
 import binascii

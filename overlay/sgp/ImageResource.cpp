@@ -11,6 +11,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: sgp/ImageResource.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Production v1.13 image chooser, dispatch and ETRLE ownership operations.
 // Extracted from himage.cpp; platform rendering remains in its original unit.
 #include "himage.h"
@@ -121,7 +131,7 @@ BOOLEAN GetETRLEImageData(HIMAGE image, ETRLEData* buffer)
     for (UINT16 i = 0; i < image->usNumberOfObjects; ++i)
     {
         const auto& object = image->pETRLEObject[i];
-        if (!object.usWidth || !object.usHeight || object.uiDataOffset > image->uiSizePixData ||
+        if (object.uiDataOffset > image->uiSizePixData ||
             object.uiDataLength > image->uiSizePixData - object.uiDataOffset) return FALSE;
     }
     ETRLEData copy{};

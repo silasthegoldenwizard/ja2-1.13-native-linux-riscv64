@@ -8,6 +8,16 @@
 > Existing source bytes and original notices retained; no additional rights are granted.
 > This record does not establish license applicability, compliance or distribution permission.
 
+<!--
+P710 native snapshot update: tests/native-core/IMAGE_FIXTURES.md
+Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+Update notice inserted during source-only package preparation: 2026-11-14.
+This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+-->
+
 # Synthetic STCI image fixtures
 
 These fixtures contain only newly authored tiny pixels and byte streams. They do
@@ -73,8 +83,17 @@ offsets. Every header is exactly 64 bytes; host packing is irrelevant.
 | 22 | 2 | global width |
 | 24 | 20 | indexed or RGB union |
 | 44 | 1 | stored pixel depth |
-| 45 | 4 | application-data byte count (deliberately unaligned) |
-| 49 | 15 | reserved zeros |
+| 45 | 3 | alignment padding, deliberately `4d a5 78` |
+| 48 | 4 | application-data byte count |
+| 52 | 12 | remaining reserved header bytes |
+
+The first original-data startup on November 13 exposed an earlier correlated
+mistake: both the decoder and this generator placed the app size at 45. Original
+Win32 alignment places that UINT32 at 48, and a locally inspected original
+resource's complete section lengths agree exactly with that layout. No original
+asset bytes are included here. Every authored fixture now uses nonzero padding
+at 45-47 so the old decoder rejects the corrected fixtures; the C++ test also
+checks the size at literal offset 48 before loading and verifies exact app bytes.
 
 Indexed union: palette count at 24 (4 bytes), subimage count at 28 (2 bytes),
 RGB component depth bytes `(8,8,8)` at 30–32, then zeros. RGB union: four 32-bit

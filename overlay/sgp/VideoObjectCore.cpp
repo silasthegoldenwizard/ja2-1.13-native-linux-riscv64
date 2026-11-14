@@ -11,11 +11,22 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: sgp/VideoObjectCore.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Original v1.13 video-object ownership and manager boundary. Surface/blit
 // dispatch and legacy diagnostic list code remain in vobject.cpp.
 #include "video_object_core.h"
 #include "shading.h"
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <new>
@@ -355,7 +366,8 @@ void GetVideoObjectDimensions(HVOBJECT object, UINT16 index, UINT16& width, UINT
     else if (object->ubBitDepth == 8 && object->pETRLEObject && index < object->usNumberOfObjects)
     { width = object->pETRLEObject[index].usWidth; height = object->pETRLEObject[index].usHeight; }
 }
-BOOLEAN GetETRLEPixelValue(UINT8* destination, HVOBJECT object, UINT16 index, UINT16 x, UINT16 y)
+static BOOLEAN LookupETRLEPixel(UINT8* destination, bool* opaque, HVOBJECT object,
+    UINT16 index, UINT16 x, UINT16 y)
 {
     ETRLEObject region;
     if (!destination || !GetVideoObjectETRLEProperties(object, &region, index) || object->ubBitDepth != 8 ||
@@ -367,6 +379,7 @@ BOOLEAN GetETRLEPixelValue(UINT8* destination, HVOBJECT object, UINT16 index, UI
     {
         unsigned column = 0;
         bool found = false;
+        bool pixelOpaque = false;
         UINT8 value = 0;
         for (;;)
         {
@@ -379,12 +392,43 @@ BOOLEAN GetETRLEPixelValue(UINT8* destination, HVOBJECT object, UINT16 index, UI
             if (length > region.usWidth - column) return FALSE;
             if (!(code & 0x80u) && std::size_t(end - current) < length) return FALSE;
             if (row == y && x >= column && x < column + length)
-            { value = code & 0x80u ? 0 : current[x - column]; found = true; }
+            {
+                pixelOpaque = !(code & 0x80u);
+                value = pixelOpaque ? current[x - column] : 0;
+                found = true;
+            }
             if (!(code & 0x80u)) current += length;
             column += length;
         }
         if (column != region.usWidth) return FALSE;
-        if (row == y && found) { *destination = value; return TRUE; }
+        if (row == y && found)
+        {
+            *destination = value;
+            if (opaque) *opaque = pixelOpaque;
+            return TRUE;
+        }
     }
     return FALSE;
 }
+BOOLEAN GetETRLEPixelValue(UINT8* destination, HVOBJECT object, UINT16 index, UINT16 x, UINT16 y)
+{
+    return LookupETRLEPixel(destination, nullptr, object, index, x, y);
+}
+#if !defined(_WIN32)
+BOOLEAN CheckVideoObjectScreenCoordinateInData(HVOBJECT object, UINT16 index, INT32 x, INT32 invertedY)
+{
+    ETRLEObject region{};
+    if (!GetVideoObjectETRLEProperties(object, &region, index) || x < 0 || x >= region.usWidth)
+        return FALSE;
+    // Original interactive structures use y measured upward from their bottom;
+    // the assembly linear index is (height-invertedY)*width+x, with no offsets.
+    const std::int64_t row = std::int64_t(region.usHeight) - std::int64_t(invertedY);
+    if (row < 0 || row >= region.usHeight) return FALSE;
+    // Preserve v1.13's EOL jge behavior: for the first column of a later row,
+    // the previous row ends exactly at the target linear offset and exits.
+    if (x == 0 && row > 0) return FALSE;
+    UINT8 value = 0;
+    bool opaque = false;
+    return LookupETRLEPixel(&value, &opaque, object, index, UINT16(x), UINT16(row)) && opaque;
+}
+#endif

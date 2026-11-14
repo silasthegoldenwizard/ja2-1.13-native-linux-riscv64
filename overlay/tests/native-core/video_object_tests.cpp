@@ -10,6 +10,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/video_object_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "video_object_core.h"
 #include "etrle_blitters.h"
 #include "shading.h"
@@ -62,6 +72,28 @@ VOBJECT_DESC fromFile(const char* name, UINT32 options = 0)
 {
     VOBJECT_DESC result{}; result.fCreateFlags = VOBJECT_CREATE_FROMFILE | options;
     std::strncpy(result.ImageFile, name, sizeof(result.ImageFile) - 1); return result;
+}
+void blankOwnership()
+{
+    HIMAGE image=load("blank_frames.sti");
+    auto desc=fromImage(image); Object object(CreateVideoObject(&desc));
+    check(object.value->usNumberOfObjects==5,"owned logical layer retains all blank frame indices");
+    check(object.value->pETRLEObject!=image->pETRLEObject && object.value->pPixData!=image->pImageData,
+          "blank descriptors and stream remain independent owned copies");
+    DestroyImage(image);
+    const std::array<UINT16,5> widths{{0,7,0,4,3}},heights{{0,5,3,0,2}};
+    for(unsigned i=0;i<5;++i)
+        check(object.value->pETRLEObject[i].usWidth==widths[i] && object.value->pETRLEObject[i].usHeight==heights[i],
+              "visible and blank object indices survive image destruction");
+    std::array<UINT16,64> pixels; pixels.fill(0x5a5a);const auto before=pixels;SGPRect clip{0,0,8,8};
+    for(UINT16 i:{UINT16(0),UINT16(2),UINT16(3)}) {
+        check(Blt8BPPDataTo16BPPBufferTransparentClip(pixels.data(),16,object.value,2,2,i,&clip),
+              "owned empty logical frame clipped draw succeeds");
+        check(pixels==before,"owned empty frame leaves entire destination unchanged");
+    }
+    check(Blt8BPPDataTo16BPPBufferTransparentClip(pixels.data(),16,object.value,0,2,4,&clip),
+          "visible frame after blank descriptors still renders");
+    check(pixels!=before,"preserved final visible index is not blanked or skipped");
 }
 void drawOracle(HVOBJECT object)
 {
@@ -122,6 +154,9 @@ void imageOwnership()
         const UINT8 index = mask[pos] ? UINT8(found - colors.begin()) : 0;
         UINT8 actual = 99;
         check(GetETRLEPixelValue(&actual, object.value, 0, x, y) && actual == index, "pixel lookup across literal/transparent runs and scanlines");
+        const bool originalHit = mask[y*7+x] && (x != 0 || y == 0);
+        check(bool(CheckVideoObjectScreenCoordinateInData(object.value, 0, x, 5-y)) == originalHit,
+              "interactive original bottom-up hit test preserves literal zero and EOL first-column quirk");
     }
     UINT8 noopPixel = 99;
     check(static_cast<const UINT8*>(object.value->pPixData)[0] == 0x80 &&
@@ -133,6 +168,16 @@ void imageOwnership()
     auto invalid = *object.value;
     invalid.uiSizePixData = 1;
     check(!GetETRLEPixelValue(&pixel, &invalid, 0, 0, 0), "pixel rejects truncated resource");
+    check(!CheckVideoObjectScreenCoordinateInData(object.value, 0, -1, 5) &&
+          !CheckVideoObjectScreenCoordinateInData(object.value, 0, 7, 5) &&
+          !CheckVideoObjectScreenCoordinateInData(object.value, 0, 0, 0) &&
+          !CheckVideoObjectScreenCoordinateInData(object.value, 0, 0, 6) &&
+          !CheckVideoObjectScreenCoordinateInData(object.value, 0, 0, INT32_MIN) &&
+          !CheckVideoObjectScreenCoordinateInData(object.value, 0, 0, INT32_MAX) &&
+          !CheckVideoObjectScreenCoordinateInData(nullptr, 0, 0, 1) &&
+          !CheckVideoObjectScreenCoordinateInData(object.value, 2, 0, 1) &&
+          !CheckVideoObjectScreenCoordinateInData(&invalid, 0, 0, 1),
+          "interactive hit test rejects invalid objects, subimages, encoding and signed endpoint coordinates");
 }
 void rejectedOwnership()
 {
@@ -391,7 +436,7 @@ int main(int argc,char** argv)
     {
         if(argc!=2)throw std::runtime_error("expected existing generated image fixture root");
         root=fs::canonical(argv[1]);ConfigureRGB565ImageFormat();mount();
-        imageOwnership();rejectedOwnership();trueColorOwnership();trueColorDescriptors();paletteAndManager();glowAliases();shadeMath();rgb565Conversion();cleanup();
+        imageOwnership();blankOwnership();rejectedOwnership();trueColorOwnership();trueColorDescriptors();paletteAndManager();glowAliases();shadeMath();rgb565Conversion();cleanup();
         std::cout<<"PASS: "<<checks<<" video-object/shading checks, "<<draws<<" whole-buffer owned-object draws\n";
         return 0;
     }

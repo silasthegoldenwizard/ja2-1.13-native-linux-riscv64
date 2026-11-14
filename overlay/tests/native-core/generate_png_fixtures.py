@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Independent tiny PNG/Copy7z JPC resources, stdlib and existing 7z only."""
 # P710 native notice preparation: tests/native-core/generate_png_fixtures.py
 # New candidate test/build/documentation/metadata path.
 # Native adaptation recorded in the 2026-11-12 checkpoint.
@@ -9,7 +10,14 @@
 # Existing source bytes and original notices retained; no additional rights are granted.
 # This record does not establish license applicability, compliance or distribution permission.
 
-"""Independent tiny PNG/Copy7z JPC resources, stdlib and existing 7z only."""
+# P710 native snapshot update: tests/native-core/generate_png_fixtures.py
+# Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-14.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 import argparse
 import json
 from pathlib import Path
@@ -26,10 +34,11 @@ def chunk(name, data):
 PALETTE = bytes([0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255]) + bytes(252 * 3)
 
 
-def png(width, height, kind, data, offset=(-2, 3), palette=PALETTE, offset_unit=0):
+def png(width, height, kind, data, offset=(-2, 3), palette=PALETTE, offset_unit=0, srgb=False):
     channels = {3: 1, 2: 3, 6: 4}[kind]
     rows = b''.join(b'\0' + data[y * width * channels:(y + 1) * width * channels] for y in range(height))
     return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, kind, 0, 0, 0)) +
+            (chunk(b'sRGB', b'\0') if srgb else b'') +
             (chunk(b'PLTE', palette) if kind == 3 else b'') +
             chunk(b'oFFs', struct.pack('>iiB', *offset, offset_unit)) + chunk(b'IDAT', zlib.compress(rows)) + chunk(b'IEND', b''))
 
@@ -45,6 +54,12 @@ def main():
     rgb = png(3, 1, 2, bytes([255, 0, 0, 0, 255, 0, 0, 0, 255]))
     rgba = png(2, 1, 6, bytes([12, 34, 56, 78, 90, 123, 210, 255]))
     fixtures = {'indexed.png': indexed, 'rgb.png': rgb, 'rgba.png': rgba,
+                'indexed_srgb.png': png(4, 2, 3, bytes([0, 1, 1, 0, 2, 0, 3, 3]), srgb=True),
+                'surface_rgba.png': png(3, 1, 6, bytes([250, 120, 65, 0,
+                                                       12, 34, 56, 78,
+                                                       90, 123, 210, 255])),
+                'surface_indexed_key.png': png(2, 1, 3, bytes([0, 1]),
+                                               palette=bytes([255, 0, 0, 0, 255, 0]) + bytes(254 * 3)),
                 'one.png': png(1, 1, 3, b'\0'),
                 'micrometer.png': png(4, 2, 3, bytes([0, 1, 1, 0, 2, 0, 3, 3]), offset_unit=1),
                 'trailing.png': indexed + chunk(b'oFFs', struct.pack('>iiB', 123, 456, 0)) + b'ignored trailer',

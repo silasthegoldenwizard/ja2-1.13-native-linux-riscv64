@@ -10,14 +10,30 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: sgp/NativeVideo.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "native_video.h"
 #include "SDLPresentation.h"
+#include "vobject.h"
+#include "clip_state.h"
 #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
+#include <vector>
+UINT32 guiMouseBufferState=BUFFER_DISABLED;
+BOOLEAN gfNextRefreshFullScreen=FALSE;
+INT32 giNumFrames=0; // original shared Air Raid/recording counter; game code owns increments
 namespace
 {
 sgp::SDLPresentation window;
@@ -26,6 +42,29 @@ UINT32 width=640, height=480, scale=1;
 std::string title="JA2 v1.13 native video";
 std::array<SGPRect,128> dirty{};
 std::size_t count=0;
+std::array<SGPRect,128> extendedDirty{};
+std::size_t extendedCount=0;
+sgp::NativeVideoRegionSource regionSource=nullptr;
+sgp::NativeVideoScrollHooks scrollHooks{};
+std::uint64_t generation=0;
+SDL_Cursor* cursor=nullptr;
+SDL_Cursor* previousCursor=nullptr;
+bool previousVisible=true;
+HVOBJECT cursorStore=nullptr;
+INT16 cursorX=0,cursorY=0;
+UINT16 cursorW=0,cursorH=0;
+int cursorWindowW=0,cursorWindowH=0;
+void closeCursor()
+{
+    // Restore the borrowed cursor before destroying our currently selected one.
+    if (cursor && SDL_GetCursor()==cursor) SDL_SetCursor(previousCursor ? previousCursor : SDL_GetDefaultCursor());
+    if (cursor) SDL_DestroyCursor(cursor);
+    cursor=nullptr; previousCursor=nullptr;
+    if (previousVisible) SDL_ShowCursor(); else SDL_HideCursor();
+    if (cursorStore) DeleteVideoObject(cursorStore);
+    cursorStore=nullptr; cursorW=cursorH=0; cursorX=cursorY=0;
+    cursorWindowW=cursorWindowH=0; guiMouseBufferState=BUFFER_DISABLED;
+}
 bool dimensions(UINT32 w, UINT32 h, UINT32 depth, UINT32 s)
 {
     if (!w || !h || w>65535 || h>65535 || depth!=16 || !s || s>static_cast<UINT32>(std::numeric_limits<int>::max())/w || s>static_cast<UINT32>(std::numeric_limits<int>::max())/h) return false;
@@ -39,7 +78,24 @@ void copy(BYTE* d, UINT32 dp, const BYTE* s, UINT32 sp, const SGPRect& r)
     for (INT32 y=r.iTop; y<r.iBottom; ++y)
         std::memcpy(d+static_cast<std::size_t>(y)*dp+static_cast<std::size_t>(r.iLeft)*2,s+static_cast<std::size_t>(y)*sp+static_cast<std::size_t>(r.iLeft)*2,static_cast<std::size_t>(r.iRight-r.iLeft)*2);
 }
+sgp::NativeVideoRegionState regionState()
+{
+    auto state=regionSource ? regionSource() : sgp::NativeVideoRegionState{static_cast<INT32>(height),false};
+    state.viewportBottom=std::clamp(state.viewportBottom,INT32{0},static_cast<INT32>(height));
+    return state;
 }
+void addExtended(INT32 l,INT32 t,INT32 r,INT32 b)
+{
+    const auto left=std::max<INT32>(0,l), top=std::max<INT32>(0,t);
+    const auto right=std::min<INT32>(static_cast<INT32>(width),r);
+    const auto bottom=std::min<INT32>(static_cast<INT32>(height),b);
+    if (left>=right || top>=bottom) return;
+    if (extendedCount==extendedDirty.size()) { InvalidateScreen(); return; }
+    extendedDirty[extendedCount++]={left,top,right,bottom};
+}
+}
+void sgp::SetNativeVideoRegionSource(NativeVideoRegionSource source) { regionSource=source; }
+void sgp::SetNativeVideoScrollHooks(NativeVideoScrollHooks hooks) { scrollHooks=hooks; }
 bool sgp::ConfigureNativeVideo(UINT32 w, UINT32 h, UINT32 depth, UINT32 s, const char* name)
 {
     if (active || !dimensions(w,h,depth,s)) return false;
@@ -53,19 +109,32 @@ BOOLEAN InitializeVideoManager(void* instance, UINT16 show, void* windowproc)
     if (!dimensions(width,height,16,scale)) return FALSE;
     if (!window.Open(title.c_str(),static_cast<int>(width),static_cast<int>(height),static_cast<int>(scale))) return FALSE;
     InitializeVideoSurfaceManager();
-    UINT32 ids[3]{};
+    UINT32 ids[4]{};
     VSURFACE_DESC d{}; d.fCreateFlags=VSURFACE_CREATE_DEFAULT; d.usWidth=width; d.usHeight=height; d.ubBitDepth=16;
     bool ok=true;
-    for (auto& id : ids) if (!AddVideoSurface(&d,&id)) { ok=false; break; }
+    for (std::size_t i=0; i<4; ++i) {
+        if (i==3) { d.usWidth=MAX_CURSOR_WIDTH; d.usHeight=MAX_CURSOR_HEIGHT; }
+        if (!AddVideoSurface(&d,&ids[i])) { ok=false; break; }
+    }
     if (ok) ok=sgp::BindReservedVideoSurfaces(ids);
     if (!ok) { for (auto id : ids) if (id) DeleteVideoSurfaceFromIndex(id); window.Close(); return FALSE; }
-    active=true; suspended=false; full=true; count=0; return TRUE;
+    // Indexed objects and buttons need a drawing clip before any screen runs.
+    // Repeated active initialization remains a no-op and keeps caller clipping.
+    SGPRect clip{0,0,static_cast<INT32>(width),static_cast<INT32>(height)};
+    SetClippingRect(&clip);
+    previousCursor=SDL_GetCursor(); previousVisible=SDL_CursorVisible();
+    active=true; suspended=false; full=true; count=0; extendedCount=0; gfNextRefreshFullScreen=FALSE;
+    guiMouseBufferState=BUFFER_DISABLED;
+    if (generation!=std::numeric_limits<std::uint64_t>::max()) ++generation;
+    return TRUE;
 }
 bool sgp::ShutdownNativeVideo()
 {
     if (!active) return true;
     if (!sgp::ReleaseReservedVideoSurfaces()) return false;
-    window.Close(); active=false; suspended=false; full=false; count=0;
+    closeCursor();
+    window.Close(); active=false; suspended=false; full=false; count=0; extendedCount=0; gfNextRefreshFullScreen=FALSE;
+    if (generation!=std::numeric_limits<std::uint64_t>::max()) ++generation;
     return true;
 }
 void ShutdownVideoManager() { (void)sgp::ShutdownNativeVideo(); }
@@ -85,11 +154,11 @@ PTR LockFrameBuffer(UINT32* p) { return LockVideoSurface(FRAME_BUFFER,p); }
 void UnlockFrameBuffer() { UnLockVideoSurface(FRAME_BUFFER); }
 BOOLEAN CanBlitToFrameBuffer()
 {
-    if (!active || suspended || full || count!=0) return FALSE;
+    if (!active || suspended || full || count!=0 || extendedCount!=0) return FALSE;
     UINT32 pitch=0; if (!LockVideoSurface(FRAME_BUFFER,&pitch)) return FALSE;
     UnLockVideoSurface(FRAME_BUFFER); return TRUE;
 }
-void InvalidateScreen() { if (active) { full=true; count=0; } }
+void InvalidateScreen() { if (active) { full=true; count=0; extendedCount=0; } }
 void InvalidateFrameBuffer() { InvalidateScreen(); }
 void StartFrameBufferRender() {}
 void EndFrameBufferRender() { InvalidateScreen(); }
@@ -102,6 +171,17 @@ void InvalidateRegion(INT32 l, INT32 t, INT32 r, INT32 b)
     if (count==dirty.size()) { InvalidateScreen(); return; }
     dirty[count++]={static_cast<INT32>(left),static_cast<INT32>(top),static_cast<INT32>(right),static_cast<INT32>(bottom)};
 }
+void InvalidateRegionEx(INT32 l,INT32 t,INT32 r,INT32 b,UINT32 /*flags*/)
+{
+    if (!active || full) return;
+    const auto state=regionState();
+    // Preserve the original viewport split without a dependency on the engine
+    // globals or a second rendering implementation.
+    if (t<=state.viewportBottom && b>state.viewportBottom) {
+        addExtended(l,t,r,state.viewportBottom);
+        if (!full) addExtended(l,state.viewportBottom,r,b);
+    } else addExtended(l,t,r,b);
+}
 void InvalidateRegions(SGPRect* regions, UINT32 n)
 {
     if (!active || full || !regions) return;
@@ -111,27 +191,250 @@ void InvalidateRegions(SGPRect* regions, UINT32 n)
 bool sgp::RefreshNativeVideo()
 {
     if (!active || suspended || !sgp::ReservedVideoSurfacesReady()) return false;
-    BYTE* pixels[3]{}; UINT32 pitch[3]{};
-    const UINT32 aliases[]={PRIMARY_SURFACE,BACKBUFFER,FRAME_BUFFER};
-    for (std::size_t i=0; i<3; ++i)
-    {
-        pixels[i]=LockVideoSurface(aliases[i],&pitch[i]);
-        if (!pixels[i])
-        {
-            for (std::size_t j=0; j<i; ++j) UnLockVideoSurface(aliases[j]);
+    auto state=regionState();
+    // Original RefreshScreen requests full frame transfer only on GAME_SCREEN.
+    // Suppress scrolling for that retry; commit clears the original scroll flags.
+    if (gfNextRefreshFullScreen && state.gameScreen) { InvalidateScreen();state.scrolling=false; }
+    const auto hooks=scrollHooks;
+    if (state.scrolling && (!hooks.renderStrip || !hooks.beginOverlays ||
+        !hooks.finishOverlays || !hooks.endOverlays)) return false;
+    struct Locks {
+        const UINT32 aliases[3]{PRIMARY_SURFACE,BACKBUFFER,FRAME_BUFFER};
+        std::array<sgp::BackgroundView,3> views{};
+        std::size_t held=0;
+        void release() { while (held) UnLockVideoSurface(aliases[--held]); }
+        bool acquire() {
+            if (held==3) return true;
+            release();
+            for (;held<3;) {
+                UINT32 pitch=0;
+                // Manager locks and their metadata lookup do not allocate.
+                // Rollback must reacquire after callbacks even under low memory.
+                auto* data=LockVideoSurface(aliases[held],&pitch);
+                if (!data) { release();return false; }
+                ++held;
+                sgp::NativeSurfaceView actual;
+                if (!sgp::LockedNativeSurfaceView(data,&actual) || actual.pitch!=pitch) {
+                    release();return false;
+                }
+                views[held-1]={actual.data,actual.bytes,actual.width,actual.height,actual.pitch};
+            }
+            return true;
+        }
+        ~Locks() { release(); }
+    } locks;
+    if (!locks.acquire()) return false;
+    sgp::BackgroundView z{};sgp::NativeScrollPlan scrollPlan;
+    std::array<std::vector<BYTE>,4> saved;
+    bool overlayTransaction=false;
+    const auto pendingDirty=dirty,pendingExtended=extendedDirty;
+    const auto pendingCount=count,pendingExtendedCount=extendedCount;
+    const bool pendingFull=full;
+    if (state.scrolling) {
+        if (!sgp::OwnedZBufferView(state.zBuffer,&z) ||
+            !sgp::PlanNativeScroll(locks.views[1],z,state.scroll,scrollPlan)) return false;
+        try {
+            for (std::size_t i=0;i<3;++i)
+                saved[i].assign(locks.views[i].data,locks.views[i].data+locks.views[i].bytes);
+            saved[3].assign(z.data,z.data+z.bytes);
+            // Overlay snapshot preparation must succeed before dirty copies
+            // or scroll mutation. Original callbacks acquire their own locks.
+            locks.release();
+            if (!hooks.beginOverlays()) return false;
+            overlayTransaction=true;
+            if (!locks.acquire()) { hooks.endOverlays(false);return false; }
+        } catch (...) {
+            if (overlayTransaction) hooks.endOverlays(false);
             return false;
         }
     }
+    const auto rollback=[&]() {
+        // The real engine hooks balance their locks. A hook retaining an outer
+        // lock is a contract violation; never unlock somebody else's lock.
+        const bool acquired=locks.acquire();
+        if (acquired) {
+            for (std::size_t i=0;i<3;++i)
+                std::memcpy(locks.views[i].data,saved[i].data(),saved[i].size());
+            std::memcpy(z.data,saved[3].data(),saved[3].size());
+        }
+        locks.release();
+        if (overlayTransaction) { hooks.endOverlays(false);overlayTransaction=false; }
+        dirty=pendingDirty;extendedDirty=pendingExtended;
+        count=pendingCount;extendedCount=pendingExtendedCount;full=pendingFull;
+        return false;
+    };
     const SGPRect all{0,0,static_cast<INT32>(width),static_cast<INT32>(height)};
-    if (full) copy(pixels[1],pitch[1],pixels[2],pitch[2],all);
-    else for (std::size_t i=0; i<count; ++i) copy(pixels[1],pitch[1],pixels[2],pitch[2],dirty[i]);
-    copy(pixels[0],pitch[0],pixels[1],pitch[1],all);
-    const bool ok=window.Present565(pixels[0],static_cast<std::size_t>(pitch[0])*height,pitch[0]);
-    for (auto id : aliases) UnLockVideoSurface(id);
-    if (ok) { full=false; count=0; }
+    auto transfer=[&](const SGPRect& rect) {
+        copy(locks.views[1].data,locks.views[1].pitch,locks.views[2].data,locks.views[2].pitch,rect);
+    };
+    if (full) transfer(all);
+    else {
+        for (std::size_t i=0;i<count;++i) transfer(dirty[i]);
+        for (std::size_t i=0;i<extendedCount;++i) {
+            // Original extended world rectangles are redrawn through scroll
+            // strips; the separately split interface portion still transfers.
+            if (state.scrolling && extendedDirty[i].iBottom<=state.viewportBottom) continue;
+            transfer(extendedDirty[i]);
+        }
+    }
+    if (state.scrolling) {
+        if (!sgp::ApplyNativeScroll(locks.views[1],z,state.scroll)) return rollback();
+        locks.release();
+        try {
+            for (UINT32 i=0;i<scrollPlan.stripCount;++i) {
+                const auto& strip=scrollPlan.strips[i];
+                if (!hooks.renderStrip(strip) || !locks.acquire()) return rollback();
+                transfer(strip);
+                locks.release();
+            }
+            if (!hooks.finishOverlays(scrollPlan.shiftX,scrollPlan.shiftY) || !locks.acquire()) return rollback();
+        } catch (...) { return rollback(); }
+    }
+    copy(locks.views[0].data,locks.views[0].pitch,locks.views[1].data,locks.views[1].pitch,all);
+    const bool ok=window.Present565(locks.views[0].data,locks.views[0].bytes,locks.views[0].pitch);
+    if (!ok && state.scrolling) return rollback();
+    locks.release();
+    if (overlayTransaction) { hooks.endOverlays(true);overlayTransaction=false; }
+    if (ok) {
+        full=false;count=0;extendedCount=0;gfNextRefreshFullScreen=FALSE;
+        if (hooks.committedFrame) hooks.committedFrame();
+        (void)sgp::RefreshNativeCursor();
+    }
     return ok;
 }
 void RefreshScreen(void*) { (void)sgp::RefreshNativeVideo(); }
 bool sgp::SaveNativeVideoWindow(const char* path) { return active && window.SaveWindowSurface(path); }
 const char* sgp::NativeVideoDriver() { return active ? window.VideoDriver() : "uninitialized"; }
 bool sgp::NativeVideoQuitRequested() { return !active || window.QuitRequested(); }
+bool sgp::NativeVideoInputInfo(SDL_WindowID& id, int& w, int& h, int& ww, int& wh) { return active && window.InputInfo(id,w,h,ww,wh); }
+bool sgp::AttachNativeVideoInput(PresentationEventSink fn, void* context) { return active && window.AttachInput(fn,context); }
+void sgp::DetachNativeVideoInput(PresentationEventSink fn, void* context) { window.DetachInput(fn,context); }
+void sgp::PumpNativeVideoEvents() { if (active) window.PumpEvents(); }
+
+std::uint64_t sgp::NativeVideoGeneration() { return generation; }
+PTR LockMouseBuffer(UINT32* pitch) { return LockVideoSurface(MOUSE_BUFFER,pitch); }
+void UnlockMouseBuffer() { UnLockVideoSurface(MOUSE_BUFFER); }
+BOOLEAN CanBlitToMouseBuffer()
+{
+    if (!active || suspended || guiMouseBufferState!=BUFFER_READY) return FALSE;
+    UINT32 pitch=0; if (!LockMouseBuffer(&pitch)) return FALSE;
+    UnlockMouseBuffer(); return TRUE;
+}
+BOOLEAN EraseMouseCursor()
+{
+    UINT32 pitch=0; auto* p=static_cast<BYTE*>(LockMouseBuffer(&pitch));
+    if (!p) return FALSE;
+    for (unsigned y=0; y<MAX_CURSOR_HEIGHT; ++y) std::memset(p+std::size_t(y)*pitch,0,MAX_CURSOR_WIDTH*2);
+    UnlockMouseBuffer(); return TRUE;
+}
+BOOLEAN SetMouseCursorProperties(INT16 x,INT16 y,UINT16 h,UINT16 w)
+{
+    if (!active || h>MAX_CURSOR_HEIGHT || w>MAX_CURSOR_WIDTH) return FALSE;
+    UINT32 pitch=0; if (!LockMouseBuffer(&pitch)) return FALSE;
+    UnlockMouseBuffer(); cursorX=x; cursorY=y; cursorH=h; cursorW=w; return TRUE;
+}
+BOOLEAN BltToMouseCursor(UINT32 id,UINT16 frame,UINT16 x,UINT16 y)
+{ return BltVideoObjectFromIndex(MOUSE_BUFFER,id,frame,x,y,VO_BLT_SRCTRANSPARENCY,nullptr); }
+namespace {
+BOOLEAN setCursorObject(HVOBJECT object,UINT16 frame,UINT16 x,UINT16 y)
+{
+    ETRLEObject properties{};
+    if (!active || !GetVideoObjectETRLEProperties(object,&properties,frame)) return FALSE;
+    const int w=int(properties.usWidth)+properties.sOffsetX;
+    const int h=int(properties.usHeight)+properties.sOffsetY;
+    if (w<=0 || h<=0 || w>MAX_CURSOR_WIDTH || h>MAX_CURSOR_HEIGHT || x>32767 || y>32767) return FALSE;
+    std::array<BYTE,MAX_CURSOR_WIDTH*MAX_CURSOR_HEIGHT*2> saved{};
+    UINT32 pitch=0; auto* bitmap=static_cast<BYTE*>(LockMouseBuffer(&pitch));
+    if (!bitmap) return FALSE;
+    for (unsigned row=0; row<MAX_CURSOR_HEIGHT; ++row)
+        std::memcpy(saved.data()+std::size_t(row)*MAX_CURSOR_WIDTH*2,bitmap+std::size_t(row)*pitch,MAX_CURSOR_WIDTH*2);
+    UnlockMouseBuffer();
+    if (!EraseMouseCursor()) return FALSE;
+    if (!BltVideoObject(MOUSE_BUFFER,object,frame,0,0,VO_BLT_SRCTRANSPARENCY,nullptr)) {
+        bitmap=static_cast<BYTE*>(LockMouseBuffer(&pitch));
+        if (bitmap) {
+            for (unsigned row=0; row<MAX_CURSOR_HEIGHT; ++row)
+                std::memcpy(bitmap+std::size_t(row)*pitch,saved.data()+std::size_t(row)*MAX_CURSOR_WIDTH*2,MAX_CURSOR_WIDTH*2);
+            UnlockMouseBuffer();
+        }
+        return FALSE;
+    }
+    cursorX=static_cast<INT16>(x); cursorY=static_cast<INT16>(y);
+    cursorH=static_cast<UINT16>(h); cursorW=static_cast<UINT16>(w);
+    DirtyCursor(); return TRUE;
+}
+}
+BOOLEAN SetMouseCursorFromObject(UINT32 id,UINT16 frame,UINT16 x,UINT16 y)
+{
+    HVOBJECT object=nullptr;
+    if (!GetVideoObject(&object,id)) return FALSE;
+    return setCursorObject(object,frame,x,y);
+}
+BOOLEAN LoadCursorFile(STR8 filename)
+{
+    if (!active || !filename || std::strlen(filename)>=sizeof(VOBJECT_DESC{}.ImageFile)) return FALSE;
+    VOBJECT_DESC descriptor{}; descriptor.fCreateFlags=VOBJECT_CREATE_FROMFILE;
+    std::strcpy(descriptor.ImageFile,filename);
+    HVOBJECT loaded=CreateVideoObject(&descriptor);
+    if (!loaded) return FALSE;
+    if (cursorStore) DeleteVideoObject(cursorStore);
+    cursorStore=loaded; return TRUE;
+}
+BOOLEAN SetCurrentCursor(UINT16 frame,UINT16 x,UINT16 y) { return setCursorObject(cursorStore,frame,x,y); }
+void DirtyCursor() { if (active) guiMouseBufferState=BUFFER_DIRTY; }
+void EnableCursor(BOOLEAN disable)
+{
+    if (!active) return;
+    guiMouseBufferState=disable ? BUFFER_DISABLED : BUFFER_DIRTY;
+    (void)sgp::RefreshNativeCursor();
+}
+BOOLEAN HideMouseCursor()
+{
+    if (!active) return FALSE;
+    guiMouseBufferState=BUFFER_DISABLED;
+    return static_cast<BOOLEAN>(sgp::RefreshNativeCursor());
+}
+bool sgp::RefreshNativeCursor()
+{
+    if (!active || suspended || !SDL_IsMainThread()) return false;
+    SDL_WindowID id=0; int w=0,h=0,ww=0,wh=0;
+    if (!window.InputInfo(id,w,h,ww,wh) || ww<=0 || wh<=0) return false;
+    if (guiMouseBufferState==BUFFER_DISABLED) return SDL_HideCursor();
+    if (guiMouseBufferState==BUFFER_READY && ww==cursorWindowW && wh==cursorWindowH) return true;
+    if (guiMouseBufferState!=BUFFER_DIRTY && guiMouseBufferState!=BUFFER_READY) return false;
+    UINT32 pitch=0; const auto* source=static_cast<const BYTE*>(LockMouseBuffer(&pitch));
+    if (!source) return false;
+    // SDL hotspots must be inside their bitmap. Transparent padding represents
+    // signed original offsets, including hotspots beyond the sprite rectangle.
+    const int left=std::min(0,int(cursorX)), top=std::min(0,int(cursorY));
+    const int right=std::max(int(cursorW),int(cursorX)+1), bottom=std::max(int(cursorH),int(cursorY)+1);
+    const auto scaled=[](std::int64_t n,int extent,int logical) { return (n*extent+logical-1)/logical; };
+    const auto dw=scaled(right-left,ww,w), dh=scaled(bottom-top,wh,h);
+    if (!cursorW || !cursorH) { UnlockMouseBuffer(); if (!SDL_HideCursor()) return false; guiMouseBufferState=BUFFER_READY; cursorWindowW=ww; cursorWindowH=wh; return true; }
+    // Bound pathological offset/resize allocations; keep the previous cursor
+    // and pending bitmap intact if the native driver cannot represent it.
+    if (dw<=0 || dh<=0 || dw>4096 || dh>4096) { UnlockMouseBuffer(); return false; }
+    SDL_Surface* rgba=SDL_CreateSurface(static_cast<int>(dw),static_cast<int>(dh),SDL_PIXELFORMAT_ARGB8888);
+    if (!rgba) { UnlockMouseBuffer(); return false; }
+    for (int py=0; py<dh; ++py) for (int px=0; px<dw; ++px) {
+        const int sx=static_cast<int>(std::int64_t(px)*w/ww)+left;
+        const int sy=static_cast<int>(std::int64_t(py)*h/wh)+top;
+        UINT16 color=0;
+        if (sx>=0 && sy>=0 && sx<cursorW && sy<cursorH) std::memcpy(&color,source+std::size_t(sy)*pitch+std::size_t(sx)*2,2);
+        const unsigned r=(color>>11)&31u,g=(color>>5)&63u,b=color&31u;
+        const Uint32 pixel=color ? 0xff000000u | ((r*255u/31u)<<16) | ((g*255u/63u)<<8) | (b*255u/31u) : 0u;
+        std::memcpy(static_cast<BYTE*>(rgba->pixels)+std::size_t(py)*static_cast<std::size_t>(rgba->pitch)+std::size_t(px)*4,&pixel,4);
+    }
+    UnlockMouseBuffer();
+    const int hx=static_cast<int>(std::int64_t(cursorX-left)*ww/w), hy=static_cast<int>(std::int64_t(cursorY-top)*wh/h);
+    SDL_Cursor* replacement=SDL_CreateColorCursor(rgba,hx,hy); SDL_DestroySurface(rgba);
+    if (!replacement) return false;
+    if (!SDL_SetCursor(replacement)) { SDL_DestroyCursor(replacement); return false; }
+    if (!SDL_ShowCursor()) {
+        SDL_SetCursor(cursor ? cursor : previousCursor);
+        SDL_DestroyCursor(replacement); return false;
+    }
+    if (cursor) SDL_DestroyCursor(cursor);
+    cursor=replacement; guiMouseBufferState=BUFFER_READY; cursorWindowW=ww; cursorWindowH=wh;
+    return true;
+}

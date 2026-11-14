@@ -10,6 +10,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/png_loader_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "PngLoader.h"
 #include "FileManBackend.h"
 #include <vfs/Core/vfs.h>
@@ -25,6 +35,10 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+// Bundled libpng's internal chromaticity helper, exercised through its exact
+// C ABI as well as the end-to-end authored sRGB image below.
+extern "C" void png_64bit_product(long, long, unsigned long*, unsigned long*);
 
 namespace fs = std::filesystem;
 namespace
@@ -54,7 +68,20 @@ void verifyPalette(const image_type& image)
 }
 void full()
 {
-    for (const char* name : {"indexed.png", "single_indexed.jpc.7z", "trailing.png", "micrometer.png"})
+    struct Product { long a, b; unsigned long hi, lo; };
+    const Product products[] = {
+        {0, -1, 0, 0}, {65535, 65535, 0, 0xfffe0001UL},
+        {-1, 1, 0, 0xffffffffUL}, {-1, -1, 0xfffffffeUL, 1},
+        {0x80000000L, 0x80000000L, 0x40000000UL, 0},
+        {0x12345678L, 0x9abcdef0L, 0x0b00ea4eUL, 0x242d2080UL}
+    };
+    for (const auto& product : products)
+    {
+        unsigned long hi = 0, lo = 0;
+        png_64bit_product(product.a, product.b, &hi, &lo);
+        check(hi == product.hi && lo == product.lo, "literal high/low32 chromaticity products including signed bit patterns");
+    }
+    for (const char* name : {"indexed.png", "indexed_srgb.png", "single_indexed.jpc.7z", "trailing.png", "micrometer.png"})
     {
         Image image(name); check(image.load(), name);
         const auto& v = image.value;

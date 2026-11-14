@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Author source-only PCX/TGA/image-chooser fixtures; never reads game data."""
 # P710 native notice preparation: tests/native-core/generate_resource_fixtures.py
 # New candidate test/build/documentation/metadata path.
 # Native adaptation recorded in the 2026-11-12 checkpoint.
@@ -9,7 +10,14 @@
 # Existing source bytes and original notices retained; no additional rights are granted.
 # This record does not establish license applicability, compliance or distribution permission.
 
-"""Author source-only PCX/TGA/image-chooser fixtures; never reads game data."""
+# P710 native snapshot update: tests/native-core/generate_resource_fixtures.py
+# Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-14.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 import argparse
 import hashlib
 import json

@@ -1,38 +1,349 @@
+Editor/XML_ActionItems.cpp
+Ja2/Credits.cpp
+Ja2/FeaturesScreen.cpp
+Ja2/GameInitOptionsScreen.cpp
+Ja2/GameSettings.cpp
+Ja2/HelpScreen.cpp
+Ja2/Init.cpp
+Ja2/Intro.cpp
+Ja2/JA2 Splash.cpp
+Ja2/Loading Screen.cpp
+Ja2/MPChatScreen.cpp
+Ja2/MPConnectScreen.cpp
+Ja2/MPJoinScreen.cpp
+Ja2/MPScoreScreen.cpp
+Ja2/MPXmlTeams.cpp
+Ja2/MainMenuScreen.cpp
+Ja2/Options Screen.cpp
+Ja2/SaveLoadGame.cpp
+Ja2/SaveLoadGame.h
+Ja2/SaveLoadScreen.cpp
+Ja2/SaveLoadScreen.h
+Ja2/Screens.cpp
+Ja2/Sys Globals.cpp
+Ja2/XML_DifficultySettings.cpp
+Ja2/XML_IntroFiles.cpp
+Ja2/XML_Layout_MainMenu.cpp
+Ja2/gameloop.cpp
+Ja2/jascreens.cpp
+Laptop/AimMembers.cpp
+Laptop/AimSort.cpp
+Laptop/BaseTable.cpp
+Laptop/BobbyR.cpp
+Laptop/BobbyRGuns.cpp
+Laptop/BobbyRGuns.h
+Laptop/BriefingRoom.cpp
+Laptop/BriefingRoomM.cpp
+Laptop/CampaignHistory_Summary.cpp
+Laptop/DropDown.cpp
+Laptop/DropDown.h
+Laptop/DynamicDialogueWidget.cpp
+Laptop/FacilityProduction.cpp
+Laptop/IMP Attribute Selection.cpp
+Laptop/IMP Background.cpp
+Laptop/IMP Begin Screen.cpp
+Laptop/IMP Confirm.cpp
+Laptop/IMP Gear.cpp
+Laptop/IMP HomePage.cpp
+Laptop/IMP Minor Trait.cpp
+Laptop/IMP Personality Quiz.cpp
+Laptop/IMP Skill Trait.cpp
+Laptop/Intelmarket.cpp
+Laptop/PMC.cpp
+Laptop/PostalService.cpp
+Laptop/PostalService.h
+Laptop/XML_BriefingRoom.cpp
+Laptop/XML_CampaignStatsEvents.cpp
+Laptop/XML_DeliveryMethods.cpp
+Laptop/XML_Email.cpp
+Laptop/XML_EmailMercAvailable.cpp
+Laptop/XML_EmailMercLevelUp.cpp
+Laptop/XML_History.cpp
+Laptop/XML_IMPVoices.cpp
+Laptop/XML_OldAIMArchive.cpp
+Laptop/XML_ShippingDestinations.cpp
+Laptop/email.cpp
+Laptop/files.cpp
+Laptop/finances.cpp
+Laptop/florist.cpp
+Laptop/history.cpp
+Laptop/laptop.cpp
+Laptop/merccompare.cpp
+Laptop/mercs Files.cpp
+Laptop/personnel.cpp
+Laptop/personnel.h
+ModularizedTacticalAI/src/PlanFactoryLibrary.cpp
+Multiplayer/client.cpp
+Multiplayer/network.h
+Multiplayer/server.cpp
+Strategic/ASD.cpp
+Strategic/Assignments.cpp
+Strategic/Auto Resolve.cpp
+Strategic/Creature Spreading.cpp
+Strategic/Game Clock.cpp
+Strategic/Hourly Update.cpp
+Strategic/LuaInitNPCs.cpp
+Strategic/Map Screen Helicopter.cpp
+Strategic/Map Screen Interface Bottom.cpp
+Strategic/Map Screen Interface Map Inventory.cpp
+Strategic/Map Screen Interface Map.cpp
+Strategic/Map Screen Interface Map.h
+Strategic/Map Screen Interface.cpp
+Strategic/MilitiaIndividual.cpp
+Strategic/MilitiaSquads.cpp
+Strategic/MiniEvents.cpp
+Strategic/PreBattle Interface.cpp
+Strategic/Queen Command.cpp
+Strategic/Quest Debug System.cpp
+Strategic/Rebel Command.cpp
+Strategic/Scheduling.cpp
+Strategic/Scheduling.h
+Strategic/Strategic AI.cpp
+Strategic/Strategic Event Handler.cpp
+Strategic/Strategic Merc Handler.cpp
+Strategic/Strategic Movement Costs.cpp
+Strategic/Strategic Movement.cpp
+Strategic/Strategic Status.cpp
+Strategic/Strategic Town Loyalty.cpp
+Strategic/Strategic Transport Groups.cpp
+Strategic/Town Militia.cpp
+Strategic/Town Militia.h
+Strategic/UndergroundInit.cpp
+Strategic/XML_ExtraItems.cpp
+Strategic/XML_FacilityTypes.cpp
+Strategic/XML_Minerals.cpp
+Strategic/XML_SectorNames.cpp
+Strategic/XML_SquadNames.cpp
+Strategic/mapscreen.cpp
+Strategic/mapscreen.h
+Strategic/strategicmap.cpp
+Strategic/strategicmap.h
+Tactical/Arms Dealer Init.cpp
+Tactical/Auto Bandage.cpp
+Tactical/BinaryHeap.hpp
+Tactical/Campaign.cpp
+Tactical/Campaign.h
+Tactical/Civ Quotes.cpp
+Tactical/Dialogue Control.cpp
+Tactical/Dialogue Control.h
+Tactical/Disease.cpp
+Tactical/DisplayCover.cpp
+Tactical/Drugs And Alcohol.cpp
+Tactical/DynamicDialogue.cpp
+Tactical/Enemy Soldier Save.cpp
+Tactical/Food.cpp
+Tactical/GAP.H
+Tactical/GAP.cpp
+Tactical/Handle Items.cpp
+Tactical/Handle UI.cpp
+Tactical/Interface Control.cpp
+Tactical/Interface Dialogue.cpp
+Tactical/Interface Enhanced.cpp
+Tactical/Interface Items.cpp
+Tactical/Interface Items.h
+Tactical/Interface Panels.cpp
+Tactical/Interface Utils.cpp
+Tactical/Interface.cpp
+Tactical/Interface.h
+Tactical/Inventory Choosing.cpp
+Tactical/Item Types.cpp
+Tactical/Items.cpp
+Tactical/Keys.cpp
+Tactical/LOS.cpp
+Tactical/LogicalBodyTypes/AbstractXMLLoader.cpp
+Tactical/LogicalBodyTypes/AbstractXMLLoader.h
+Tactical/LogicalBodyTypes/EnumeratorDB.cpp
+Tactical/LogicalBodyTypes/FilterDB.cpp
+Tactical/LogicalBodyTypes/PaletteTable.cpp
+Tactical/LogicalBodyTypes/Singleton.h
+Tactical/LogicalBodyTypes/SurfaceCache.h
+Tactical/Militia Control.cpp
+Tactical/Minigame.cpp
+Tactical/Morale.cpp
+Tactical/Overhead Types.h
+Tactical/Overhead.cpp
+Tactical/PATHAI.cpp
+Tactical/Points.cpp
+Tactical/Rain.cpp
+Tactical/RandomMerc.cpp
+Tactical/Rotting Corpses.cpp
+Tactical/ShopKeeper Interface.cpp
+Tactical/SkillMenu.cpp
+Tactical/SkillMenu.h
+Tactical/Soldier Ani.cpp
+Tactical/Soldier Control.cpp
+Tactical/Soldier Control.h
+Tactical/Soldier Create.cpp
+Tactical/Soldier Create.h
+Tactical/Soldier Find.cpp
+Tactical/Soldier Init List.cpp
+Tactical/Soldier Profile.cpp
+Tactical/SoldierTooltips.cpp
+Tactical/Spread Burst.cpp
+Tactical/Tactical Save.cpp
+Tactical/TeamTurns.cpp
+Tactical/Turn Based Input.cpp
+Tactical/UI Cursors.cpp
+Tactical/VehicleMenu.cpp
+Tactical/VehicleMenu.h
+Tactical/Vehicles.cpp
+Tactical/Weapons.cpp
+Tactical/XML_AmmoStrings.cpp
+Tactical/XML_AmmoTypes.cpp
+Tactical/XML_AttachmentSlots.cpp
+Tactical/XML_Background.cpp
+Tactical/XML_BurstSounds.cpp
+Tactical/XML_CivGroupNames.cpp
+Tactical/XML_Disease.cpp
+Tactical/XML_Drugs.cpp
+Tactical/XML_EnemyNames.cpp
+Tactical/XML_EnemyRank.cpp
+Tactical/XML_Explosive.cpp
+Tactical/XML_HiddenNames.cpp
+Tactical/XML_InteractiveTiles.cpp
+Tactical/XML_ItemAdjustments.cpp
+Tactical/XML_LBEPocket.cpp
+Tactical/XML_LBEPocketPopup.cpp
+Tactical/XML_LoadBearingEquipment.cpp
+Tactical/XML_LoadScreenHints.cpp
+Tactical/XML_MercStartingGear.cpp
+Tactical/XML_Merchants.cpp
+Tactical/XML_MilitiaIndividual.cpp
+Tactical/XML_NewFaceGear.cpp
+Tactical/XML_Profiles.cpp
+Tactical/XML_SectorLoadscreens.cpp
+Tactical/XML_SoldierProfiles.cpp
+Tactical/XML_Sounds.cpp
+Tactical/XML_Taunts.cpp
+Tactical/XML_Vehicles.cpp
+Tactical/faces.h
+Tactical/interface Dialogue.h
+Tactical/opplist.cpp
+TacticalAI/AIMain.cpp
+TacticalAI/AIUtils.cpp
+TacticalAI/Attacks.cpp
+TacticalAI/DecideAction.cpp
+TacticalAI/FindLocations.cpp
+TacticalAI/NPC.cpp
+TacticalAI/NPC.h
+TacticalAI/QuestDebug.cpp
+TileEngine/Ambient Control.cpp
+TileEngine/Explosion Control.cpp
+TileEngine/Explosion Control.h
+TileEngine/Interactive Tiles.cpp
+TileEngine/Isometric Utils.cpp
+TileEngine/Map Edgepoints.cpp
+TileEngine/Radar Screen.cpp
+TileEngine/Render Dirty.cpp
+TileEngine/Render Dirty.h
+TileEngine/Shade Table Util.cpp
+TileEngine/Smell.cpp
+TileEngine/SmokeEffects.cpp
+TileEngine/SmokeEffects.h
+TileEngine/Tactical Placement GUI.cpp
+TileEngine/environment.cpp
+TileEngine/lighting.cpp
+TileEngine/overhead map.cpp
+TileEngine/renderworld.cpp
+TileEngine/renderworld.h
+TileEngine/structure.cpp
+TileEngine/worlddef.cpp
+Utils/Animated ProgressBar.cpp
+Utils/Cinematics Bink.h
+Utils/Cinematics.cpp
+Utils/Font Control.cpp
+Utils/INIReader.cpp
+Utils/INIReader.h
+Utils/KeyMap.cpp
+Utils/KeyMap.h
+Utils/Music Control.cpp
+Utils/Music Control.h
+Utils/PopUpBox.cpp
+Utils/Quantize Wrap.cpp
+Utils/Quantize.cpp
+Utils/Quantize.h
+Utils/Sound Control.cpp
+Utils/Sound Control.h
+Utils/Text Input.cpp
+Utils/Text Utils.cpp
+Utils/Timer Control.cpp
+Utils/Timer Control.h
+Utils/Utilities.cpp
+Utils/Utilities.h
+Utils/WordWrap.cpp
+Utils/XML_Items.cpp
+Utils/XML_Language.cpp
+Utils/XML_Parser.h
+Utils/XML_SenderNameList.cpp
+Utils/XML_auto_parse.h
+Utils/message.cpp
+Utils/message.h
+Utils/popup_callback.h
+Utils/popup_class.cpp
+Utils/popup_class.h
+Utils/popup_definition.cpp
+Utils/popup_definition.h
 ext/VFS/ext/7z/CMakeLists.txt
 ext/VFS/ext/7z/src/CpuArch.h
 ext/VFS/include/vfs/Core/Interface/vfs_file_interface.h
+ext/VFS/include/vfs/Core/Interface/vfs_iterator_interface.h
 ext/VFS/include/vfs/Core/vfs_os_functions.h
 ext/VFS/src/CMakeLists.txt
 ext/VFS/src/Core/File/vfs_file.cpp
 ext/VFS/src/Core/Location/vfs_uncompressed_lib_base.cpp
+ext/VFS/src/Core/vfs_init.cpp
 ext/VFS/src/Core/vfs_os_functions.cpp
 ext/VFS/src/Core/vfs_string.cpp
 ext/VFS/src/Ext/7z/vfs_7z_library.cpp
 ext/VFS/src/Ext/7z/vfs_create_7z_library.cpp
 ext/VFS/src/Ext/slf/vfs_slf_library.cpp
 ext/libpng/CMakeLists.txt
+ext/libpng/png.c
+i18n/Multi Language Graphic Utils.cpp
+lua/lua.cpp
+lua/lua_class_interface.cpp
+lua/lua_env.cpp
+lua/lua_state.cpp
+lua/lua_state.h
+lua/lua_table.h
+lua/lua_tactical.cpp
+lua/lwstring.cpp
+sgp/Button System.h
 sgp/CMakeLists.txt
+sgp/Cursor Control.cpp
+sgp/DEBUG.H
 sgp/FileMan.cpp
 sgp/FileMan.h
+sgp/Font.h
+sgp/MemMan.cpp
 sgp/MemMan.h
 sgp/PCX.cpp
 sgp/PngLoader.cpp
 sgp/PngLoader.h
+sgp/Random.cpp
 sgp/STCI.cpp
 sgp/STCI.h
+sgp/WinFont.h
+sgp/expat.h
 sgp/himage.cpp
 sgp/himage.h
 sgp/imgfmt.h
 sgp/impTGA.cpp
 sgp/impTGA.h
+sgp/input.h
 sgp/line.cpp
 sgp/line.h
+sgp/mousesystem.h
 sgp/pcx.h
 sgp/shading.cpp
 sgp/shading.h
 sgp/soundman.cpp
+sgp/soundman.h
+sgp/timer.h
 sgp/types.h
+sgp/video.h
 sgp/vobject.cpp
 sgp/vobject.h
 sgp/vobject_blitters.cpp
 sgp/vobject_blitters.h
+sgp/vsurface.h

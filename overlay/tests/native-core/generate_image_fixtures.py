@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Write tiny synthetic STCI fixtures and independent literal-pixel oracles.
+
+Python standard library only. Never reads game assets or executes a decoder.
+Only the named generated leaves in the exact caller-supplied directory change.
+See IMAGE_FIXTURES.md for source provenance and the expected-load contract.
+"""
 # P710 native notice preparation: tests/native-core/generate_image_fixtures.py
 # New candidate test/build/documentation/metadata path.
 # Native adaptation recorded in the 2026-11-12 checkpoint.
@@ -9,12 +15,14 @@
 # Existing source bytes and original notices retained; no additional rights are granted.
 # This record does not establish license applicability, compliance or distribution permission.
 
-"""Write tiny synthetic STCI fixtures and independent literal-pixel oracles.
+# P710 native snapshot update: tests/native-core/generate_image_fixtures.py
+# Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-14.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
-Python standard library only. Never reads game assets or executes a decoder.
-Only the named generated leaves in the exact caller-supplied directory change.
-See IMAGE_FIXTURES.md for source provenance and the expected-load contract.
-"""
 
 import argparse
 import hashlib
@@ -56,7 +64,10 @@ def header(*, flags, width, height, depth, stored, original=None, count=0,
                  (0xFF0000, 0x00FF00, 0x0000FF, 0, 8, 8, 8, 0))
         struct.pack_into("<IIIIBBBB", h, 24, *masks)
     h[44] = depth
-    struct.pack_into("<I", h, 45, len(app))
+    # Original Win32 files align the next UINT32 at 48. Padding has no value
+    # contract; nonzero bytes catch a decoder that mistakes it for app size.
+    h[45:48] = b"\x4d\xa5\x78"
+    struct.pack_into("<I", h, 48, len(app))
     return bytes(h)
 
 
@@ -102,7 +113,8 @@ def main():
         parser.error("output directory and its ancestors must not be symlinks")
     root.mkdir(parents=True, exist_ok=True)
     manifest = {"schema": 1, "synthetic_only": True, "source_pin": PIN,
-                "header_bytes": 64, "app_size_offset": 45, "subimage_bytes": 16,
+                "header_bytes": 64, "app_size_offset": 48, "subimage_bytes": 16,
+                "alignment_padding_hex": "4da578",
                 "palette_bytes": 768, "app_hex": APP.hex(), "files": {}, "oracles": {}}
 
     def write(name, data, *, load=None, reason=None, details=None):
@@ -144,6 +156,15 @@ def main():
     long_stream = b"\x7f" + bytes([1]) * 127 + b"\x03\x02\x02\x02\x00\xff\x83\x00"
     write("long_runs.sti", collection([(130, 2, 0, 0, long_stream)]), load=True)
     oracle("long_runs_frame0", [[1] * 127 + [2] * 3, [None] * 130])
+    # Animation frame numbers are meaningful even when a logical body layer is
+    # absent. Keep both zero extents and each one-zero extent in the table.
+    blank_frames = collection([(0, 0, -2, 3, b""),
+                               (7, 5, -1, 2, STREAM0),
+                               (0, 3, 4, -5, b"\xa5\x5a"),
+                               (4, 0, 0, 0, b""),
+                               (3, 2, 2, -1, STREAM1)])
+    write("blank_frames.sti", blank_frames, load=True,
+          reason="mixed blank and visible logical-layer frames preserve all five indices")
 
     plain_indices = bytes([0, 1, 2, 3, 4, 5])
     plain_grid = [[0, 1, 2], [3, 4, 5]]
@@ -178,8 +199,10 @@ def main():
     bad("flags_both", patch(sprite, 16, "<I", RGB | INDEXED | ETRLE), "contradictory organizations")
     bad("depth", patch(sprite, 44, "<B", 16), "indexed pixels must have depth 8")
     bad("palette_count", patch(sprite, 24, "<I", 255), "indexed palette count is not 256")
-    bad("object_zero_width", patch(sprite, 64 + 768 + 14, "<H", 0), "zero object width")
-    bad("object_zero_height", patch(sprite, 64 + 768 + 12, "<H", 0), "zero object height")
+    bad("empty_object_offset", patch(blank_frames, 64 + 768, "<I", 54),
+        "blank frame offset still must stay inside its 53-byte pixel section")
+    bad("empty_object_length", patch(blank_frames, 64 + 768 + 4, "<I", 54),
+        "blank frame span still must stay inside its 53-byte pixel section")
     bad("object_offset", patch(sprite, 64 + 768, "<I", len(STREAM0) + len(STREAM1) + 1),
         "object data offset exceeds pixel section")
     bad("object_length", patch(sprite, 64 + 768 + 4, "<I", len(STREAM0) + len(STREAM1) + 1),

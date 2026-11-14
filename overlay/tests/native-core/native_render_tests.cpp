@@ -10,6 +10,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_render_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "Font.h"
 #include "vsurface.h"
 #include "clip_state.h"
@@ -77,9 +87,9 @@ void surfacesTest()
     check(!AddStandardVideoSurface(&bad,nullptr),"null output");
     bad={VSURFACE_CREATE_DEFAULT,{},65536,1,16}; check(!CreateVideoSurface(&bad),"large width");
     bad.usWidth=1; bad.usHeight=65536; check(!CreateVideoSurface(&bad),"large height");
-    bad.usHeight=1; bad.ubBitDepth=8; check(!CreateVideoSurface(&bad),"depth");
+    bad.usHeight=1; bad.ubBitDepth=24; check(!CreateVideoSurface(&bad),"unsupported depth");
     bad.ubBitDepth=16; bad.fCreateFlags=VSURFACE_CREATE_FROMFILE; check(!CreateVideoSurface(&bad),"fromfile");
-    bad.fCreateFlags=VSURFACE_CREATE_DEFAULT|VSURFACE_SYSTEM_MEM_USAGE; check(!CreateVideoSurface(&bad),"creation flags");
+    bad.fCreateFlags=VSURFACE_CREATE_DEFAULT|VSURFACE_VIDEO_MEM_USAGE; check(!CreateVideoSurface(&bad),"unsupported video-memory creation flags");
     for (UINT32 r : {PRIMARY_SURFACE,BACKBUFFER,FRAME_BUFFER,MOUSE_BUFFER,0u})
     {
         HVSURFACE p=nullptr; UINT32 pitch=99;

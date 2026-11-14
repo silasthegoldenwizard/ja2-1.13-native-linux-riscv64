@@ -1,0 +1,46 @@
+{
+  "previous_payload_tree": "24537b39e85b0241e7351175ecece85feeffe225",
+  "engine_base_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
+  "sdl_commit": "f00dc919ca35b9756316e86c4777392de442f9b2",
+  "scope": "Verbatim reuse of the five delivered component-notice files and their exact origin records; no broader licensing conclusion.",
+  "records": [
+    {
+      "path": "notices/bfVFS-LGPL-2.1.txt",
+      "frozen_path": "ext/VFS/COPYING",
+      "frozen_sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "payload_sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "lf_canonicalization": false
+    },
+    {
+      "path": "notices/LZMA-SDK-9.22.txt",
+      "frozen_path": "ext/VFS/ext/7z/doc/lzma.txt",
+      "frozen_sha256": "77dbe7a41f3e46f874de571c826c008ecdd527ce8e08ab6d6d01a8bcc214b1a7",
+      "payload_sha256": "c53d7696b337239f614b7f5a0a8e3e05492c1165e95e55a0c5cc99aa765e0132",
+      "lf_canonicalization": true
+    },
+    {
+      "path": "notices/libpng-LICENSE.txt",
+      "frozen_path": "ext/libpng/LICENSE",
+      "frozen_sha256": "ae94ab59024a19b4b8d5714dae6348edf7030f1b6b806c712670785df58bf00a",
+      "payload_sha256": "ae94ab59024a19b4b8d5714dae6348edf7030f1b6b806c712670785df58bf00a",
+      "lf_canonicalization": false
+    },
+    {
+      "path": "notices/SDL3-LICENSE.txt",
+      "frozen_path": "notices/SDL3-LICENSE.txt",
+      "frozen_sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd",
+      "payload_sha256": "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd",
+      "lf_canonicalization": false
+    },
+    {
+      "path": "notices/SFI-SCLA.txt",
+      "repository": "https://github.com/dariusk/ja2",
+      "commit": "876ccf5dfdad7e6821c5b26d6d783132ea1ab7a2",
+      "upstream_path": "SFI Source Code license agreement.txt",
+      "git_blob_sha1": "b66aabc6f7affb4fca0b6cc2d6288f3225ecd0b1",
+      "payload_sha256": "f78ace6a6cfd40cb1b49de2e5fd4a113ebc58cab4864e4a4e5fffd428005c7fd",
+      "byte_exact": true,
+      "scope": "Historical engine-source working basis, not blanket component licensing or express later-contributor certification"
+    }
+  ]
+}

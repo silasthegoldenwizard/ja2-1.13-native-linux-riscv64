@@ -10,9 +10,20 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_vfs_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "FileManIO.h"
 #include "FileManBackend.h"
 #include <vfs/Core/vfs.h>
+#include <vfs/Core/vfs_init.h>
 #include <vfs/Core/vfs_profile.h>
 #include <vfs/Core/vfs_os_functions.h>
 #include <vfs/Core/File/vfs_file.h>
@@ -150,6 +161,52 @@ void unicode()
     check(throws([&] { vfs::String::as_utf8(std::wstring(1, wchar_t{0x110000})); }), "reject invalid wide scalar");
 }
 
+int liveIterators = 0;
+bool rejectClone = false;
+class CountedIterator : public vfs::TIterator<int>::IImplementation
+{
+    int* data;
+    unsigned index;
+public:
+    explicit CountedIterator(int* values, unsigned at = 0) : data(values), index(at) { ++liveIterators; }
+    ~CountedIterator() override { --liveIterators; }
+    int* value() override { return index < 3 ? data + index : nullptr; }
+    void next() override { ++index; }
+protected:
+    IImplementation* clone() override {
+        if (rejectClone) throw std::runtime_error("authored clone failure");
+        return new CountedIterator(data, index);
+    }
+};
+void iteratorOwnership()
+{
+    int values[] = {11, 22, 33};
+    {
+        vfs::TIterator<int> first(new CountedIterator(values));
+        vfs::TIterator<int> copied(first);
+        check(liveIterators == 2 && *first.value() == 11 && *copied.value() == 11, "iterator copy owns an independent implementation");
+        copied.next();
+        check(*first.value() == 11 && *copied.value() == 22, "copied iterator positions advance independently");
+        vfs::TIterator<int> assigned(new CountedIterator(values, 2));
+        assigned = first;
+        check(liveIterators == 3 && *assigned.value() == 11, "copy assignment releases prior implementation");
+        auto* const self = &assigned;
+        assigned = *self;
+        assigned.next();
+        check(liveIterators == 3 && *assigned.value() == 22, "self assignment preserves usable iterator ownership");
+        rejectClone = true;
+        check(throws([&] { assigned = first; }), "clone failure propagates");
+        rejectClone = false;
+        check(liveIterators == 3 && *assigned.value() == 22, "failed assignment preserves prior position and ownership");
+        vfs::TIterator<int> empty;
+        assigned = empty;
+        check(assigned.end() && liveIterators == 2, "assignment from empty releases implementation");
+        copied.next(); copied.next();
+        check(copied.end() && liveIterators == 1 && *first.value() == 11, "end releases only copied implementation");
+    }
+    check(liveIterators == 0, "all iterator implementations retire exactly once");
+}
+
 void looseProfiles()
 {
     const auto aliasPath = root / "writable/NativeAlias.txt";
@@ -274,6 +331,25 @@ void mountedArchive(const std::string& archive,
     resetVFS();
 }
 
+void configuredArchive()
+{
+    // Exercise the original config-driven mount path used by full startup,
+    // not just the direct library mounting helper above.
+    vfs_init::VfsConfig config;
+    auto* profile = new vfs_init::Profile;
+    config.addProfile(profile, true);
+    profile->m_name = "configured-archive";
+    profile->m_root = path(root / "archives");
+    auto* location = new vfs_init::Location;
+    profile->addLocation(location, true);
+    location->m_type = "LIBRARY";
+    location->m_path = "valid.slf";
+    check(vfs_init::initVirtualFileSystem(config), "original configured SLF initialization");
+    check(readAll("Archive/Mixed.TXT") == "slf mixed payload\n", "configured SLF retains exact bytes");
+    check(open("Archive/Mixed.TXT", FILE_ACCESS_WRITE) == 0, "configured SLF stays readonly");
+    resetVFS();
+}
+
 void archives()
 {
     mountedArchive("valid.slf", {{"Archive/Mixed.TXT", "slf mixed payload\n"},
@@ -307,8 +383,10 @@ int main(int argc, char** argv)
         check(fs::exists(root / "manifest.json"), "independent fixture manifest exists");
         check(sizeof(void*) == 8 && sizeof(wchar_t) == 4, "native Linux LP64 representation");
         unicode();
+        iteratorOwnership();
         looseProfiles();
         archives();
+        configuredArchive();
         resetVFS();
         vfs::ObjectAllocator::clear();
         std::ofstream result(root / "native-vfs-result.json");

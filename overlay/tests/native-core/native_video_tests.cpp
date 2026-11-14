@@ -10,6 +10,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_video_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "video.h"
 #include "Font.h"
 #include "clip_state.h"
@@ -20,8 +30,11 @@
 #include <vector>
 namespace
 {
+unsigned checks=0;
 void check(bool b, const char* message)
-{ if (!b) throw std::runtime_error(message); }
+{ ++checks; if (!b) throw std::runtime_error(message); }
+sgp::NativeVideoRegionState regionState{10,false};
+sgp::NativeVideoRegionState readRegionState() noexcept { return regionState; }
 constexpr std::size_t W=32, H=20, P=72;
 using Bytes=std::vector<BYTE>;
 Bytes image(UINT16 color)
@@ -46,6 +59,7 @@ void patch(Bytes& v, INT32 l, INT32 t, INT32 r, INT32 b, UINT16 color)
 }
 void inactive()
 {
+    check(ghFrameBuffer==nullptr,"inactive original framebuffer identity");
     for (UINT32 id : {PRIMARY_SURFACE,BACKBUFFER,FRAME_BUFFER,MOUSE_BUFFER})
     {
         HVSURFACE p=nullptr; UINT32 pitch=99;
@@ -61,10 +75,10 @@ int main()
     {
         check(sgp::ShutdownNativeVideo(),"initial idempotent shutdown");
         check(InitializeVideoSurfaceManager(),"surface initialization"); inactive();
-        SGPRect all{INT_MIN,INT_MIN,INT_MAX,INT_MAX}; SetClippingRect(&all);
+        SGPRect clip{}; SetClippingRect(&clip);
         VSURFACE_DESC d{}; d.fCreateFlags=VSURFACE_CREATE_DEFAULT; d.usWidth=32; d.usHeight=20; d.ubBitDepth=16;
         UINT32 ordinary=0; check(AddVideoSurface(&d,&ordinary),"preexisting ordinary surface");
-        check(ColorFillVideoSurfaceArea(ordinary,0,0,32,20,0x1234),"ordinary seed");
+        fill(ordinary,0x1234);
         HVSURFACE keep=nullptr; check(GetVideoSurface(&keep,ordinary),"ordinary pointer");
         const auto preserved=read(ordinary);
         check(!sgp::ConfigureNativeVideo(0,20,16,8,"bad") && !sgp::ConfigureNativeVideo(32,0,16,8,"bad"),"zero geometry");
@@ -73,8 +87,17 @@ int main()
         char title[]="owned title"; check(sgp::ConfigureNativeVideo(32,20,16,8,title),"configuration"); title[0]='X';
         check(!InitializeVideoManager(&d,0,nullptr) && !InitializeVideoManager(nullptr,1,nullptr) && !InitializeVideoManager(nullptr,0,&d),"unsupported initialization arguments");
         inactive();
-        check(InitializeVideoManager(nullptr,0,nullptr) && InitializeVideoManager(nullptr,0,nullptr),"real and repeated initialization");
+        GetClippingRect(&clip);
+        check(clip.iLeft==0 && clip.iTop==0 && clip.iRight==0 && clip.iBottom==0,"rejected initialization preserves empty drawing clip");
+        check(InitializeVideoManager(nullptr,0,nullptr),"real initialization");
+        GetClippingRect(&clip);
+        check(clip.iLeft==0 && clip.iTop==0 && clip.iRight==32 && clip.iBottom==20,"startup initializes full drawing clip");
+        check(ColorFillVideoSurfaceArea(FRAME_BUFFER,31,19,32,20,0x5678),"startup clipped draw at bottom-right edge");
+        const auto startup=read(FRAME_BUFFER); UINT16 startupPixel=0;
+        std::memcpy(&startupPixel,startup.data()+19*P+31*2,2);
+        check(startupPixel==0x5678,"startup drawing clip admits the final framebuffer pixel");
         check(std::strcmp(sgp::NativeVideoDriver(),"x11")==0,"real X11 required");
+        HVSURFACE realFrame=nullptr;check(GetVideoSurface(&realFrame,FRAME_BUFFER) && ghFrameBuffer==realFrame,"original framebuffer identity is actual native handle");
         check(!sgp::ConfigureNativeVideo(32,20,16,8,"active"),"active configuration refusal");
         UINT16 w=0,h=0; UINT8 depth=0; GetCurrentVideoSettings(&w,&h,&depth);
         check(w==32 && h==20 && depth==16,"video settings"); GetCurrentVideoSettings(nullptr,nullptr,nullptr);
@@ -94,6 +117,9 @@ int main()
         check(!ShutdownVideoSurfaceManager(),"external manager shutdown refused");
         check(sgp::RefreshNativeVideo(),"initial full refresh"); fill(FRAME_BUFFER,7); fill(BACKBUFFER,3); fill(PRIMARY_SURFACE,2);
         SGPRect tiny{0,0,1,1}; SetClippingRect(&tiny);
+        check(InitializeVideoManager(nullptr,0,nullptr),"repeated active initialization");
+        GetClippingRect(&clip);
+        check(clip.iLeft==0 && clip.iTop==0 && clip.iRight==1 && clip.iBottom==1,"repeated initialization preserves caller drawing clip");
         InvalidateRegion(2,3,10,7);
         check(!CanBlitToFrameBuffer(),"pending framebuffer transfer is not BUFFER_READY");
         using Lock=PTR (*)(UINT32*);
@@ -144,17 +170,73 @@ int main()
             check(sgp::RefreshNativeVideo(),"legacy full invalidation"); expect(BACKBUFFER,image(15)); expect(PRIMARY_SURFACE,image(15));
         }
         check(CanBlitToFrameBuffer(),"frame available"); UINT32 pitch=0; check(LockFrameBuffer(&pitch)!=nullptr,"frame lock"); check(!CanBlitToFrameBuffer(),"locked frame unavailable"); UnlockFrameBuffer();
+        sgp::SetNativeVideoRegionSource(&readRegionState);
+        fill(FRAME_BUFFER,21); fill(BACKBUFFER,22); fill(PRIMARY_SURFACE,23);
+        InvalidateRegionEx(2,7,8,13,UINT_MAX); // split across viewport; flags are unused in the original consumer
+        check(!CanBlitToFrameBuffer(),"extended regions mark real pending transfer");
+        check(LockFrameBuffer(&pitch)!=nullptr,"extended-region frame lock");
+        check(!sgp::RefreshNativeVideo(),"extended regions survive locked refresh");
+        expect(BACKBUFFER,image(22)); expect(PRIMARY_SURFACE,image(23)); UnlockFrameBuffer();
+        regionState.scrolling=true;
+        check(!sgp::RefreshNativeVideo(),"unbound scroll request fails before copy");
+        expect(BACKBUFFER,image(22)); expect(PRIMARY_SURFACE,image(23));
+        regionState.scrolling=false;
+        check(sgp::RefreshNativeVideo(),"extended retry after lock and scroll refusal");
+        expected=image(22); patch(expected,2,7,8,13,21);
+        expect(BACKBUFFER,expected); expect(PRIMARY_SURFACE,expected); expect(FRAME_BUFFER,image(21));
+        check(CanBlitToFrameBuffer(),"successful extended transfer clears work");
+        fill(FRAME_BUFFER,24); fill(BACKBUFFER,25);
+        for (const auto& r : {SGPRect{5,5,2,2},SGPRect{1,1,1,2},SGPRect{INT_MIN,INT_MIN,-1,-1},SGPRect{INT_MAX,INT_MAX,INT_MIN,INT_MIN}})
+            InvalidateRegionEx(r.iLeft,r.iTop,r.iRight,r.iBottom,0);
+        check(CanBlitToFrameBuffer() && sgp::RefreshNativeVideo(),"invalid extended geometry is empty");
+        expect(BACKBUFFER,image(25)); expect(PRIMARY_SURFACE,image(25));
+        InvalidateRegionEx(INT_MIN,INT_MIN,INT_MAX,INT_MAX,0);
+        check(sgp::RefreshNativeVideo(),"extreme extended geometry clipped safely"); expect(PRIMARY_SURFACE,image(24));
+        fill(FRAME_BUFFER,26); fill(BACKBUFFER,27);
+        for (unsigned i=0;i<128;++i) { InvalidateRegion(0,0,1,1); InvalidateRegionEx(0,0,1,1,0); }
+        check(sgp::RefreshNativeVideo(),"independent regular and extended budgets");
+        expected=image(27); patch(expected,0,0,1,1,26); expect(PRIMARY_SURFACE,expected);
+        fill(FRAME_BUFFER,28); fill(BACKBUFFER,29);
+        for (unsigned i=0;i<129;++i) InvalidateRegionEx(0,0,1,1,0);
+        check(sgp::RefreshNativeVideo(),"extended overflow forces real full refresh"); expect(PRIMARY_SURFACE,image(28));
+        fill(FRAME_BUFFER,30); fill(BACKBUFFER,31);
+        // Each cross-viewport request occupies two original extended slots.
+        for (unsigned i=0;i<64;++i) InvalidateRegionEx(0,9,1,11,0);
+        check(sgp::RefreshNativeVideo(),"exact split capacity remains a partial transfer");
+        expected=image(31); patch(expected,0,9,1,11,30); expect(PRIMARY_SURFACE,expected);
+        fill(FRAME_BUFFER,32); fill(BACKBUFFER,33);
+        for (unsigned i=0;i<65;++i) InvalidateRegionEx(0,9,1,11,0);
+        check(sgp::RefreshNativeVideo(),"viewport split retains original overflow boundary"); expect(PRIMARY_SURFACE,image(32));
+        // Original full-refresh request selects full GAME_SCREEN copy, disables
+        // scrolling, survives a refused locked transfer and clears on commit.
+        fill(FRAME_BUFFER,40);fill(BACKBUFFER,41);regionState.gameScreen=true;regionState.scrolling=true;
+        gfNextRefreshFullScreen=TRUE;check(LockFrameBuffer(&pitch)!=nullptr,"hold original full-refresh frame");
+        check(!sgp::RefreshNativeVideo() && gfNextRefreshFullScreen,"full request retained on locked refusal");UnlockFrameBuffer();
+        check(sgp::RefreshNativeVideo() && !gfNextRefreshFullScreen,"game full request commits without scroll hooks");
+        expect(BACKBUFFER,image(40));expect(PRIMARY_SURFACE,image(40));
+        fill(FRAME_BUFFER,42);fill(BACKBUFFER,43);regionState.gameScreen=false;regionState.scrolling=false;
+        gfNextRefreshFullScreen=TRUE;check(sgp::RefreshNativeVideo() && !gfNextRefreshFullScreen,"non-game request preserves original backbuffer presentation");
+        expect(BACKBUFFER,image(43));expect(PRIMARY_SURFACE,image(43));
+        sgp::SetNativeVideoRegionSource(nullptr);
         expect(ordinary,preserved);
         auto* borrowed=LockVideoSurfaceBuffer(keep,&pitch); check(borrowed!=nullptr,"ordinary borrow during video teardown");
         check(sgp::ShutdownNativeVideo() && sgp::ShutdownNativeVideo(),"idempotent teardown with ordinary lock"); ShutdownVideoManager(); inactive();
         check(Bytes(borrowed,borrowed+P*H)==preserved && !ShutdownVideoSurfaceManager(),"ordinary borrow survives video teardown"); UnLockVideoSurfaceBuffer(keep);
         check(!DeleteVideoSurface(pointers[0]) && !LockVideoSurfaceBuffer(pointers[0],&pitch),"stale pointer after teardown");
         expect(ordinary,preserved); HVSURFACE same=nullptr; check(GetVideoSurface(&same,ordinary) && same==keep,"ordinary identity retained");
-        check(InitializeVideoManager(nullptr,0,nullptr),"reinitialization"); HVSURFACE newer=nullptr; check(GetVideoSurface(&newer,PRIMARY_SURFACE) && newer!=pointers[0],"no pointer resurrection");
+        check(sgp::ConfigureNativeVideo(31,19,16,8,"reconfigured"),"inactive geometry reconfiguration");
+        check(InitializeVideoManager(nullptr,0,nullptr),"reinitialization");
+        GetClippingRect(&clip);
+        check(clip.iLeft==0 && clip.iTop==0 && clip.iRight==31 && clip.iBottom==19,"reinitialization resets drawing clip to new geometry");
+        check(ColorFillVideoSurfaceArea(FRAME_BUFFER,30,18,31,19,0x4321),"reinitialized clipped edge draw");
+        auto* reinitialized=static_cast<BYTE*>(LockFrameBuffer(&pitch)); check(reinitialized!=nullptr,"reinitialized frame pixels");
+        UINT16 reinitializedPixel=0; std::memcpy(&reinitializedPixel,reinitialized+18*pitch+30*2,2); UnlockFrameBuffer();
+        check(reinitializedPixel==0x4321,"reinitialized clip admits new framebuffer edge");
+        HVSURFACE newer=nullptr; check(GetVideoSurface(&newer,PRIMARY_SURFACE) && newer!=pointers[0],"no pointer resurrection");
         check(!LockVideoSurfaceBuffer(pointers[0],&pitch) && !DeleteVideoSurfaceFromIndex(backing[0]),"no stale capability resurrection");
         check(sgp::ShutdownNativeVideo(),"final video shutdown"); expect(ordinary,preserved); check(DeleteVideoSurfaceFromIndex(ordinary),"ordinary owner can delete");
         check(ShutdownVideoSurfaceManager() && ShutdownVideoSurfaceManager(),"final surface teardown");
-        std::cout << "PASS: real X11 video manager, dirty transfers, ownership, locks and whole padded buffers\n"; return 0;
+        std::cout << "PASS: " << checks << " real X11 video/extended-region checks; dirty transfers, ownership, locks and whole padded buffers; unbound scrolling safely refused\n"; return 0;
     }
     catch (const std::exception& e)
     {

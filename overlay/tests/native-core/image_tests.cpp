@@ -10,6 +10,16 @@
  * This record does not establish license applicability, compliance or distribution permission.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/image_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-14.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "FileManIO.h"
 #include "FileManBackend.h"
 #include "STCI.h"
@@ -53,7 +63,7 @@ const std::array<const char*, 12> valid{{
 const std::array<const char*, 28> malformed{{
     "bad_short_header.sti", "bad_short_palette.sti", "bad_short_table.sti", "bad_short_pixels.sti",
     "bad_short_app.sti", "bad_magic.sti", "bad_flags_none.sti", "bad_flags_both.sti",
-    "bad_depth.sti", "bad_palette_count.sti", "bad_object_zero_width.sti", "bad_object_zero_height.sti",
+    "bad_depth.sti", "bad_palette_count.sti", "bad_empty_object_offset.sti", "bad_empty_object_length.sti",
     "bad_object_offset.sti", "bad_object_length.sti", "bad_object_count_zero.sti", "bad_object_count_extra.sti",
     "bad_run_overflow.sti", "bad_run_underflow.sti", "bad_literal_overflow.sti", "bad_literal_truncated.sti",
     "bad_missing_eol.sti", "bad_etrle_zlib.sti", "bad_plain_zero_width.sti", "bad_plain_size.sti",
@@ -145,6 +155,10 @@ void fullLoads()
 {
     for (const auto* name : valid)
     {
+        const auto wire = disk(name);
+        check(wire.size() >= 64 && wire[45] == 0x4d && wire[46] == 0xa5 && wire[47] == 0x78,
+              "original header alignment padding is deliberately nonzero");
+        check(le32(wire.data() + 48) == app.size(), "literal application size at original wire offset 48");
         Image owner(name);
         owner.load();
         auto& image = owner.image;
@@ -342,6 +356,39 @@ struct Surface
     UINT16* data() { return reinterpret_cast<UINT16*>(bytes.data() + origin); }
 };
 
+void blankFrames()
+{
+    Image owner("blank_frames.sti"); owner.load();
+    auto& image = owner.image;
+    check(image.usNumberOfObjects == 5 && image.uiSizePixData == 53,
+          "blank layer descriptors retain every animation index and stored span");
+    const std::array<UINT16,5> widths{{0,7,0,4,3}}, heights{{0,5,3,0,2}};
+    const std::array<UINT32,5> offsets{{0,0,40,42,42}}, lengths{{0,40,2,0,11}};
+    for (unsigned i=0;i<5;++i)
+    {
+        const auto& frame=image.pETRLEObject[i];
+        check(frame.usWidth==widths[i] && frame.usHeight==heights[i] &&
+              frame.uiDataOffset==offsets[i] && frame.uiDataLength==lengths[i],
+              "literal blank/visible descriptor offsets and dimensions");
+    }
+    SGPVObject source{}; source.ubBitDepth=8; source.usNumberOfObjects=5;
+    source.pETRLEObject=image.pETRLEObject; source.pPixData=image.pPixData8;
+    source.uiSizePixData=image.uiSizePixData;
+    Surface surface(27,1); const auto before=surface.bytes; SGPRect clip{0,0,11,10};
+    // No palette is bound: these calls must return before payload/palette use.
+    for (UINT16 i : {UINT16(0),UINT16(2),UINT16(3)})
+    {
+        check(Blt8BPPDataTo16BPPBufferTransparentClip(surface.data(),surface.pitch,&source,2,2,i,&clip),
+              "each no-area frame is a successful clipped no-op");
+        check(surface.bytes==before,"blank clipped draw preserves pixels, pitch padding and guards");
+        check(Blt8BPPDataTo16BPPBufferOutlineClip(surface.data(),surface.pitch,&source,2,2,i,0xffff,TRUE,&clip),
+              "blank outline clipped draw succeeds before palette access");
+        check(surface.bytes==before,"blank outline preserves every destination byte");
+        check(!Blt8BPPDataTo16BPPBufferTransparent(surface.data(),surface.pitch,&source,2,2,i),
+              "unclipped empty admission remains unchanged");
+    }
+}
+
 void expectedDraw(std::vector<UINT8>& destination, const Surface& surface, const Grid& grid,
                   INT32 x, INT32 y, const SGPRect& clip)
 {
@@ -491,7 +538,9 @@ void invalidDraws()
         rejected(modified, 27, 2, 0, 0, clipped);
         table[0] = source.object.pETRLEObject[0];
         table[0].usWidth = 0;
-        rejected(modified, 27, 2, 0, 0, clipped);
+        // Unclipped admission is unchanged; clipped no-area success/no-write
+        // is covered for both dimensions and owned objects above.
+        if (!clipped) rejected(modified, 27, 2, 0, 0, false);
         // Bounded bytes from the fixture, deliberately corrupt one early control.
         std::vector<UINT8> encoded(source.owner.image.p8BPPData,
                                    source.owner.image.p8BPPData + source.owner.image.uiSizePixData);
@@ -561,6 +610,7 @@ int main(int argc, char** argv)
         ConfigureRGB565ImageFormat();
         mount();
         fullLoads();
+        blankFrames();
         masksAndOwnership();
         rejectedAndTransactional();
         paletteHelpers();
@@ -570,7 +620,7 @@ int main(int argc, char** argv)
         std::ofstream result(root / "image-result.json");
         check(bool(result), "open native integration result");
         result << "{\"passed\":true,\"checks\":" << checks << ",\"load_scenarios\":" << loadScenarios
-               << ",\"draw_scenarios\":" << drawScenarios << ",\"valid_fixture_count\":12,\"malformed_fixture_count\":28,"
+               << ",\"draw_scenarios\":" << drawScenarios << ",\"valid_fixture_count\":13,\"malformed_fixture_count\":28,"
                << "\"provider\":\"production FileManVFS + STCI + image ownership/palette + scalar ETRLE\","
                << "\"synthetic_only\":true,\"full_game_startup\":false}\n";
         if (!result) throw std::runtime_error("write native integration result");
