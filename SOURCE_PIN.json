@@ -2,7 +2,7 @@
   "schema": 2,
   "checkpoint": "native-a9-victory-20261114",
   "preparation_date": "2026-11-14",
-  "status": "frozen source-only snapshot for the private repository; publication delivery recorded separately",
+  "status": "This frozen snapshot contains source files for the private repository only. A separate record describes publication delivery.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "previous_private_commit": "b1bc53dfd519a543eed1e31267cc325fd0370b41",
@@ -11,7 +11,7 @@
     "repository": "https://github.com/libsdl-org/SDL",
     "tag": "release-3.4.20",
     "commit": "f00dc919ca35b9756316e86c4777392de442f9b2",
-    "configuration": "shared X11 with SDL_X11_SHARED=OFF; external SDK, not uploaded"
+    "configuration": "Shared X11 with SDL_X11_SHARED=OFF. The SDK is external. This repository does not include it."
   },
   "ffmpeg": {
     "version": "7.1.5",
@@ -19,7 +19,7 @@
     "source_archive_sha256": "de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f",
     "release_signing_fingerprint": "FCF986EA15E6E293A5644F10B4322F04D67658D8",
     "signature_verified_in_existing_receipt": true,
-    "configuration": "decoder-only LGPL shared; network, autodetection, GPL and nonfree disabled; external SDK, not uploaded"
+    "configuration": "Shared LGPL build with decoders only. Network, autodetection, GPL, and nonfree options are disabled. The SDK is external. This repository does not include it."
   },
   "freetype": {
     "version": "2.15.0",
@@ -27,7 +27,7 @@
     "source_archive_sha256": "93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5",
     "publisher_checksum_verified_in_existing_receipt": true,
     "signature_verified": false,
-    "configuration": "external SDK, not uploaded"
+    "configuration": "The SDK is external. This repository does not include it."
   },
   "raknet": {
     "repository": "https://github.com/catacs/gameprojectx",
@@ -35,9 +35,9 @@
     "component": "Libs/RakNet/Source",
     "actual_component_bytes_in_proposed_upload": false,
     "references_in_engine_build_and_callers": true,
-    "status": "component-specific local hold; modified headers and native SDK adaptations absent; full engine build gap"
+    "status": "This component stays on local storage until its license review is complete. Modified headers and native SDK changes are absent. This package alone cannot build the complete engine."
   },
-  "known_issue": "Unexercised source-supported lit-door stale pBaseStructure grid read after deletion in InternalSwapStructureForPartner; no new runtime crash reproduced or export-side fix.",
-  "verification": "Exact source reconstruction only; no new build/runtime or RISC-V result for notice-adjusted export",
-  "component_terms": "Historical/inferred engine contribution basis remains qualified; bfVFS LGPL 2.1-or-later and other component terms remain separately scoped"
+  "known_issue": "The lit-door path reads the pBaseStructure grid after deletion in InternalSwapStructureForPartner. Source review supports this untested issue. No new runtime crash was reproduced. This snapshot includes no fix.",
+  "verification": "The original source snapshot passed exact reconstruction checks. The export with notice changes has no new build, runtime, or RISC-V test result.",
+  "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms."
 }

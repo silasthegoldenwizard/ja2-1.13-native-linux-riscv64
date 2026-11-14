@@ -1,35 +1,61 @@
 # Accepted source status — November 14, 2026
 
-The accepted live-source checkpoint demonstrates original native x86-64 engine
-startup, menu/Preferences transitions, original campaign entry and complete
-first-sector A9 victory in normal and unsuppressed sanitizer runs. Both accepted
-victory lanes closed normally with exit 0. Stable victory checks found A9
-player-owned, enemy counts zero, combat/busy clear, first-battle facts complete,
-all four original hostiles dead/inactive and the three hired mercenaries alive.
+This page describes the accepted live-source checkpoint.
+It does not describe later live-source changes.
 
-Final complete suites passed 72/72 native and 74/74 sanitizer with zero failures
-or skips. A bounded independent source/evidence review returned PASS WITH GAPS.
-This is recorded acceptance evidence for the original uncommitted source bytes.
-The notice-adjusted package is verified by exact reconstruction, without a new
-compilation, runtime test or visual acceptance claim.
+The original engine starts on native x86-64.
+It completes menu and Preferences transitions and enters an original campaign.
+Normal and unsuppressed sanitizer runs both completed first-sector A9 victory.
+Both accepted victory runs closed normally with exit 0.
 
-A subsequent source review identifies an unexercised lifetime issue in the
-accepted snapshot: the lit-door branch of `InternalSwapStructureForPartner`
-in `TileEngine/structure.cpp` reads `pBaseStructure->sGridNo` after
-`DeleteStructureFromWorld` can free it, before `LightSpriteStateChangePost`.
-This is source-supported; no new runtime crash was reproduced. It is preserved
-in this source snapshot, with no packaging repair. Bounded local source triage
-is complete; fixes and runtime reachability remain open. A separate synchronous
-non-person destruction path also supports a conditional stale-alias exposure;
-no new runtime crash was reproduced.
+The stable victory checks recorded these results:
 
-The package excludes proprietary resources, images, binaries, builds, profiles,
-saves, raw logs, authentication/environment state, API/provider/accounting state
-and CI. The two modified RakNet headers and separately modified RakNet 3.401
-library remain local-only pending their exact component terms review. Current
-engine callers/build files retain references to that dependency. Full engine
-reproduction therefore remains incomplete from the proposed upload alone.
+- A9 was player-owned.
+- Enemy counts were zero.
+- Combat/busy state was clear.
+- First-battle facts were complete.
+- All four original hostiles had dead/inactive status.
+- The three hired mercenaries were alive.
 
-Next engineering result is a separately authorized post-A9 save/reload trial;
-it has not started. Sound/devices, human visual acceptance, broad campaign
-reliability, general projectile lifetime safety and native RISC-V remain open.
+The final complete suites passed 72/72 native tests and 74/74 sanitizer tests.
+No test failed or was skipped.
+A bounded independent source/evidence review gave the result PASS WITH GAPS.
+These records apply to the original source bytes, which remained uncommitted.
+The package with notice changes has exact source-reconstruction checks.
+It has no new compilation, runtime test, or human visual acceptance.
+
+A later source review found an untested lifetime issue in the accepted snapshot.
+It is in the lit-door branch of `InternalSwapStructureForPartner` in `TileEngine/structure.cpp`.
+The routine calls `DeleteStructureFromWorld`.
+This call can free the old structure.
+The lit-door path can then read `pBaseStructure->sGridNo` before `LightSpriteStateChangePost`.
+
+Source review supports this issue.
+The recorded review did not reproduce a new runtime crash.
+This snapshot keeps the issue and includes no packaging repair.
+
+The review of the listed source findings is complete.
+Repairs and runtime reachability tests are still open.
+A separate synchronous non-person destruction path can also expose a stale alias.
+Source review supports this conditional path.
+The recorded review did not reproduce a new runtime crash in that path.
+
+The package does not include these items:
+
+- Proprietary resources, images, binaries, or builds
+- Profiles or saves
+- Raw logs
+- Authentication or environment state
+- API, provider, or accounting state
+- CI configuration
+
+The two modified RakNet headers stay on local storage.
+The separately modified RakNet 3.401 library also stays there.
+Their exact component terms need a review.
+Current engine callers and build files keep references to this dependency.
+This package alone cannot reproduce the complete engine.
+
+At this checkpoint, the next engineering result was a separate post-A9 save/reload trial.
+That trial needed separate authorization and had not started.
+Sound and physical devices, human visual acceptance, and broad campaign reliability remained unproved.
+General projectile lifetime safety and native RISC-V also remained unproved.

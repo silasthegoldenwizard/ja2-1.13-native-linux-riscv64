@@ -4,7 +4,7 @@
   "base_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "accepted_source_pin_sha256": "e4388cc0d530755c0c544198c564c67327c36a6a25fb13d94b32b1baba6dbedd",
   "reconstructed_files": 1476,
-  "reconstructed_git_tree_sha1": "a2b835b28ba4cdee7d6b00646ce261f8970c18d0",
+  "reconstructed_git_tree_sha1": "5b9a67b17912b6e0a1957fe55962ebb9183be02a",
   "records": [
     {
       "path": "Editor/Button Defines.h",
@@ -21912,8 +21912,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "34ca86bd5c068b0eadde9a9fd5323071aaa6b87f6b12e2c80bf4e0fc5a77bcab",
-      "reconstructed_bytes": 9775,
+      "reconstructed_sha256": "0eaa2018032ab2e1ec7abb0e5967cac9eeedf2d2631dfb1f28f49db0be11e751",
+      "reconstructed_bytes": 10426,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PCEtLQpQNzEwIG5hdGl2ZSBzbmFwc2hvdCB1cGRhdGU6IHRlc3RzL25hdGl2ZS1jb3JlL0JVVFRPTl9GSVhUVVJFUy5tZApOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIEE5IHNuYXBzaG90IGRhdGVkIDIwMjYtMTEtMTQuClRoaXMgZmlsZSBpcyBpbmhlcml0ZWQvYWRhcHRlZCBvciBwcm9qZWN0LWFkZGVkIG1hdGVyaWFsOyBhIG5ldyBwYXRoIGRvZXMgbm90IGVzdGFibGlzaCBpbmRlcGVuZGVudCBhdXRob3JzaGlwLgpFbmdpbmUgYmFzZWxpbmU6IDFkb3QxMy9zb3VyY2VAMzM5NDY5NWEzODdhMTRjNzhlOTJiMTU4Y2ZkY2Y1MGU0MDY4Yzk2Yi4KVXBkYXRlIG5vdGljZSBpbnNlcnRlZCBkdXJpbmcgc291cmNlLW9ubHkgcGFja2FnZSBwcmVwYXJhdGlvbjogMjAyNi0xMS0xNC4KVGhpcyByZWNvcmRzIHRoZSBzbmFwc2hvdC9wcmVwYXJhdGlvbiBkYXRlLCBub3QgYW4gYXNzZXJ0ZWQgZmlyc3QtZWRpdCBkYXRlLiBFeGlzdGluZyBub3RpY2VzIHJldGFpbmVkLgpFeGFjdCBvcmlnaW5hbCBieXRlcywgb3JpZ2lucyBhbmQgcmV2ZXJzaWJsZSBub3RpY2UgY2hhbmdlcyBhcmUgcmVjb3JkZWQgaW4gUkVDT05TVFJVQ1RJT04tTUFOSUZFU1QuanNvbi4KLS0+Cgo=",
@@ -21923,7 +21923,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/BUTTON_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/BUTTON_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "34ca86bd5c068b0eadde9a9fd5323071aaa6b87f6b12e2c80bf4e0fc5a77bcab",
+        "previous_reconstructed_bytes": 9775,
+        "notice_removed_current_sha256": "59bf94ae60f38764357e7faea81e649d65d94637756a0a16375a93be02a58fe5",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/CMakeLists.txt",
@@ -21956,8 +21968,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "961d7968e228c820d4d6036d836050e5ea1c7bb832b33e3749645a844a139375",
-      "reconstructed_bytes": 12116,
+      "reconstructed_sha256": "5c24a8eaefcab51f60092bcd05b6a90a67ac98294ad4e2b457feb886fb39c80f",
+      "reconstructed_bytes": 12448,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL0lNQUdFX0ZJWFRVUkVTLm1kCj4gTmV3IGNhbmRpZGF0ZSB0ZXN0L2J1aWxkL2RvY3VtZW50YXRpb24vbWV0YWRhdGEgcGF0aC4KPiBOYXRpdmUgYWRhcHRhdGlvbiByZWNvcmRlZCBpbiB0aGUgMjAyNi0xMS0xMiBjaGVja3BvaW50Lgo+IEV4YWN0IGZpcnN0LWVkaXQvY3JlYXRpb24gZGF0ZSBpcyBub3QgZXN0YWJsaXNoZWQ7IHRoaXMgaXMgYSBjaGVja3BvaW50LXJlY29yZCBkYXRlLgo+IFNjb3BlOiBkb2N1bWVudCBzeW50aGV0aWMgU1RDSS9FVFJMRSBmaXh0dXJlIGxheW91dCBhbmQgbGl0ZXJhbCBwaXhlbCBleHBlY3RhdGlvbnMuCj4gRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCj4gTm90aWNlIGluc2VydGVkOiAyMDI2LTExLTEyLgo+IEV4aXN0aW5nIHNvdXJjZSBieXRlcyBhbmQgb3JpZ2luYWwgbm90aWNlcyByZXRhaW5lZDsgbm8gYWRkaXRpb25hbCByaWdodHMgYXJlIGdyYW50ZWQuCj4gVGhpcyByZWNvcmQgZG9lcyBub3QgZXN0YWJsaXNoIGxpY2Vuc2UgYXBwbGljYWJpbGl0eSwgY29tcGxpYW5jZSBvciBkaXN0cmlidXRpb24gcGVybWlzc2lvbi4KCjwhLS0KUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiB0ZXN0cy9uYXRpdmUtY29yZS9JTUFHRV9GSVhUVVJFUy5tZApOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIEE5IHNuYXBzaG90IGRhdGVkIDIwMjYtMTEtMTQuClRoaXMgZmlsZSBpcyBpbmhlcml0ZWQvYWRhcHRlZCBvciBwcm9qZWN0LWFkZGVkIG1hdGVyaWFsOyBhIG5ldyBwYXRoIGRvZXMgbm90IGVzdGFibGlzaCBpbmRlcGVuZGVudCBhdXRob3JzaGlwLgpFbmdpbmUgYmFzZWxpbmU6IDFkb3QxMy9zb3VyY2VAMzM5NDY5NWEzODdhMTRjNzhlOTJiMTU4Y2ZkY2Y1MGU0MDY4Yzk2Yi4KVXBkYXRlIG5vdGljZSBpbnNlcnRlZCBkdXJpbmcgc291cmNlLW9ubHkgcGFja2FnZSBwcmVwYXJhdGlvbjogMjAyNi0xMS0xNC4KVGhpcyByZWNvcmRzIHRoZSBzbmFwc2hvdC9wcmVwYXJhdGlvbiBkYXRlLCBub3QgYW4gYXNzZXJ0ZWQgZmlyc3QtZWRpdCBkYXRlLiBFeGlzdGluZyBub3RpY2VzIHJldGFpbmVkLgpFeGFjdCBvcmlnaW5hbCBieXRlcywgb3JpZ2lucyBhbmQgcmV2ZXJzaWJsZSBub3RpY2UgY2hhbmdlcyBhcmUgcmVjb3JkZWQgaW4gUkVDT05TVFJVQ1RJT04tTUFOSUZFU1QuanNvbi4KLS0+Cgo=",
@@ -21967,7 +21979,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/IMAGE_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/IMAGE_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "961d7968e228c820d4d6036d836050e5ea1c7bb832b33e3749645a844a139375",
+        "previous_reconstructed_bytes": 12116,
+        "notice_removed_current_sha256": "d052ec5e4b02fb6f1c75bfaa1da5cdeb6ae95550e68a9269eed906eef12f8ae8",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/INPUT_FIXTURES.md",
@@ -21978,8 +22002,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "0ffdff647886e6d536649f83bb42a29ef9a66e782f3a23fdda512d7549c155e1",
-      "reconstructed_bytes": 3781,
+      "reconstructed_sha256": "01cc9554e1ace69827b7afe55e43eb80564e708e7fc75aee087c5d953f97be43",
+      "reconstructed_bytes": 3963,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PCEtLQpQNzEwIG5hdGl2ZSBzbmFwc2hvdCB1cGRhdGU6IHRlc3RzL25hdGl2ZS1jb3JlL0lOUFVUX0ZJWFRVUkVTLm1kCk5hdGl2ZSBMaW51eCBzb3VyY2UvYnVpbGQvdGVzdCBhZGFwdGF0aW9ucyBjYXB0dXJlZCBpbiB0aGUgYWNjZXB0ZWQgQTkgc25hcHNob3QgZGF0ZWQgMjAyNi0xMS0xNC4KVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCkVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgpVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE0LgpUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCkV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgotLT4KCg==",
@@ -21989,7 +22013,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/INPUT_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/INPUT_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "0ffdff647886e6d536649f83bb42a29ef9a66e782f3a23fdda512d7549c155e1",
+        "previous_reconstructed_bytes": 3781,
+        "notice_removed_current_sha256": "6df090e74e02a3393e487b0bebac3db6489ef0217399c015c2fd20b6ca4dd69a",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/PNG_FIXTURES.md",
@@ -22000,8 +22036,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "0f9a8a83f41d3861da8c8b2d510c3c127ae55c7eb99e27027503dc71873cf6f1",
-      "reconstructed_bytes": 4314,
+      "reconstructed_sha256": "a1984b06c6ec716ed1769db731e116ed76f23458564b168fd6a50a90d50b84f4",
+      "reconstructed_bytes": 4654,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL1BOR19GSVhUVVJFUy5tZAo+IE5ldyBjYW5kaWRhdGUgdGVzdC9idWlsZC9kb2N1bWVudGF0aW9uL21ldGFkYXRhIHBhdGguCj4gTmF0aXZlIGFkYXB0YXRpb24gcmVjb3JkZWQgaW4gdGhlIDIwMjYtMTEtMTIgY2hlY2twb2ludC4KPiBFeGFjdCBmaXJzdC1lZGl0L2NyZWF0aW9uIGRhdGUgaXMgbm90IGVzdGFibGlzaGVkOyB0aGlzIGlzIGEgY2hlY2twb2ludC1yZWNvcmQgZGF0ZS4KPiBTY29wZTogZG9jdW1lbnQgaW5kZXBlbmRlbnQgUE5HL0pQQyBmaXh0dXJlIGJ5dGVzIGFuZCBleHBlY3RlZCBkZWNvZGluZy4KPiBFbmdpbmUgYmFzZWxpbmU6IDFkb3QxMy9zb3VyY2VAMzM5NDY5NWEzODdhMTRjNzhlOTJiMTU4Y2ZkY2Y1MGU0MDY4Yzk2Yi4KPiBOb3RpY2UgaW5zZXJ0ZWQ6IDIwMjYtMTEtMTIuCj4gRXhpc3Rpbmcgc291cmNlIGJ5dGVzIGFuZCBvcmlnaW5hbCBub3RpY2VzIHJldGFpbmVkOyBubyBhZGRpdGlvbmFsIHJpZ2h0cyBhcmUgZ3JhbnRlZC4KPiBUaGlzIHJlY29yZCBkb2VzIG5vdCBlc3RhYmxpc2ggbGljZW5zZSBhcHBsaWNhYmlsaXR5LCBjb21wbGlhbmNlIG9yIGRpc3RyaWJ1dGlvbiBwZXJtaXNzaW9uLgoKPCEtLQpQNzEwIG5hdGl2ZSBzbmFwc2hvdCB1cGRhdGU6IHRlc3RzL25hdGl2ZS1jb3JlL1BOR19GSVhUVVJFUy5tZApOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIEE5IHNuYXBzaG90IGRhdGVkIDIwMjYtMTEtMTQuClRoaXMgZmlsZSBpcyBpbmhlcml0ZWQvYWRhcHRlZCBvciBwcm9qZWN0LWFkZGVkIG1hdGVyaWFsOyBhIG5ldyBwYXRoIGRvZXMgbm90IGVzdGFibGlzaCBpbmRlcGVuZGVudCBhdXRob3JzaGlwLgpFbmdpbmUgYmFzZWxpbmU6IDFkb3QxMy9zb3VyY2VAMzM5NDY5NWEzODdhMTRjNzhlOTJiMTU4Y2ZkY2Y1MGU0MDY4Yzk2Yi4KVXBkYXRlIG5vdGljZSBpbnNlcnRlZCBkdXJpbmcgc291cmNlLW9ubHkgcGFja2FnZSBwcmVwYXJhdGlvbjogMjAyNi0xMS0xNC4KVGhpcyByZWNvcmRzIHRoZSBzbmFwc2hvdC9wcmVwYXJhdGlvbiBkYXRlLCBub3QgYW4gYXNzZXJ0ZWQgZmlyc3QtZWRpdCBkYXRlLiBFeGlzdGluZyBub3RpY2VzIHJldGFpbmVkLgpFeGFjdCBvcmlnaW5hbCBieXRlcywgb3JpZ2lucyBhbmQgcmV2ZXJzaWJsZSBub3RpY2UgY2hhbmdlcyBhcmUgcmVjb3JkZWQgaW4gUkVDT05TVFJVQ1RJT04tTUFOSUZFU1QuanNvbi4KLS0+Cgo=",
@@ -22011,7 +22047,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/PNG_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/PNG_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "0f9a8a83f41d3861da8c8b2d510c3c127ae55c7eb99e27027503dc71873cf6f1",
+        "previous_reconstructed_bytes": 4314,
+        "notice_removed_current_sha256": "09378203e3efb87facf164a7e8b5a4f3f1b364a705a8ea48d3677496612f2021",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/README.md",
@@ -22022,8 +22070,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "671c47eaf2e0da2c1d033b703bf9e12e21047647aa4033a496cc842d3463b329",
-      "reconstructed_bytes": 11004,
+      "reconstructed_sha256": "c21f3c4bce7ab393c1dc49849d0a840b22210cda27f9c68f278948ac8d616604",
+      "reconstructed_bytes": 11436,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL1JFQURNRS5tZAo+IE5ldyBjYW5kaWRhdGUgdGVzdC9idWlsZC9kb2N1bWVudGF0aW9uL21ldGFkYXRhIHBhdGguCj4gTmF0aXZlIGFkYXB0YXRpb24gcmVjb3JkZWQgaW4gdGhlIDIwMjYtMTEtMTIgY2hlY2twb2ludC4KPiBFeGFjdCBmaXJzdC1lZGl0L2NyZWF0aW9uIGRhdGUgaXMgbm90IGVzdGFibGlzaGVkOyB0aGlzIGlzIGEgY2hlY2twb2ludC1yZWNvcmQgZGF0ZS4KPiBTY29wZTogZG9jdW1lbnQgaXNvbGF0ZWQgbmF0aXZlIGNvbXBvbmVudCBjaGVja3MgYW5kIHJlbWFpbmluZyBsaW1pdHMuCj4gRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCj4gTm90aWNlIGluc2VydGVkOiAyMDI2LTExLTEyLgo+IEV4aXN0aW5nIHNvdXJjZSBieXRlcyBhbmQgb3JpZ2luYWwgbm90aWNlcyByZXRhaW5lZDsgbm8gYWRkaXRpb25hbCByaWdodHMgYXJlIGdyYW50ZWQuCj4gVGhpcyByZWNvcmQgZG9lcyBub3QgZXN0YWJsaXNoIGxpY2Vuc2UgYXBwbGljYWJpbGl0eSwgY29tcGxpYW5jZSBvciBkaXN0cmlidXRpb24gcGVybWlzc2lvbi4KCjwhLS0KUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiB0ZXN0cy9uYXRpdmUtY29yZS9SRUFETUUubWQKTmF0aXZlIExpbnV4IHNvdXJjZS9idWlsZC90ZXN0IGFkYXB0YXRpb25zIGNhcHR1cmVkIGluIHRoZSBhY2NlcHRlZCBBOSBzbmFwc2hvdCBkYXRlZCAyMDI2LTExLTE0LgpUaGlzIGZpbGUgaXMgaW5oZXJpdGVkL2FkYXB0ZWQgb3IgcHJvamVjdC1hZGRlZCBtYXRlcmlhbDsgYSBuZXcgcGF0aCBkb2VzIG5vdCBlc3RhYmxpc2ggaW5kZXBlbmRlbnQgYXV0aG9yc2hpcC4KRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuClVwZGF0ZSBub3RpY2UgaW5zZXJ0ZWQgZHVyaW5nIHNvdXJjZS1vbmx5IHBhY2thZ2UgcHJlcGFyYXRpb246IDIwMjYtMTEtMTQuClRoaXMgcmVjb3JkcyB0aGUgc25hcHNob3QvcHJlcGFyYXRpb24gZGF0ZSwgbm90IGFuIGFzc2VydGVkIGZpcnN0LWVkaXQgZGF0ZS4gRXhpc3Rpbmcgbm90aWNlcyByZXRhaW5lZC4KRXhhY3Qgb3JpZ2luYWwgYnl0ZXMsIG9yaWdpbnMgYW5kIHJldmVyc2libGUgbm90aWNlIGNoYW5nZXMgYXJlIHJlY29yZGVkIGluIFJFQ09OU1RSVUNUSU9OLU1BTklGRVNULmpzb24uCi0tPgoK",
@@ -22033,7 +22081,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/README.md"
+      "payload_path": "overlay/tests/native-core/README.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "671c47eaf2e0da2c1d033b703bf9e12e21047647aa4033a496cc842d3463b329",
+        "previous_reconstructed_bytes": 11004,
+        "notice_removed_current_sha256": "ada6d382f3d61896584ed81349526974ced1d57224d353ed3a8ac0220bad5b8f",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/RENDER_FIXTURES.md",
@@ -22044,8 +22104,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "3ce46f77beb647cb7f357628ff70191f463ead46494c537f42c291e85764c438",
-      "reconstructed_bytes": 3013,
+      "reconstructed_sha256": "488bc70c6682363e99ef802ac4042126ff731dd1ebbbe46be098a88d81212d7b",
+      "reconstructed_bytes": 3109,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL1JFTkRFUl9GSVhUVVJFUy5tZAo+IE5ldyBjYW5kaWRhdGUgdGVzdC9idWlsZC9kb2N1bWVudGF0aW9uL21ldGFkYXRhIHBhdGguCj4gTmF0aXZlIGFkYXB0YXRpb24gcmVjb3JkZWQgaW4gdGhlIDIwMjYtMTEtMTIgY2hlY2twb2ludC4KPiBFeGFjdCBmaXJzdC1lZGl0L2NyZWF0aW9uIGRhdGUgaXMgbm90IGVzdGFibGlzaGVkOyB0aGlzIGlzIGEgY2hlY2twb2ludC1yZWNvcmQgZGF0ZS4KPiBTY29wZTogZG9jdW1lbnQgYXV0aG9yZWQgc3VyZmFjZS9mb250IHNjZW5lIGFuZCBleHBlY3RlZCByZW5kZXJpbmcuCj4gRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCj4gTm90aWNlIGluc2VydGVkOiAyMDI2LTExLTEyLgo+IEV4aXN0aW5nIHNvdXJjZSBieXRlcyBhbmQgb3JpZ2luYWwgbm90aWNlcyByZXRhaW5lZDsgbm8gYWRkaXRpb25hbCByaWdodHMgYXJlIGdyYW50ZWQuCj4gVGhpcyByZWNvcmQgZG9lcyBub3QgZXN0YWJsaXNoIGxpY2Vuc2UgYXBwbGljYWJpbGl0eSwgY29tcGxpYW5jZSBvciBkaXN0cmlidXRpb24gcGVybWlzc2lvbi4KCjwhLS0KUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiB0ZXN0cy9uYXRpdmUtY29yZS9SRU5ERVJfRklYVFVSRVMubWQKTmF0aXZlIExpbnV4IHNvdXJjZS9idWlsZC90ZXN0IGFkYXB0YXRpb25zIGNhcHR1cmVkIGluIHRoZSBhY2NlcHRlZCBBOSBzbmFwc2hvdCBkYXRlZCAyMDI2LTExLTE0LgpUaGlzIGZpbGUgaXMgaW5oZXJpdGVkL2FkYXB0ZWQgb3IgcHJvamVjdC1hZGRlZCBtYXRlcmlhbDsgYSBuZXcgcGF0aCBkb2VzIG5vdCBlc3RhYmxpc2ggaW5kZXBlbmRlbnQgYXV0aG9yc2hpcC4KRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuClVwZGF0ZSBub3RpY2UgaW5zZXJ0ZWQgZHVyaW5nIHNvdXJjZS1vbmx5IHBhY2thZ2UgcHJlcGFyYXRpb246IDIwMjYtMTEtMTQuClRoaXMgcmVjb3JkcyB0aGUgc25hcHNob3QvcHJlcGFyYXRpb24gZGF0ZSwgbm90IGFuIGFzc2VydGVkIGZpcnN0LWVkaXQgZGF0ZS4gRXhpc3Rpbmcgbm90aWNlcyByZXRhaW5lZC4KRXhhY3Qgb3JpZ2luYWwgYnl0ZXMsIG9yaWdpbnMgYW5kIHJldmVyc2libGUgbm90aWNlIGNoYW5nZXMgYXJlIHJlY29yZGVkIGluIFJFQ09OU1RSVUNUSU9OLU1BTklGRVNULmpzb24uCi0tPgoK",
@@ -22055,7 +22115,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/RENDER_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/RENDER_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "3ce46f77beb647cb7f357628ff70191f463ead46494c537f42c291e85764c438",
+        "previous_reconstructed_bytes": 3013,
+        "notice_removed_current_sha256": "6b76ba8f40d63af7cd1f4db4fb68b9a1b262fd91cfe31cca013af1429808886f",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/RESOURCE_FIXTURES.md",
@@ -22066,8 +22138,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "6bc4ffb2a3575220aed865965aeaf8d7e970cb513ab55c0c2a2e9d1bc53e6318",
-      "reconstructed_bytes": 3324,
+      "reconstructed_sha256": "7d483de0d814e9fd80e5983c65432261099eb18cfafbf09e3f1569fcb8cd7fef",
+      "reconstructed_bytes": 3449,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL1JFU09VUkNFX0ZJWFRVUkVTLm1kCj4gTmV3IGNhbmRpZGF0ZSB0ZXN0L2J1aWxkL2RvY3VtZW50YXRpb24vbWV0YWRhdGEgcGF0aC4KPiBOYXRpdmUgYWRhcHRhdGlvbiByZWNvcmRlZCBpbiB0aGUgMjAyNi0xMS0xMiBjaGVja3BvaW50Lgo+IEV4YWN0IGZpcnN0LWVkaXQvY3JlYXRpb24gZGF0ZSBpcyBub3QgZXN0YWJsaXNoZWQ7IHRoaXMgaXMgYSBjaGVja3BvaW50LXJlY29yZCBkYXRlLgo+IFNjb3BlOiBkb2N1bWVudCBzeW50aGV0aWMgUENYL1RHQS9yZXNvdXJjZSBjaG9vc2VyIGNhc2VzIGFuZCBsaW1pdHMuCj4gRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCj4gTm90aWNlIGluc2VydGVkOiAyMDI2LTExLTEyLgo+IEV4aXN0aW5nIHNvdXJjZSBieXRlcyBhbmQgb3JpZ2luYWwgbm90aWNlcyByZXRhaW5lZDsgbm8gYWRkaXRpb25hbCByaWdodHMgYXJlIGdyYW50ZWQuCj4gVGhpcyByZWNvcmQgZG9lcyBub3QgZXN0YWJsaXNoIGxpY2Vuc2UgYXBwbGljYWJpbGl0eSwgY29tcGxpYW5jZSBvciBkaXN0cmlidXRpb24gcGVybWlzc2lvbi4KCjwhLS0KUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiB0ZXN0cy9uYXRpdmUtY29yZS9SRVNPVVJDRV9GSVhUVVJFUy5tZApOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIEE5IHNuYXBzaG90IGRhdGVkIDIwMjYtMTEtMTQuClRoaXMgZmlsZSBpcyBpbmhlcml0ZWQvYWRhcHRlZCBvciBwcm9qZWN0LWFkZGVkIG1hdGVyaWFsOyBhIG5ldyBwYXRoIGRvZXMgbm90IGVzdGFibGlzaCBpbmRlcGVuZGVudCBhdXRob3JzaGlwLgpFbmdpbmUgYmFzZWxpbmU6IDFkb3QxMy9zb3VyY2VAMzM5NDY5NWEzODdhMTRjNzhlOTJiMTU4Y2ZkY2Y1MGU0MDY4Yzk2Yi4KVXBkYXRlIG5vdGljZSBpbnNlcnRlZCBkdXJpbmcgc291cmNlLW9ubHkgcGFja2FnZSBwcmVwYXJhdGlvbjogMjAyNi0xMS0xNC4KVGhpcyByZWNvcmRzIHRoZSBzbmFwc2hvdC9wcmVwYXJhdGlvbiBkYXRlLCBub3QgYW4gYXNzZXJ0ZWQgZmlyc3QtZWRpdCBkYXRlLiBFeGlzdGluZyBub3RpY2VzIHJldGFpbmVkLgpFeGFjdCBvcmlnaW5hbCBieXRlcywgb3JpZ2lucyBhbmQgcmV2ZXJzaWJsZSBub3RpY2UgY2hhbmdlcyBhcmUgcmVjb3JkZWQgaW4gUkVDT05TVFJVQ1RJT04tTUFOSUZFU1QuanNvbi4KLS0+Cgo=",
@@ -22077,7 +22149,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/RESOURCE_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/RESOURCE_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "6bc4ffb2a3575220aed865965aeaf8d7e970cb513ab55c0c2a2e9d1bc53e6318",
+        "previous_reconstructed_bytes": 3324,
+        "notice_removed_current_sha256": "5be3cd94225d37224322bc0de2c34f8b2089a7820475a547e8bac546ad35f608",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/VFS_FIXTURES.md",
@@ -22088,8 +22172,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "eea7f7e4dc7b4d17f394c459d208ae6fad266e629864736a24116c1042b97aa5",
-      "reconstructed_bytes": 8955,
+      "reconstructed_sha256": "aacaf992b11265e36224a88d2c2cd38e7549220b9068173d385268b4349f60e6",
+      "reconstructed_bytes": 9091,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL1ZGU19GSVhUVVJFUy5tZAo+IE5ldyBjYW5kaWRhdGUgdGVzdC9idWlsZC9kb2N1bWVudGF0aW9uL21ldGFkYXRhIHBhdGguCj4gTmF0aXZlIGFkYXB0YXRpb24gcmVjb3JkZWQgaW4gdGhlIDIwMjYtMTEtMTIgY2hlY2twb2ludC4KPiBFeGFjdCBmaXJzdC1lZGl0L2NyZWF0aW9uIGRhdGUgaXMgbm90IGVzdGFibGlzaGVkOyB0aGlzIGlzIGEgY2hlY2twb2ludC1yZWNvcmQgZGF0ZS4KPiBTY29wZTogZG9jdW1lbnQgc3ludGhldGljIFNMRi83eiBjb25zdHJ1Y3Rpb24sIG9yaWdpbmFsIGZvcm1hdCBjb250cmFjdCBhbmQgaW5kZXBlbmRlbnQgZXhwZWN0YXRpb25zLgo+IEVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgo+IE5vdGljZSBpbnNlcnRlZDogMjAyNi0xMS0xMi4KPiBFeGlzdGluZyBzb3VyY2UgYnl0ZXMgYW5kIG9yaWdpbmFsIG5vdGljZXMgcmV0YWluZWQ7IG5vIGFkZGl0aW9uYWwgcmlnaHRzIGFyZSBncmFudGVkLgo+IFRoaXMgcmVjb3JkIGRvZXMgbm90IGVzdGFibGlzaCBsaWNlbnNlIGFwcGxpY2FiaWxpdHksIGNvbXBsaWFuY2Ugb3IgZGlzdHJpYnV0aW9uIHBlcm1pc3Npb24uCgo8IS0tClA3MTAgbmF0aXZlIHNuYXBzaG90IHVwZGF0ZTogdGVzdHMvbmF0aXZlLWNvcmUvVkZTX0ZJWFRVUkVTLm1kCk5hdGl2ZSBMaW51eCBzb3VyY2UvYnVpbGQvdGVzdCBhZGFwdGF0aW9ucyBjYXB0dXJlZCBpbiB0aGUgYWNjZXB0ZWQgQTkgc25hcHNob3QgZGF0ZWQgMjAyNi0xMS0xNC4KVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCkVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgpVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE0LgpUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCkV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgotLT4KCg==",
@@ -22099,7 +22183,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/VFS_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/VFS_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "eea7f7e4dc7b4d17f394c459d208ae6fad266e629864736a24116c1042b97aa5",
+        "previous_reconstructed_bytes": 8955,
+        "notice_removed_current_sha256": "e352ed2298c3873219714d9ff244b75531710af3225ba724865063fde6803aa1",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/VIDEO_FIXTURES.md",
@@ -22110,8 +22206,8 @@
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": null,
       "upstream_blob_sha1": null,
-      "reconstructed_sha256": "703706cb6a4dc0cbd34a25277f9222052787789ef9bdae4c25c7dc586025339c",
-      "reconstructed_bytes": 4362,
+      "reconstructed_sha256": "3433dba7094fa5c1a5b90c8aca5b7bd6c90bafc256d002fd2b3dbd50bdd7e93c",
+      "reconstructed_bytes": 4446,
       "notice": {
         "insertion_offset": 0,
         "insertion_base64": "PiBQNzEwIG5hdGl2ZSBub3RpY2UgcHJlcGFyYXRpb246IHRlc3RzL25hdGl2ZS1jb3JlL1ZJREVPX0ZJWFRVUkVTLm1kCj4gTmV3IGNhbmRpZGF0ZSB0ZXN0L2J1aWxkL2RvY3VtZW50YXRpb24vbWV0YWRhdGEgcGF0aC4KPiBOYXRpdmUgYWRhcHRhdGlvbiByZWNvcmRlZCBpbiB0aGUgMjAyNi0xMS0xMiBjaGVja3BvaW50Lgo+IEV4YWN0IGZpcnN0LWVkaXQvY3JlYXRpb24gZGF0ZSBpcyBub3QgZXN0YWJsaXNoZWQ7IHRoaXMgaXMgYSBjaGVja3BvaW50LXJlY29yZCBkYXRlLgo+IFNjb3BlOiBkb2N1bWVudCByZXNlcnZlZC1mcmFtZWJ1ZmZlciBzY2VuZSwgZGlydHkgdXBkYXRlIGFuZCByZXByb2R1Y3Rpb24uCj4gRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCj4gTm90aWNlIGluc2VydGVkOiAyMDI2LTExLTEyLgo+IEV4aXN0aW5nIHNvdXJjZSBieXRlcyBhbmQgb3JpZ2luYWwgbm90aWNlcyByZXRhaW5lZDsgbm8gYWRkaXRpb25hbCByaWdodHMgYXJlIGdyYW50ZWQuCj4gVGhpcyByZWNvcmQgZG9lcyBub3QgZXN0YWJsaXNoIGxpY2Vuc2UgYXBwbGljYWJpbGl0eSwgY29tcGxpYW5jZSBvciBkaXN0cmlidXRpb24gcGVybWlzc2lvbi4KCjwhLS0KUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiB0ZXN0cy9uYXRpdmUtY29yZS9WSURFT19GSVhUVVJFUy5tZApOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIEE5IHNuYXBzaG90IGRhdGVkIDIwMjYtMTEtMTQuClRoaXMgZmlsZSBpcyBpbmhlcml0ZWQvYWRhcHRlZCBvciBwcm9qZWN0LWFkZGVkIG1hdGVyaWFsOyBhIG5ldyBwYXRoIGRvZXMgbm90IGVzdGFibGlzaCBpbmRlcGVuZGVudCBhdXRob3JzaGlwLgpFbmdpbmUgYmFzZWxpbmU6IDFkb3QxMy9zb3VyY2VAMzM5NDY5NWEzODdhMTRjNzhlOTJiMTU4Y2ZkY2Y1MGU0MDY4Yzk2Yi4KVXBkYXRlIG5vdGljZSBpbnNlcnRlZCBkdXJpbmcgc291cmNlLW9ubHkgcGFja2FnZSBwcmVwYXJhdGlvbjogMjAyNi0xMS0xNC4KVGhpcyByZWNvcmRzIHRoZSBzbmFwc2hvdC9wcmVwYXJhdGlvbiBkYXRlLCBub3QgYW4gYXNzZXJ0ZWQgZmlyc3QtZWRpdCBkYXRlLiBFeGlzdGluZyBub3RpY2VzIHJldGFpbmVkLgpFeGFjdCBvcmlnaW5hbCBieXRlcywgb3JpZ2lucyBhbmQgcmV2ZXJzaWJsZSBub3RpY2UgY2hhbmdlcyBhcmUgcmVjb3JkZWQgaW4gUkVDT05TVFJVQ1RJT04tTUFOSUZFU1QuanNvbi4KLS0+Cgo=",
@@ -22121,7 +22217,19 @@
         "lf_normalized": false
       },
       "classification": "project-added checkpoint path; adapted/extracted content possible, no independent authorship claim",
-      "payload_path": "overlay/tests/native-core/VIDEO_FIXTURES.md"
+      "payload_path": "overlay/tests/native-core/VIDEO_FIXTURES.md",
+      "editorial_amendment": {
+        "date": "2026-11-14",
+        "kind": "STE reader documentation rewrite",
+        "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+        "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+        "previous_reconstructed_sha256": "703706cb6a4dc0cbd34a25277f9222052787789ef9bdae4c25c7dc586025339c",
+        "previous_reconstructed_bytes": 4362,
+        "notice_removed_current_sha256": "1e067f91f074af0e26197ec09e4922a08fed4ab4829b918238fb2633a2620164",
+        "notice_removal_restores_accepted_snapshot": false,
+        "historical_snapshot_fields_retained": true,
+        "scope": "Editorial prose changes after the accepted snapshot; notices remain exact. Historical snapshot hashes are provenance, not current documentation identities."
+      }
     },
     {
       "path": "tests/native-core/fileman_tests.cpp",
@@ -23792,5 +23900,24 @@
     "Multiplayer/raknet/BitStream.h",
     "Multiplayer/raknet/RakMemoryOverride.h"
   ],
-  "scope": "Source/build/license closure selected by exact roots/extensions; not the full upstream tree. RakNet component absent; full engine cannot build from this proposed upload alone."
+  "scope": "Source/build/license closure selected by exact roots/extensions; not the full upstream tree. RakNet component absent; full engine cannot build from this proposed upload alone.",
+  "editorial_amendment": {
+    "date": "2026-11-14",
+    "source_private_commit": "730d7ea6102e7dc4301765d402bf4a3ccf5abc4c",
+    "patch_sha256": "c6e4f88d8f41a1abd4758acadf750564ffdc68ca212065ada83dde8eb36912a4",
+    "previous_reconstructed_git_tree_sha1": "a2b835b28ba4cdee7d6b00646ce261f8970c18d0",
+    "changed_reconstructed_documents": [
+      "tests/native-core/BUTTON_FIXTURES.md",
+      "tests/native-core/IMAGE_FIXTURES.md",
+      "tests/native-core/INPUT_FIXTURES.md",
+      "tests/native-core/PNG_FIXTURES.md",
+      "tests/native-core/README.md",
+      "tests/native-core/RENDER_FIXTURES.md",
+      "tests/native-core/RESOURCE_FIXTURES.md",
+      "tests/native-core/VFS_FIXTURES.md",
+      "tests/native-core/VIDEO_FIXTURES.md"
+    ],
+    "accepted_source_pin_sha256_is_historical": true,
+    "accepted_runtime_evidence": "Historical evidence for unchanged code only; no new build, gameplay, or human acceptance result."
+  }
 }

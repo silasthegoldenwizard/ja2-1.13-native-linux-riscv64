@@ -20,33 +20,44 @@ Exact original bytes, origins and reversible notice changes are recorded in RECO
 
 # Native reserved-framebuffer acceptance
 
-This slice uses the existing authored `generate_render_fixtures.py` output,
-specifically `rendering/font.sti`, mounted through the existing VFS provider.
-The copied font translation is A, B, space. No proprietary inputs are required.
+This component uses the existing authored `generate_render_fixtures.py` output.
+It specifically uses `rendering/font.sti`, mounted through the existing VFS provider.
+The copied font translation is A, B, space.
+No proprietary inputs are necessary.
 There is no new fixture generator or renderer-derived first-frame oracle.
 
-The viewer takes exactly `fixture-root output-base`. It emits:
+The viewer takes exactly `fixture-root output-base`.
+It writes these files:
 
 * `output-base-first.bmp` and `output-base-first.rgb565`
 * `output-base-second.bmp` and `output-base-second.rgb565`
 
-Each raw file is the complete padded PRIMARY_SURFACE allocation: 32x20 RGB565,
-72-byte pitch, 1440 bytes, with eight untouched 0xa5 padding bytes per row.
-The BMP is captured from the actual 256x160 SDL3 X11 window surface.
+Each raw file contains the complete padded PRIMARY_SURFACE allocation: 32x20 RGB565, 72-byte pitch, 1440 bytes.
+Each row has eight unchanged 0xa5 padding bytes.
+The BMP comes from the actual 256x160 SDL3 X11 window surface.
 
-Frame one is the retained literal scene: background 0x2104; half-open panel
-[1,1,31,19) 0x4208; an 8x4 blue 0x001f tile with red 0xf800 inset [1,1,7,3),
-placed at (2,3); white mono AB at (12,3), green 0x07e0 shadow, background zero;
-colored BA at (20,10). All scene drawing targets FRAME_BUFFER, directly or by
-blit, and a full refresh transfers FRAME_BUFFER -> BACKBUFFER -> PRIMARY_SURFACE.
+Frame one uses the retained literal scene.
+The background is 0x2104.
+The half-open panel [1,1,31,19) is 0x4208.
+An 8x4 blue 0x001f tile has a red 0xf800 inset [1,1,7,3) and sits at (2,3).
+White mono AB is at (12,3), with a green 0x07e0 shadow and background zero.
+Colored BA is at (20,10).
 
-Frame two fills only [2,3,10,7) in FRAME_BUFFER with yellow 0xffe0 and invalidates
-only that rectangle. Exactly 32 source pixels change. Compare the first raw/BMP
-against the sealed existing literal scene oracle; compare the second against that
-same oracle with only these coordinates replaced. Check every pixel and padding
-byte, and all nearest-neighbor scaled BMP pixels. The viewer is not the oracle.
+All scene drawing targets FRAME_BUFFER, directly or by blit.
+A full refresh transfers FRAME_BUFFER -> BACKBUFFER -> PRIMARY_SURFACE.
 
-Example commands, from the source root, with the already approved SDL3 prefix:
+Frame two fills only [2,3,10,7) in FRAME_BUFFER with yellow 0xffe0.
+It invalidates only that rectangle.
+Exactly 32 source pixels change.
+The viewer is not the oracle.
+
+Compare the first raw/BMP against the sealed existing literal scene oracle.
+Compare the second against that same oracle, with only these coordinates replaced.
+Do a check of every pixel and padding byte.
+Do a check of all nearest-neighbor scaled BMP pixels.
+
+The example commands use the already approved SDL3 prefix.
+Run them from the source root:
 
 ```sh
 cmake -S tests/native-core -B build/native-video-manager-20261112/debug -DCMAKE_BUILD_TYPE=Debug -DP710_SDL_PRESENTATION=ON -DCMAKE_PREFIX_PATH="$SDL3_PREFIX"
@@ -59,7 +70,10 @@ ASAN_OPTIONS=detect_leaks=1 ctest --test-dir build/native-video-manager-20261112
 ASAN_OPTIONS=detect_leaks=1 SDL_VIDEODRIVER=x11 build/native-video-manager-20261112/sanitized/p710_native_video_viewer build/native-video-manager-20261112/sanitized/artifacts/rendering build/native-video-manager-20261112/sanitized/artifacts/manual-video
 ```
 
-An accessible real X11 DISPLAY is required. Tests explicitly require the x11
-driver; no dummy/offscreen fallback is accepted. Each viewer frame remains
-visible briefly and polls quit events. SDL lifetime is balanced solely through
-the existing presentation owner; neither new driver calls global SDL_Quit.
+The host must provide an accessible real X11 DISPLAY.
+Tests explicitly require the x11 driver.
+They accept no dummy/offscreen fallback.
+Each viewer frame stays visible briefly and polls quit events.
+
+Only the existing presentation owner balances SDL lifetime.
+Neither new driver calls global SDL_Quit.

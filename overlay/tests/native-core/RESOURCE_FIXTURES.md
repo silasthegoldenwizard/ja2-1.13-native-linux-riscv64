@@ -20,10 +20,37 @@ Exact original bytes, origins and reversible notice changes are recorded in RECO
 
 # Production image/resource checks
 
-`python3 tests/native-core/generate_resource_fixtures.py OUTPUT_ROOT` writes independently authored synthetic bytes only. It imports the previous authored STCI fixture helper to preserve its explicit wire offsets/literal streams; it never reads proprietary resources or asks a production decoder/encoder to produce expected pixels.
+`python3 tests/native-core/generate_resource_fixtures.py OUTPUT_ROOT` writes only independently authored synthetic bytes.
+It imports the previous authored STCI fixture helper to keep its explicit wire offsets and literal streams.
+It never reads proprietary resources.
+It never uses a production decoder/encoder to produce expected pixels.
 
-`p710_native_resource_tests OUTPUT_ROOT` mounts the exact output through actual bfVFS/FileManVFS. It calls production CreateImage/LoadImageData, PCX's retained public decode/blit API, TGA and GetETRLEImageData. Expected pixels and descriptors are literal C++ values. Fixtures include padded indexed PCX rows, escaped/run bytes, clipped transparency, four TGA origins, original raw 5:5:5 16-bit samples, RGB24 swizzling, strict/fallback PNG chooser behavior, real STCI ETRLE deep-copy lifetime, malformed wire sections and repeated/incremental loading for all eight content masks. A present broken PNG must fail; fallback means absent replacement, not decode fallback.
+`p710_native_resource_tests OUTPUT_ROOT` mounts the exact output through actual bfVFS/FileManVFS.
+It calls production CreateImage/LoadImageData, PCX's retained public decode/blit API, TGA and GetETRLEImageData.
+Expected pixels and descriptors are literal C++ values.
 
-Generator: Python standard library only; shared `generate_image_fixtures.py` must remain adjacent. Test links production ImageResource/PCX/impTGA/PngLoader, existing STCI/ImageData/ImagePalette, actual FileManIO/FileManVFS/bfVFS/Copy7z and the bundled libpng/zlib/Expat dependencies. No fake readers, global replacements, shadow headers or game assets.
+Fixtures include padded indexed PCX rows, escaped/run bytes, clipped transparency, four TGA origins and original raw 5:5:5 16-bit samples.
+They also include RGB24 swizzling, strict/fallback PNG chooser behavior, actual STCI ETRLE deep-copy lifetime and malformed wire sections.
+Repeated/incremental loading covers all eight content masks.
+A present broken PNG must fail.
+Fallback applies to an absent replacement.
+It does not permit decode fallback.
 
-PCX supported scope is 8-bit single-plane RLE with a standard 0x0c palette marker, row padding included in BytesPerLine. Malformed runs, truncated header/data/palette, invalid stride and trailing compressed data are rejected. The historical PCX exporter treated padding/marker bytes as pixels and did unbounded reads; these are corrected. TGA scope remains original implemented type 2, 16/24-bit true color; indexed/RLE and 32-bit modes remain unsupported. Row origins are interpreted from the descriptor; 24-bit BGR wire values become original RGB memory bytes; 16-bit 5:5:5 samples remain unchanged. The importer does not add a new format family.
+The generator uses only the Python standard library.
+The shared `generate_image_fixtures.py` must stay adjacent to it.
+The test links production ImageResource/PCX/impTGA/PngLoader and existing STCI/ImageData/ImagePalette.
+It also links actual FileManIO/FileManVFS/bfVFS/Copy7z and the bundled libpng/zlib/Expat dependencies.
+It uses no fake readers, global replacements, shadow headers or game assets.
+
+PCX supports 8-bit single-plane RLE with a standard 0x0c palette marker.
+BytesPerLine includes row padding.
+The loader rejects malformed runs, truncated header/data/palette, invalid stride and trailing compressed data.
+The historical PCX exporter treated padding/marker bytes as pixels and made unbounded reads.
+These defects are corrected.
+
+TGA support stays at the original implemented type 2, 16/24-bit true color.
+Indexed/RLE and 32-bit modes stay unsupported.
+The importer interprets row origins from the descriptor.
+It converts 24-bit BGR wire values to original RGB memory bytes.
+It keeps 16-bit 5:5:5 samples unchanged.
+The importer adds no new format family.

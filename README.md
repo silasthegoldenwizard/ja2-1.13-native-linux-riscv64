@@ -1,27 +1,43 @@
 # Jagged Alliance 2 v1.13 for Linux
 
-An experimental native port of **JA2 v1.13**, preserving its original gameplay and mechanics. Linux x86-64 is the first development target, with RISC-V64 planned next.
+This experimental project ports **JA2 v1.13** to Linux.
+It must keep the original gameplay and mechanics.
+Linux x86-64 is the first target.
+RISC-V64 is a later target.
 
 > [!IMPORTANT]
-> **Source snapshot — November 14, 2026. Source-only private-repository scope.**
-> Some required RakNet header and library changes remain outside this package pending component review. The package cannot reproduce the complete engine build on its own. No proprietary game assets or compiled binaries are included.
+> **Source snapshot: November 14, 2026. Private repository. Source files only.**
+> Some necessary RakNet header and library changes are outside this package.
+> These changes need a component license review.
+> This package alone cannot reproduce the complete engine build.
+> The package does not include proprietary game assets or compiled binaries.
 
 ## Progress so far
 
-The development build has reached the original menu, started a campaign, hired mercenaries, entered A9, and completed the first sector battle on native Linux x86-64.
+The development build reached the original menu.
+It started a campaign and hired mercenaries.
+It entered A9 and completed the first sector battle on native Linux x86-64.
 
 | Area | Recorded result |
 | --- | --- |
 | Native test suite | 72/72 passed |
 | ASan/UBSan/LSan suite | 74/74 passed, without suppressions |
-| Source package | Exact reconstruction verified; independent package check passed with gaps |
-| Still to validate | Save/reload, sound and physical devices, human visual acceptance, broader campaigns, and RISC-V64 |
+| Source package | Exact source reconstruction passed. The independent package check passed with gaps. |
+| Tests still necessary | Save/reload, sound and physical devices, human visual acceptance, broader campaigns, and RISC-V64 |
 
-The engine results apply to the local development checkpoint before packaging. This source snapshot has not had a fresh build or runtime test. A source-supported lifetime issue in the lit-door path remains untested; see [status and known issues](docs/STATUS.md).
+The engine results apply to the local development checkpoint before the package was made.
+This source snapshot has no new build or runtime test.
+Source review found an untested lifetime issue in the lit-door path.
+The [status and known issues](docs/STATUS.md) page gives the details.
 
 ## Explore and reconstruct the source
 
-Use an existing local upstream Git repository containing the revision in [SOURCE_PIN.json](SOURCE_PIN.json), and choose an output path that does not already exist:
+The source overlay contains changes for a separate upstream source copy.
+Reconstruction applies these changes to that copy.
+
+1. Use an existing local upstream Git repository with the revision in [SOURCE_PIN.json](SOURCE_PIN.json).
+2. Select an output path that does not exist.
+3. Run this command:
 
 ```sh
 python3 reconstruct.py \
@@ -29,12 +45,24 @@ python3 reconstruct.py \
   --output /path/to/new-empty-source
 ```
 
-The helper reads pinned Git objects without fetching and verifies the reconstructed files against the manifest.
+The helper reads pinned Git objects.
+It does not fetch objects.
+It compares the reconstructed files with the manifest.
 
-See the [Linux build guide](docs/BUILD-LINUX.md) for the development environment, dependencies, and current full-build blocker, and the [changelog](docs/CHANGELOG.md) for this snapshot’s changes.
+The [Linux build guide](docs/BUILD-LINUX.md) gives the development environment, dependencies, and full-build limitation.
+The [changelog](docs/CHANGELOG.md) lists the changes in this snapshot.
 
 ## Source and licensing
 
-Licenses apply by component. The historical SFI terms remain a qualified basis for the original engine source; bfVFS retains LGPL 2.1-or-later terms, and other components retain their own notices. Private hosting does not replace those terms. Public visibility and binary releases remain separate decisions.
+Each component keeps its own license terms.
+The historical SFI terms give a qualified basis for the original engine source.
+bfVFS keeps LGPL 2.1-or-later terms.
+Other components keep their own notices.
+Private hosting does not replace these terms.
+Public access and binary releases need separate decisions.
 
-See [publication scope and licensing](docs/PUBLICATION-LIMITS.md), [license notices](notices/), and the [reconstruction manifest](RECONSTRUCTION-MANIFEST.json) for the details.
+The following records give the details:
+
+- [Publication scope and licensing](docs/PUBLICATION-LIMITS.md)
+- [License notices](notices/)
+- [Reconstruction manifest](RECONSTRUCTION-MANIFEST.json)

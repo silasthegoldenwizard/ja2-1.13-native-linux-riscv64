@@ -20,17 +20,60 @@ Exact original bytes, origins and reversible notice changes are recorded in RECO
 
 # Independent PNG and JPC fixture oracle
 
-`generate_png_fixtures.py` authors PNG signature/IHDR/PLTE/oFFs/IDAT/IEND chunks using Python's standard `struct` and `zlib`; it does not call the production decoder/encoder or derive expectations from loader output. Existing `7z` writes Copy-method archives (`-mx=0 -ms=off`), matching the retained bfVFS library contract. All fixtures are synthetic and disposable.
+`generate_png_fixtures.py` makes PNG signature/IHDR/PLTE/oFFs/IDAT/IEND chunks with Python's standard `struct` and `zlib`.
+It does not call the production decoder or encoder. It does not derive expectations from loader output.
+Existing `7z` writes Copy-method archives (`-mx=0 -ms=off`).
+These archives match the retained bfVFS library contract. All fixtures are synthetic and disposable.
 
-Run `python3 tests/native-core/generate_png_fixtures.py <artifact-dir> --seven-zip /usr/bin/7z`, then the parent CMake target `p710_native_png_tests <artifact-dir>` (or the focused agent probe `build/png-resource-agent/png_tests build/png-resource-agent/fixtures`).
+Run `python3 tests/native-core/generate_png_fixtures.py <artifact-dir> --seven-zip /usr/bin/7z`.
+Then run the parent CMake target `p710_native_png_tests <artifact-dir>`.
+Alternatively, run the focused agent probe `build/png-resource-agent/png_tests build/png-resource-agent/fixtures` after fixture generation.
 
-Literal oracles in `png_loader_tests.cpp`:
+The literal oracles in `png_loader_tests.cpp` define these expected results:
 
-- Indexed 4x2 rows: `[0,1,1,0]`, `[2,0,3,3]`. Palette entries0–3: black, red, green, blue; entries4–255 are zero. Native ETRLE bytes are `81 02 01 01 81 00 01 02 81 02 03 03 00`. Index0 remains the original transparent index.
-- RGB24 3x1 pixels red, green, blue become configured native RGB565 words `f800 07e0 001f`. RGBA32 2x1 remains byte sequence `0c 22 38 4e 5a 7b d2 ff`. Descriptor dimensions/count, byte size and offsets are checked independently.
-- A single transparent pixel encodes as `81 00`. A130-pixel row with128 opaque index1 values followed by two transparent pixels encodes as127 opaque values, one opaque value, `82 00`, testing the127-byte run boundary.
-- JPC archive creation order10/0/2 differs from numeric frame order0/2/10. The additional1x1 frame indices are2 and3, so exact concatenated bytes prove ordering. Multi-frame canvas remains the historical640x480.
-- XML0 overrides offsets to(-7,8), emits wall9/tile count2/location4660/current frame1/frame count2/flags0x23. The16 app bytes are `09 02 34 12 00 00 00 01 02 23 00 00 00 00 00 00`. Unmentioned app records remain zero. An x-only offset override on frame2 resets y to0, preserving original parser semantics. A single RGBA member plus XML is also exercised.
-- Every combination of requested palette/bitmap/app flags, incremental replacement and repeated release is checked. Each malformed case is tested with metadata-only, individual-section and full-section requests, both fresh and after a prior valid load; failure must preserve every prior HIMAGE byte and still-valid pixel storage.
+- Indexed 4x2 rows are `[0,1,1,0]`, `[2,0,3,3]`.
+  Palette entries 0–3 are black, red, green, and blue. Entries 4–255 are zero.
+  Native ETRLE bytes are `81 02 01 01 81 00 01 02 81 02 03 03 00`.
+  Index 0 stays the original transparent index.
+- RGB24 3x1 pixels red, green, and blue become configured native RGB565 words `f800 07e0 001f`.
+  RGBA32 2x1 keeps byte sequence `0c 22 38 4e 5a 7b d2 ff`.
+  Tests independently examine descriptor dimensions/count, byte size, and offsets.
+- A single transparent pixel encodes as `81 00`.
+  A 130-pixel row has 128 opaque index 1 values, then two transparent pixels.
+  It encodes as 127 opaque values, one opaque value, and `82 00`.
+  This tests the 127-byte run boundary.
+- JPC archive creation order 10/0/2 differs from numeric frame order 0/2/10.
+  The additional 1x1 frames use indices 2 and 3. Exact concatenated bytes thus prove ordering.
+  The multi-frame canvas keeps the historical 640x480 dimensions.
+- XML 0 overrides offsets to (-7,8).
+  It emits wall 9, tile count 2, location 4660, current frame 1, frame count 2, and flags 0x23.
+  The 16 app bytes are `09 02 34 12 00 00 00 01 02 23 00 00 00 00 00 00`.
+  Unmentioned app records stay zero.
+  An x-only offset override on frame 2 resets y to 0. This preserves original parser behavior.
 
-Seven valid PNGs and four valid JPCs are accompanied by eight malformed PNGs (signature, truncation, small palette, offset range, CRC, dimension overflow, unsupported depth, unsupported grayscale) and15 malformed JPCs (negative/past-end/duplicate XML frame indices, integer overflow/junk, excess animation frame sum, offset range, DTD/entity input, broken XML, invalid/duplicate numeric filenames, multi-frame RGB, no frames, malformed PNG member, invalid archive). A micrometer-unit oFFs fixture preserves the old loader's direct numeric offset behavior. A valid trailing-data PNG appends a fake oFFs chunk and arbitrary bytes after IEND; offsets must remain those of the parsed PNG. No proprietary resource or game installation is read.
+Tests also use a single RGBA member plus XML.
+They examine every combination of requested palette/bitmap/app flags, incremental replacement, and repeated release.
+They use metadata-only, individual-section, and full-section requests for each malformed case.
+They test each request with a fresh load and after a valid load.
+Failure must preserve every prior HIMAGE byte and still-valid pixel storage.
+
+The fixtures include seven valid PNGs and four valid JPCs.
+They also include eight malformed PNGs with these defects:
+
+- Signature, truncation, and small palette.
+- Offset range, CRC, and dimension overflow.
+- Unsupported depth and unsupported grayscale.
+
+The 15 malformed JPCs cover these defects:
+
+- Negative, past-end, and duplicate XML frame indices.
+- Integer overflow and junk.
+- Excess animation frame sum and offset range.
+- DTD/entity input and broken XML.
+- Invalid and duplicate numeric filenames.
+- Multi-frame RGB, no frames, malformed PNG member, and invalid archive.
+
+A micrometer-unit oFFs fixture preserves the old loader's direct numeric offset behavior.
+A valid trailing-data PNG adds a fake oFFs chunk and arbitrary bytes after IEND.
+Offsets must stay those of the parsed PNG.
+The tests read no proprietary resource or game installation.

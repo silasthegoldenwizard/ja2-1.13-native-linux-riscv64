@@ -20,51 +20,54 @@ Exact original bytes, origins and reversible notice changes are recorded in RECO
 
 # Synthetic VFS archive fixtures
 
-Run with Python 3 and the already installed 7z CLI; no Python packages are needed:
+Use Python 3 and the already installed 7z CLI.
+No Python packages are necessary:
 
 ```sh
 python3 tests/native-core/generate_vfs_fixtures.py /absolute/output/directory
 ```
 
-An optional `--seven-zip /path/to/7z` selects the executable. The generator creates
-only named leaves below the caller's output directory. It rejects symlink output
-leaves/parents, never recursively deletes a directory, and unlinks only its three
-known CLI-generated archive leaves before recreating them. Existing unrelated
-files remain untouched. The generator reads no game assets and runs no VFS code.
+The optional `--seven-zip /path/to/7z` selects the executable.
+The generator creates only named leaves below the caller's output directory.
+It rejects symlink output leaves/parents and never recursively deletes a directory.
+Before it recreates archives, it unlinks only its three known CLI-generated archive leaves.
+Existing unrelated files stay unchanged.
+The generator reads no game assets and runs no VFS code.
 
-The output is `base/`, `mod/`, `writable/`, `archives/`, `_7z-input/`, and
-`manifest.json`. The manifest records exact file sizes and SHA-256 digests,
-literal payload expectations, archive acceptance expectations, malformed-input
-reasons, and the CLI commands/listings. It does not infer correct VFS results
-from production-reader output. The generated writable file is reset to its
-initial bytes on every invocation, so regenerate before a fresh integration run.
+The output is `base/`, `mod/`, `writable/`, `archives/`, `_7z-input/`, and `manifest.json`.
+The manifest records exact file sizes and SHA-256 digests, literal payload expectations and archive acceptance expectations.
+It also records malformed-input reasons and the CLI commands/listings.
+It does not use production-reader output to infer correct VFS results.
+Each invocation resets the generated writable file to its initial bytes.
+Before a new integration run, generate the fixtures again.
 
 ## Build versus reuse
 
-The existing installed 7z CLI supplies ordinary Copy and LZMA archives and checks
-their integrity and extracted bytes. Python's standard library is sufficient
-for small fixed SLF disk records. A tiny explicit 7z header is needed only for
-the shared Copy-folder case: installed 7-Zip 25.01 produces three separate Copy
-folders even when passed `-ms=on`. No generic archive framework is introduced.
+The existing installed 7z CLI supplies ordinary Copy and LZMA archives.
+It also checks their integrity and extracted bytes.
+Python's standard library is sufficient for small fixed SLF disk records.
+Only the shared Copy-folder case needs a small explicit 7z header.
+Installed 7-Zip 25.01 produces three separate Copy folders even with `-ms=on`.
+This approach adds no generic archive framework.
 
-Acceptance for these inputs is that the independent 7z CLI accepts every valid
-7z container and extracts the fixed expected bytes, and that the parent VFS
-tests consume the independent SLF bytes and fixed logical oracle. Generating
-fixtures alone does not establish VFS correctness or native game behavior.
+Acceptance requires the independent 7z CLI to accept every valid 7z container and extract the fixed expected bytes.
+It also requires the parent VFS tests to use the independent SLF bytes and fixed logical oracle.
+Fixture generation alone does not establish VFS correctness or native game behavior.
 
 ## SLF source provenance and disk layout
 
-The source contract inspected is `ext/VFS/src/Ext/slf/vfs_slf_library.cpp` at
-engine revision `3394695a387a14c78e92b158cfdcf50e4068c96b`, specifically the
-`slf::LIBHEADER` and `slf::DIRENTRY` declarations, state constants, directory-at-EOF
-seek, and active-entry filtering. This file is part of bfVFS, copyright
-2008–2010 (BF), LGPL 2.1 or later. Fixture code is new test code, not copied
-production serialization. No second independent SLF specification was bundled
-at the inspected paths, and no proprietary SLF was opened for this task.
+The inspected source contract is `ext/VFS/src/Ext/slf/vfs_slf_library.cpp` at engine revision `3394695a387a14c78e92b158cfdcf50e4068c96b`.
+The inspection covers the `slf::LIBHEADER` and `slf::DIRENTRY` declarations, state constants, directory-at-EOF seek and active-entry filtering.
+This file is part of bfVFS, copyright 2008–2010 (BF), LGPL 2.1 or later.
+The fixture code is new test code.
+It does not copy production serialization.
 
-The writer uses literal little-endian offsets for the historical Windows layout,
-including its padding. It does not serialize C++ structures or use native
-`sizeof`, alignment, or host byte order:
+The inspected paths included no second independent SLF specification.
+No proprietary SLF was opened for this task.
+
+The writer uses literal little-endian offsets for the historical Windows layout, including padding.
+It does not serialize C++ structures.
+It does not use native `sizeof`, alignment or host byte order:
 
 | Header byte offset | Field |
 | --- | --- |
@@ -91,10 +94,9 @@ including its padding. It does not serialize C++ structures or use native
 | 276 | reserved unsigned 16-bit field |
 | 278 | two tail-padding bytes; record ends at 280 |
 
-Directory records follow all payload bytes, at
-`archive_size - entry_count * 280`. The UTF-8 SLF filename fixture exercises
-bfVFS's explicit `vfs::String::as_utf16` path conversion; it does not claim that
-every historical external SLF uses UTF-8.
+Directory records follow all payload bytes at `archive_size - entry_count * 280`.
+The UTF-8 SLF filename fixture tests bfVFS's explicit `vfs::String::as_utf16` path conversion.
+It does not claim that every historical external SLF uses UTF-8.
 
 ## Fixed logical oracle
 
@@ -114,24 +116,36 @@ every historical external SLF uses UTF-8.
 | `archives/empty.slf` | valid empty library |
 | `archives/case-collision.slf` | fixed first entry `Collision.TXT`=`collision first\n`, then `collision.txt`=`collision second\n`; integration owner selects rejection or documented first-wins policy |
 
-Case/separator-equivalent queries for the mixed SLF entry include
-`archive/mixed.txt` and `ARCHIVE\MIXED.TXT`. All strings above denote UTF-8 bytes;
-`\n` denotes a single byte 0x0a. The manifest repeats these literal expectations.
+Case/separator-equivalent queries for the mixed SLF entry include `archive/mixed.txt` and `ARCHIVE\MIXED.TXT`.
+All strings above denote UTF-8 bytes.
+`\n` denotes a single byte 0x0a.
+The manifest repeats these literal expectations.
 
-These SLF archives must be rejected: `short-header.slf`, `negative-count.slf`,
-`overflow-count.slf` (INT32_MAX), `impossible-count.slf`,
-`truncated-directory.slf`, `range-before-payload.slf`, `range-past-eof.slf`,
-`range-in-directory.slf`, `range-cross-directory.slf`, `no-nul-entry.slf`,
-`no-nul-library-name.slf`, and `no-nul-library-path.slf`. The malformed range
-cases exercise payload offsets into the header/directory, past EOF, and a
-32-bit endpoint overflow. Their manifest entries state each isolated defect.
+The VFS must reject these SLF archives:
+
+* `short-header.slf`
+* `negative-count.slf`
+* `overflow-count.slf` (INT32_MAX)
+* `impossible-count.slf`
+* `truncated-directory.slf`
+* `range-before-payload.slf`
+* `range-past-eof.slf`
+* `range-in-directory.slf`
+* `range-cross-directory.slf`
+* `no-nul-entry.slf`
+* `no-nul-library-name.slf`
+* `no-nul-library-path.slf`
+
+The malformed range cases test payload offsets into the header/directory, past EOF, and a 32-bit endpoint overflow.
+Their manifest entries state each isolated defect.
 
 ## 7z vectors and independent validation
 
-`archives/copy.7z` and `archives/copy-nonsolid.7z` are CLI-created Copy-method
-archives with uncompressed headers. The former requests solid mode, but the
-observed CLI listing shows three blocks and `Solid = -`. The latter explicitly
-requests separate folders. Both include:
+`archives/copy.7z` and `archives/copy-nonsolid.7z` are CLI-created Copy-method archives with uncompressed headers.
+The first requests solid mode.
+However, the observed CLI listing shows three blocks and `Solid = -`.
+The second explicitly requests separate folders.
+Both include these files:
 
 | Filename | Exact payload |
 | --- | --- |
@@ -140,26 +154,34 @@ requests separate folders. Both include:
 | `Seven/🌍.txt` | `7z astral payload\n` (18 bytes) |
 | `Seven/Empty.txt` | zero bytes, no folder |
 
-`archives/solid-copy.7z` uses the same fixed oracle with three nonempty files
-sharing one Copy folder and the empty file's folder sentinel. Its small explicit
-header follows bundled `ext/VFS/ext/7z/doc/7zFormat.txt`: one Copy coder, one
-packed stream, three substreams with explicit lengths/CRCs, literal UTF-16LE
-names including a surrogate pair, and header CRCs. Installed 7z independently
-reports `Solid = +`, `Blocks = 1`; the fixture is 257 bytes. This catches
-incorrect per-file reads that use the entire folder's offset and unpacked size.
+The `archives/solid-copy.7z` fixture uses the same fixed oracle.
+Three nonempty files share one Copy folder.
+The empty file uses its folder sentinel.
+The small explicit header follows the bundled `ext/VFS/ext/7z/doc/7zFormat.txt`.
+It has one Copy coder, one packed stream and three substreams with explicit lengths/CRCs.
+It also has literal UTF-16LE names, including a surrogate pair, and header CRCs.
 
-`archives/compressed.7z` is a valid CLI-created LZMA archive with the same
-payloads; the intentionally uncompressed bfVFS provider must reject it instead
-of treating compressed stream bytes as file data. Its rejection expectation is
-a provider limitation, not a claim that this archive is malformed.
+Installed 7z independently reports `Solid = +`, `Blocks = 1`.
+The fixture is 257 bytes.
+This fixture detects incorrect per-file reads that use the entire folder's offset and unpacked size.
 
-Each generation runs `7z t` and extracts each of the four exact named files to
-stdout for all four valid 7z containers. Their bytes must equal the fixed
-literal oracle. The manifest retains technical listings. The three malformed
-7z cases are `truncated.7z` (31-byte start header), `bad-signature.7z`
-(corrupted first signature byte), and `truncated-body.7z` (missing final byte).
+`archives/compressed.7z` is a valid CLI-created LZMA archive with the same payloads.
+The intentionally uncompressed bfVFS provider must reject it.
+It must not treat compressed stream bytes as file data.
+This rejection expectation describes a provider limitation.
+It does not claim that the archive is malformed.
 
-These are small deterministic test inputs, not compatibility coverage of all
-SLF/7z variants or validation of proprietary resource archives. Payload/folder
-offsets, Unicode conversion, overlay ordering, writable file operations and
-malformed-input handling still require execution through the actual VFS tests.
+Each generation runs `7z t` for all four valid 7z containers.
+It also extracts each of the four exact named files to stdout for each container.
+Their bytes must equal the fixed literal oracle.
+The manifest keeps technical listings.
+
+The three malformed 7z cases are:
+
+* `truncated.7z`: 31-byte start header.
+* `bad-signature.7z`: corrupted first signature byte.
+* `truncated-body.7z`: missing final byte.
+
+These inputs are small deterministic tests.
+They do not cover compatibility with all SLF/7z variants or validate proprietary resource archives.
+Payload/folder offsets, Unicode conversion, overlay ordering, writable file operations and malformed-input handling still need execution through the actual VFS tests.
