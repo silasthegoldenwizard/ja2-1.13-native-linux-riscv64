@@ -9,7 +9,8 @@ Unchanged engine and vendor source files come from a separate copy.
 The [reconstruction manifest](../RECONSTRUCTION-MANIFEST.json) records the source of each file.
 It records original bytes, reconstructed bytes, and reversible notice insertions.
 Some files keep notices from earlier preparation.
-The file notices record the November 14 snapshot and package date.
+New file notices record the November 15 snapshot and package date.
+Unchanged previously edited guides retain their exact accepted notice and editorial records.
 They do not invent first-edit dates or independent authorship.
 
 The package stores inherited non-UTF8 patch context as base64 in `patches/native-byte-context.json`.
@@ -28,7 +29,21 @@ It refuses an output destination that already exists.
 It does not install dependencies, compile source, run the game, or get game assets.
 
 Reconstruction checks cover the selected source files.
-The held RakNet component still prevents a complete accepted-engine build from this package alone.
+The engine overlay needs the separate RakNet source companion for its complete source-input route.
+
+The companion supplies these reviewed inputs:
+
+- Engine `Multiplayer/raknet/BitStream.h` and `Multiplayer/raknet/RakMemoryOverride.h` adaptations.
+- RakNet 3.401 source at `catacs/gameprojectx@a4c67c6c89b4e83b6d8455ac5e84719e288546f7`, component `Libs/RakNet/Source`.
+- Its 79-source static-library recipe and eight native SDK adaptations.
+- Component notices for Jenkins material, inherited AEScrypt material, Rand, and SHA1.
+
+The eight SDK paths are `BitStream.h`, `DS_BinarySearchTree.h`, `FCMHost.cpp`, `PacketLogger.cpp`,
+`RakMemoryOverride.h`, `RakPeer.cpp`, `Rand.cpp`, and `ThreadPool.h`.
+The recipe includes AES, RSA, Rand, SHA1, and DataBlockEncryptor sources.
+Source-package review must account for those actual inputs.
+The corrected source companion has passed its targeted package review.
+The [build record](BUILD-RESULTS.json) identifies the later clean-build result and remaining limits.
 
 ## Development build context
 
@@ -39,7 +54,7 @@ The accepted development checkpoint uses these tools:
 - CMake 3.20+
 - Make
 
-Reuse existing Python 3, 7z/7zz, zlib, Expat, pthread, and X11 development dependencies.
+The build also needs Python 3, 7z/7zz, zlib, Expat, pthread, and X11 development dependencies.
 This overlay does not include an installer or dependency binary.
 `SOURCE_PIN.json` gives the exact external source versions.
 
@@ -58,13 +73,16 @@ This overlay does not include an installer or dependency binary.
   bfVFS still supplies the live backend.
   This snapshot does not include the isolated replacement experiments.
 
-Specify reviewed local prefixes.
+## Build the paired source
 
-**The following build is blocked for this package.**
-It needs the held RakNet headers and library.
-The commands describe the accepted engine configuration.
-They are not a tested clean-room build procedure.
-They give no permission to get or install dependencies.
+Download and extract both source archives from the release.
+Reconstruct the engine into a new directory with the helper described above.
+Copy the companion's `game-headers/` contents into the reconstructed engine's `Multiplayer/raknet/` directory.
+Follow the companion README to verify its source and build `libraknet3401.a`.
+Keep its required `sdk/packaging-notices.json` with `sdk/prepare.py`.
+Use the new SDK build directory as `P710_RAKNET_ROOT`.
+Run the following commands from the reconstructed engine directory.
+Specify the matching local dependency prefixes.
 
 ```sh
 cmake -S platform/linux -B /path/to/new-build -G 'Unix Makefiles' \
@@ -75,17 +93,28 @@ cmake -S platform/linux -B /path/to/new-build -G 'Unix Makefiles' \
   -DP710_RAKNET_ROOT=/path/to/reviewed-native-raknet-build
 cmake --build /path/to/new-build --target p710_native_game --parallel 2
 cmake --build /path/to/new-build --parallel 2
+cmake --build /path/to/new-build --target p710_native_profile101_tests --parallel 2
 ctest --test-dir /path/to/new-build --output-on-failure
 ```
 
 For the sanitizer lane, configure a separate new build with `-DP710_SANITIZERS=ON`.
 Use the matching instrumented external RakNet archive.
+The profile-test target is excluded from the default all-target build and needs the explicit command above.
 
 The recorded runs use ASan/UBSan with leak detection and no suppressions.
 The SDL, FFmpeg, and FreeType SDKs do not have sanitizer instrumentation.
 
-Display tests need an authorized X11 environment.
-The preparation step did not run these commands.
+Display tests need an X11 environment.
+Use a separate test display to avoid interference with a desktop game.
+The snapshot-preparation records describe the earlier packaging stage.
+Use [BUILD-RESULTS.json](BUILD-RESULTS.json) for exact evidence scopes.
+The successful prior package build predates the attachment guard.
+The refreshed source has one guarded pointer condition and no new package build claim.
+Owner-reported live results and pending acceptance remain separate.
+The initial native attempt found a missing unchanged `i18n/text.def` reconstruction input.
+The corrected package declares that exact pinned base file.
+Native completion reused valid objects from its initial empty isolated build; the sanitizer lane started fresh.
+The record preserves that distinction and the initial failure.
 Original game data comes from a separate source.
 Keep that data private.
 This package does not include game assets, profiles, or saves.

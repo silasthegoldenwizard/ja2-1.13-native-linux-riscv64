@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: tests/native-core/native_scroll_refresh_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -108,6 +108,74 @@ void end(bool commit) noexcept
     overlayActive=false;
 }
 void committedFrame() noexcept { ++presents;state.scrolling=false; }
+unsigned scrollFrame=0;
+bool renderBottomStrip(const SGPRect& rect)
+{
+    if (!overlayActive || rect.iLeft!=0 || rect.iTop!=4 || rect.iRight!=6 || rect.iBottom!=5)
+        return false;
+    UINT32 pitch=0;auto* bytes=LockVideoSurface(FRAME_BUFFER,&pitch);
+    if (!bytes) return false;
+    for (unsigned x=0;x<6;++x) write(bytes,4*pitch+x*2,UINT16(0xc100+scrollFrame*16+x));
+    UnLockVideoSurface(FRAME_BUFFER);return true;
+}
+bool finishVerticalScroll(INT32 dx,INT32 dy)
+{ return overlayActive && dx==0 && dy==-1; }
+void consecutiveScrollFrames(UINT32 pitch)
+{
+    // The tactical loop calls EndFrameBufferRender every frame. Its frame
+    // interior stays stale while only the exposed strip is rendered afresh.
+    // A full frame transfer here overwrites the accumulated BACKBUFFER view.
+    seed(PRIMARY_SURFACE,200,0xd1);seed(BACKBUFFER,0,0xb2);seed(FRAME_BUFFER,100,0xf3);
+    sgp::SetNativeVideoScrollHooks({&renderBottomStrip,&begin,&finishVerticalScroll,&end,&committedFrame});
+    const std::array<std::array<UINT16,36>,3> expected{{
+        {{100,1,2,3,4,5, 20,21,22,23,24,25, 30,31,32,33,34,35, 40,41,42,43,44,45,
+          0xc110,0xc111,0xc112,0xc113,0xc114,0xc115, 50,51,52,53,154,155}},
+        {{100,1,2,3,4,5, 30,31,32,33,34,35, 40,41,42,43,44,45,
+          0xc110,0xc111,0xc112,0xc113,0xc114,0xc115,
+          0xc120,0xc121,0xc122,0xc123,0xc124,0xc125, 50,51,52,53,154,155}},
+        {{100,1,2,3,4,5, 40,41,42,43,44,45,
+          0xc110,0xc111,0xc112,0xc113,0xc114,0xc115,
+          0xc120,0xc121,0xc122,0xc123,0xc124,0xc125,
+          0xc130,0xc131,0xc132,0xc133,0xc134,0xc135, 50,51,52,53,154,155}}
+    }};
+    for (scrollFrame=1;scrollFrame<=3;++scrollFrame) {
+        state={5,true,{{0,1,6,5},0x02,1,1},zBuffer};
+        UINT32 actualPitch=0;auto* frame=LockVideoSurface(FRAME_BUFFER,&actualPitch);
+        check(frame && actualPitch==pitch,"stale tactical frame available");
+        // A changing label-like mark must never leak from the stale world
+        // frame into the scrolling backbuffer through a full transfer.
+        write(frame,2*pitch+4,UINT16(0xe000+scrollFrame));UnLockVideoSurface(FRAME_BUFFER);
+        StartFrameBufferRender();
+        InvalidateRegion(0,0,1,1); // ordinary dirty regions still transfer
+        InvalidateRegionEx(0,1,6,5,0); // world dirty work is skipped during scroll
+        InvalidateRegionEx(4,4,6,6,0); // split interface portion still transfers
+        EndFrameBufferRender();
+        check(!CanBlitToFrameBuffer(),"end-render preserves BUFFER_DIRTY availability contract");
+        if (scrollFrame==1) {
+            SuspendVideoManager();
+            check(!sgp::RefreshNativeVideo() && !CanBlitToFrameBuffer(),"refused refresh retains pending render");
+            check(RestoreVideoManager(),"resume pending tactical frame");
+            check(!CanBlitToFrameBuffer(),"resumed frame remains dirty until successful presentation");
+        }
+        check(sgp::RefreshNativeVideo(),"consecutive tactical-style scroll frame presents");
+        check(CanBlitToFrameBuffer(),"successful tactical frame clears BUFFER_DIRTY");
+        for (const auto id:{PRIMARY_SURFACE,BACKBUFFER}) {
+            const auto result=surfaceBytes(id);
+            for (unsigned y=0;y<6;++y) {
+                for (unsigned x=0;x<6;++x)
+                    check(read(result.data(),y*pitch+x*2)==expected[scrollFrame-1][y*6+x],
+                        "three-frame literal world/strip/interface result excludes stale labels");
+                for (unsigned x=12;x<pitch;++x)
+                    check(result[y*pitch+x]==(id==PRIMARY_SURFACE?0xd1:0xb2),"consecutive scroll preserves padding");
+            }
+        }
+    }
+    seed(FRAME_BUFFER,500,0xf3);InvalidateScreen();EndFrameBufferRender();
+    check(sgp::RefreshNativeVideo(),"explicit full invalidation still transfers after EndFrameBufferRender");
+    const auto back=surfaceBytes(BACKBUFFER);
+    for (unsigned y=0;y<6;++y) for (unsigned x=0;x<6;++x)
+        check(read(back.data(),y*pitch+x*2)==500+y*10+x,"explicit full copy retains every visible pixel");
+}
 void run()
 {
     check(sgp::ConfigureNativeVideo(6,6,16,8,"scroll failure fixture"),"configure real video");
@@ -172,6 +240,7 @@ void run()
     }
     check(read(zView.data,0)==0x1234 && zView.data[zView.bytes-1]==0x7b,"successful callback Z changes retained");
     check(sgp::RefreshNativeVideo() && presents==2,"non-scrolling successful frame also signals commit");
+    consecutiveScrollFrames(pitch);
     sgp::SetNativeVideoRegionSource(nullptr);sgp::SetNativeVideoScrollHooks({});
     check(ShutdownZBuffer(zBuffer),"Z cleanup");zBuffer=nullptr;
     check(sgp::ShutdownNativeVideo() && ShutdownVideoSurfaceManager(),"real manager teardown");

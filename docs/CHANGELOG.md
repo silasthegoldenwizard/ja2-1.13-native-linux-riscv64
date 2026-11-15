@@ -1,35 +1,36 @@
-# Prepared update — November 14, 2026
+# Changes for the native Linux source preview
 
-This list describes the prepared source checkpoint.
-A separate record describes delivery to the private repository.
+## v0.1.0-alpha.1 source packaging
 
-- The original native engine source advances from the November 12 component harness.
-  It includes original-engine linking, the menu, the campaign, and accepted A9 victory.
-- The snapshot adds native input, cursor, and UI code.
-  It adds bounded text and font services, scalable FreeType glyphs, and SDL presentation and audio boundaries.
-  It adds FFmpeg movie and audio decoding and the remaining original rendering families.
-  It keeps v1.13 mechanics.
-- The snapshot keeps the Windows profile-101 resource-reader boundary.
-  It includes bounded startup, VFS writable-profile, and original-engine integration changes.
-- The A9 runtime repairs remain.
-  They address invalid animation indexing, corpse palette copy size, and public-knowledge sentinel behavior.
-  They also address the two observed projectile/structure lifetime defects.
-- The snapshot includes current synthetic tests and source, dependency, and status documentation.
-  The recorded original-source suites pass 72/72 and 74/74.
-  The export with notice changes has source-reconstruction checks only.
-- Unchanged engine and vendor files stay external.
-  Component-specific notices remain.
-  Actual RakNet-derived header and library changes stay on local storage.
-  Their absence prevents full-engine reconstruction.
-- Source review found an untested lit-door stale read in `InternalSwapStructureForPartner` after structure deletion.
-  The recorded review did not reproduce a new runtime crash.
-  This export includes no repair for that issue.
+The source preview pairs the engine overlay with the reviewed RakNet 3.401 source companion.
+The companion includes the previously separate headers, SDK adaptations, and complete selected source notices.
+Rand's supported change-date notice is a reversible packaging addition.
+Publication-facing guides and a separate packaged-source build record describe this paired route.
+The earlier reader changes did not change engine or SDK implementation bytes.
+The attachment refresh adds one null check in `Tactical/Interface Items.cpp` after `DoAttachment`.
+The complete derived pre-notice file matches Owner's supplied hash.
+No other reconstructed implementation file changes.
+The independently accepted completion-only regression passes 24 normal and 24 strict sanitizer checks.
+Actual attachment compatibility and full UI behavior are not established by its outcome doubles.
+The final source/archive review and Owner's export acknowledgment are separate from the regression result.
 
-  The review of the listed source findings is complete.
-  Repairs and runtime reachability tests are still open.
-  A separate synchronous destruction alias is another conditional path supported by source review.
-  The recorded review did not reproduce a crash in that path.
+## November 15 development checkpoint
 
-The preparation step made no commit or remote object.
-It did not push or publish files.
-It made no binary or CI configuration.
+This November 15 checkpoint adds the completed native desktop and save/load work.
+It also adds the dialogue, door, sound-cache, and inventory sorting repairs.
+
+| Area | Change | Focused evidence |
+|---|---|---|
+| Display | Borderless upper-monitor output and shared UI/input scaling | Resolution and desktop probes retained |
+| Saves | Bounded native count/layout and UTF16LE message handling | No-mercenary and populated cold-load results retained |
+| Scrolling | Dirty-work and selected blitter-effects correction | User confirmed the repaired top edge |
+| Combat | Finite recoil direction and live-node identity checks | 54 recoil and 26 node assertions per mode |
+| Dialogue | Matching C++ deletion and single registry cleanup path | 56 assertions per mode |
+| Doors | Use the grid captured before structure deletion | 545 checks, 24 scenarios per mode |
+| Battle sounds | Cover voice sets 0–11 and reject invalid saved IDs | 147 assertions per mode |
+| Sector inventory | Replace raw byte sorting with C++ object-aware sorting | 2,204 assertions per mode |
+
+The full suites increase from 72/74 in the earlier published source checkpoint to 85/87 in this local source checkpoint.
+The additional sanitizer tests are the retained intentional diagnostic canaries.
+No isolated API VFS replacement candidate is added.
+No game assets, binary release, dependency update, or RISC-V result is included.

@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: tests/native-core/native_runtime_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -81,7 +81,10 @@ void profile(const fs::path& root) {
     check(parsed.profile==options.profile && parsed.checkProfile && parsed.noSound && parsed.overrides.size()==1,"parse roots, dry mode and original option overrides");
     const char* help[]={"game","--help"}; check(p710::ParseNativeOptions(2,help).help,"help does not require game roots");
     const char* missing[]={"game","--profile"}; check(rejects([&]{p710::ParseNativeOptions(2,missing);}),"reject incomplete root argument");
-    const char* full[]={"game","/FULLSCREEN"}; check(rejects([&]{p710::ParseNativeOptions(2,full);}),"unsupported fullscreen fails explicitly");
+    const char* full[]={"game","/FULLSCREEN"};
+    check(p710::ParseNativeOptions(2,full).overrides==std::vector<std::pair<std::string,std::string>>{{"SCREEN_MODE_WINDOWED","0"}},"fullscreen selects native desktop presentation");
+    const char* display[]={"game","/FULLSCREEN","--NATIVE_DISPLAY=upper","--NATIVE_UI_SCALE=2"};
+    check(p710::ParseNativeOptions(4,display).overrides.size()==3,"display and UI scale use existing override path");
     const auto config=options.profile/"vfs_config.ini";
     put(config,"[vfs_config]\nPROFILES = assets,user\n[PROFILE_assets]\nNAME = assets\nPROFILE_ROOT = "+a+"\nLOCATIONS = assets\n[LOC_assets]\nTYPE = DIRECTORY\nPATH = \n[PROFILE_user]\nNAME = isolated_user\nWRITE = true\nPROFILE_ROOT = /must/never/be/used\n");
     put(root/"assets/Temp-policy.txt","read only remains");
@@ -105,6 +108,28 @@ void profile(const fs::path& root) {
     check(fs::current_path()==cwd,"VFS setup/checks never change process cwd");
 }
 void framePolicy() {
+    int width=17,height=19;
+    const int layouts[][4]={
+        {1024,768,1280,960},{1280,720,1280,720},{1280,1024,1280,1024},
+        {1366,768,1282,720},{1600,900,1280,720},{1920,1080,1280,720},
+        {2560,1080,1708,720},{2560,1440,1280,720},
+        {3440,1440,1720,720},{3840,2160,1920,1080}
+    };
+    for (const auto& c:layouts) {
+        check(p710::NativeScaledGameDimensions(c[0],c[1],2,width,height) &&
+              width==c[2] && height==c[3],"resolution matrix has literal full-feature logical dimensions");
+        if (c[0]>=1280)
+            check(p710::NativeScaledGameDimensions(c[0],c[1],1,width,height) &&
+                  width==c[0] && height==c[1],
+                  "unscaled matrix preserves native dimensions above the minimum");
+    }
+    check(p710::NativeScaledGameDimensions(2560,1080,2,width,height) && width==1708 && height==720,"upper ultrawide layout enlarges UI without disabling NIV/squad choices");
+    check(p710::NativeScaledGameDimensions(3440,1440,2,width,height) && width==1720 && height==720,"native ultrawide resolution retains2x UI");
+    check(p710::NativeScaledGameDimensions(1920,1080,2,width,height) && width==1280 && height==720,"1080p layout retains full feature tier at1.5x");
+    check(p710::NativeScaledGameDimensions(1280,720,2,width,height) && width==1280 && height==720,"small display keeps logical minimum rather than disabling features");
+    check(p710::NativeScaledGameDimensions(2560,1440,2,width,height) && width==1280 && height==720,"1440p supports exact2x UI");
+    check(!p710::NativeScaledGameDimensions(2560,1080,0,width,height) && !p710::NativeScaledGameDimensions(2560,1080,5,width,height),"reject UI scale outside bounded range");
+    check(!p710::NativeScaledGameDimensions(0,1080,2,width,height) && !p710::NativeScaledGameDimensions(2147483647,1080,1,width,height),"reject invalid or unrepresentable display dimensions");
     check(p710::ContinueNativeWindowedFrame(true,false,false,true),"focused original windowed frames continue");
     check(p710::ContinueNativeWindowedFrame(true,false,false,false),"focus loss retains original windowed frame continuation with advancing clocks");
     for(bool focused:{false,true}) {

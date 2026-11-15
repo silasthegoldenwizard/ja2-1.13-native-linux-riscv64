@@ -1,0 +1,32 @@
+{
+  "checkpoint": "native-inventory-transfers-20261115",
+  "source_pin_sha256": "cce1e28b52f89f7ea3f9e91170dce84780b79362463cf84a8f78884b218fa876",
+  "suites": {
+    "debug": {
+      "tests": 85,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "a1fcc0babb919725f4c6a5aa410c375ee830d066e8bcf6e7dfcfc2b863dd858c",
+      "sector_sort": "2204 original sector-inventory sort assertions passed\n"
+    },
+    "sanitized": {
+      "tests": 87,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "692b63f78ee24d625b6142758412fd519e454687a40bf07f7b1806167dc037ea",
+      "sector_sort": "2204 original sector-inventory sort assertions passed\n"
+    }
+  },
+  "source_manifest_sha256": "71456361c41ae44ac49105d6f576a6576b39ff02dc70bb437dcd56e3d7cb059a",
+  "original_pre_notice_tests_only": true,
+  "new_package_build": false,
+  "gameplay_limits": [
+    "All-feature A9 victory pending",
+    "Sector-to-mercenary transfer trial pending",
+    "Sound-enabled and physical-device coverage incomplete",
+    "RISC-V untested"
+  ],
+  "vfs": "Original bfVFS remains active. All isolated API replacement candidates are excluded."
+}

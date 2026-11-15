@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: sgp/NativeVideo.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cmath>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -37,9 +38,10 @@ INT32 giNumFrames=0; // original shared Air Raid/recording counter; game code ow
 namespace
 {
 sgp::SDLPresentation window;
-bool active=false, suspended=false, full=false;
+bool active=false, suspended=false, full=false, renderPending=false;
 UINT32 width=640, height=480, scale=1;
 std::string title="JA2 v1.13 native video";
+sgp::NativePresentationOptions presentationOptions{};
 std::array<SGPRect,128> dirty{};
 std::size_t count=0;
 std::array<SGPRect,128> extendedDirty{};
@@ -53,7 +55,7 @@ bool previousVisible=true;
 HVOBJECT cursorStore=nullptr;
 INT16 cursorX=0,cursorY=0;
 UINT16 cursorW=0,cursorH=0;
-int cursorWindowW=0,cursorWindowH=0;
+sgp::NativePresentationGeometry cursorGeometry{};
 void closeCursor()
 {
     // Restore the borrowed cursor before destroying our currently selected one.
@@ -63,7 +65,7 @@ void closeCursor()
     if (previousVisible) SDL_ShowCursor(); else SDL_HideCursor();
     if (cursorStore) DeleteVideoObject(cursorStore);
     cursorStore=nullptr; cursorW=cursorH=0; cursorX=cursorY=0;
-    cursorWindowW=cursorWindowH=0; guiMouseBufferState=BUFFER_DISABLED;
+    cursorGeometry={}; guiMouseBufferState=BUFFER_DISABLED;
 }
 bool dimensions(UINT32 w, UINT32 h, UINT32 depth, UINT32 s)
 {
@@ -96,18 +98,20 @@ void addExtended(INT32 l,INT32 t,INT32 r,INT32 b)
 }
 void sgp::SetNativeVideoRegionSource(NativeVideoRegionSource source) { regionSource=source; }
 void sgp::SetNativeVideoScrollHooks(NativeVideoScrollHooks hooks) { scrollHooks=hooks; }
-bool sgp::ConfigureNativeVideo(UINT32 w, UINT32 h, UINT32 depth, UINT32 s, const char* name)
+bool sgp::ConfigureNativeVideo(UINT32 w, UINT32 h, UINT32 depth, UINT32 s, const char* name,
+                               NativePresentationOptions options)
 {
-    if (active || !dimensions(w,h,depth,s)) return false;
+    if (active || !dimensions(w,h,depth,s) ||
+        (options.display!=NativeDisplayTarget::Primary && options.display!=NativeDisplayTarget::Upper)) return false;
     try { std::string owned(name ? name : "JA2 v1.13 native video"); title.swap(owned); } catch (...) { return false; }
-    width=w; height=h; scale=s; return true;
+    width=w; height=h; scale=s; presentationOptions=options; return true;
 }
 BOOLEAN InitializeVideoManager(void* instance, UINT16 show, void* windowproc)
 {
     if (instance || show || windowproc) return FALSE;
     if (active) return TRUE;
     if (!dimensions(width,height,16,scale)) return FALSE;
-    if (!window.Open(title.c_str(),static_cast<int>(width),static_cast<int>(height),static_cast<int>(scale))) return FALSE;
+    if (!window.Open(title.c_str(),static_cast<int>(width),static_cast<int>(height),static_cast<int>(scale),presentationOptions)) return FALSE;
     InitializeVideoSurfaceManager();
     UINT32 ids[4]{};
     VSURFACE_DESC d{}; d.fCreateFlags=VSURFACE_CREATE_DEFAULT; d.usWidth=width; d.usHeight=height; d.ubBitDepth=16;
@@ -123,7 +127,7 @@ BOOLEAN InitializeVideoManager(void* instance, UINT16 show, void* windowproc)
     SGPRect clip{0,0,static_cast<INT32>(width),static_cast<INT32>(height)};
     SetClippingRect(&clip);
     previousCursor=SDL_GetCursor(); previousVisible=SDL_CursorVisible();
-    active=true; suspended=false; full=true; count=0; extendedCount=0; gfNextRefreshFullScreen=FALSE;
+    active=true; suspended=false; full=true; renderPending=false; count=0; extendedCount=0; gfNextRefreshFullScreen=FALSE;
     guiMouseBufferState=BUFFER_DISABLED;
     if (generation!=std::numeric_limits<std::uint64_t>::max()) ++generation;
     return TRUE;
@@ -133,7 +137,7 @@ bool sgp::ShutdownNativeVideo()
     if (!active) return true;
     if (!sgp::ReleaseReservedVideoSurfaces()) return false;
     closeCursor();
-    window.Close(); active=false; suspended=false; full=false; count=0; extendedCount=0; gfNextRefreshFullScreen=FALSE;
+    window.Close(); active=false; suspended=false; full=false; renderPending=false; count=0; extendedCount=0; gfNextRefreshFullScreen=FALSE;
     if (generation!=std::numeric_limits<std::uint64_t>::max()) ++generation;
     return true;
 }
@@ -154,14 +158,20 @@ PTR LockFrameBuffer(UINT32* p) { return LockVideoSurface(FRAME_BUFFER,p); }
 void UnlockFrameBuffer() { UnLockVideoSurface(FRAME_BUFFER); }
 BOOLEAN CanBlitToFrameBuffer()
 {
-    if (!active || suspended || full || count!=0 || extendedCount!=0) return FALSE;
+    if (!active || suspended || full || renderPending || count!=0 || extendedCount!=0) return FALSE;
     UINT32 pitch=0; if (!LockVideoSurface(FRAME_BUFFER,&pitch)) return FALSE;
     UnLockVideoSurface(FRAME_BUFFER); return TRUE;
 }
 void InvalidateScreen() { if (active) { full=true; count=0; extendedCount=0; } }
 void InvalidateFrameBuffer() { InvalidateScreen(); }
 void StartFrameBufferRender() {}
-void EndFrameBufferRender() { InvalidateScreen(); }
+void EndFrameBufferRender()
+{
+    // Original EndFrameBufferRender marks BUFFER_DIRTY; it does not request a
+    // full copy. During scrolling FRAME_BUFFER holds only freshly drawn strips
+    // and dirty work, while BACKBUFFER retains the accumulated world view.
+    if (active) renderPending=true;
+}
 void InvalidateRegion(INT32 l, INT32 t, INT32 r, INT32 b)
 {
     if (!active || full) return;
@@ -296,7 +306,7 @@ bool sgp::RefreshNativeVideo()
     locks.release();
     if (overlayTransaction) { hooks.endOverlays(true);overlayTransaction=false; }
     if (ok) {
-        full=false;count=0;extendedCount=0;gfNextRefreshFullScreen=FALSE;
+        full=false;renderPending=false;count=0;extendedCount=0;gfNextRefreshFullScreen=FALSE;
         if (hooks.committedFrame) hooks.committedFrame();
         (void)sgp::RefreshNativeCursor();
     }
@@ -307,6 +317,7 @@ bool sgp::SaveNativeVideoWindow(const char* path) { return active && window.Save
 const char* sgp::NativeVideoDriver() { return active ? window.VideoDriver() : "uninitialized"; }
 bool sgp::NativeVideoQuitRequested() { return !active || window.QuitRequested(); }
 bool sgp::NativeVideoInputInfo(SDL_WindowID& id, int& w, int& h, int& ww, int& wh) { return active && window.InputInfo(id,w,h,ww,wh); }
+bool sgp::NativeVideoPresentationGeometry(NativePresentationGeometry& geometry) { return active && window.Geometry(geometry); }
 bool sgp::AttachNativeVideoInput(PresentationEventSink fn, void* context) { return active && window.AttachInput(fn,context); }
 void sgp::DetachNativeVideoInput(PresentationEventSink fn, void* context) { window.DetachInput(fn,context); }
 void sgp::PumpNativeVideoEvents() { if (active) window.PumpEvents(); }
@@ -397,10 +408,10 @@ BOOLEAN HideMouseCursor()
 bool sgp::RefreshNativeCursor()
 {
     if (!active || suspended || !SDL_IsMainThread()) return false;
-    SDL_WindowID id=0; int w=0,h=0,ww=0,wh=0;
-    if (!window.InputInfo(id,w,h,ww,wh) || ww<=0 || wh<=0) return false;
+    NativePresentationGeometry geometry{};
+    if (!window.Geometry(geometry)) return false;
     if (guiMouseBufferState==BUFFER_DISABLED) return SDL_HideCursor();
-    if (guiMouseBufferState==BUFFER_READY && ww==cursorWindowW && wh==cursorWindowH) return true;
+    if (guiMouseBufferState==BUFFER_READY && geometry==cursorGeometry) return true;
     if (guiMouseBufferState!=BUFFER_DIRTY && guiMouseBufferState!=BUFFER_READY) return false;
     UINT32 pitch=0; const auto* source=static_cast<const BYTE*>(LockMouseBuffer(&pitch));
     if (!source) return false;
@@ -408,17 +419,18 @@ bool sgp::RefreshNativeCursor()
     // signed original offsets, including hotspots beyond the sprite rectangle.
     const int left=std::min(0,int(cursorX)), top=std::min(0,int(cursorY));
     const int right=std::max(int(cursorW),int(cursorX)+1), bottom=std::max(int(cursorH),int(cursorY)+1);
-    const auto scaled=[](std::int64_t n,int extent,int logical) { return (n*extent+logical-1)/logical; };
-    const auto dw=scaled(right-left,ww,w), dh=scaled(bottom-top,wh,h);
-    if (!cursorW || !cursorH) { UnlockMouseBuffer(); if (!SDL_HideCursor()) return false; guiMouseBufferState=BUFFER_READY; cursorWindowW=ww; cursorWindowH=wh; return true; }
+    const double sxScale=double(geometry.contentWidth)*geometry.windowWidth/(double(geometry.pixelWidth)*geometry.logicalWidth);
+    const double syScale=double(geometry.contentHeight)*geometry.windowHeight/(double(geometry.pixelHeight)*geometry.logicalHeight);
+    const auto dw=std::ceil((right-left)*sxScale), dh=std::ceil((bottom-top)*syScale);
+    if (!cursorW || !cursorH) { UnlockMouseBuffer(); if (!SDL_HideCursor()) return false; guiMouseBufferState=BUFFER_READY; cursorGeometry=geometry; return true; }
     // Bound pathological offset/resize allocations; keep the previous cursor
     // and pending bitmap intact if the native driver cannot represent it.
     if (dw<=0 || dh<=0 || dw>4096 || dh>4096) { UnlockMouseBuffer(); return false; }
     SDL_Surface* rgba=SDL_CreateSurface(static_cast<int>(dw),static_cast<int>(dh),SDL_PIXELFORMAT_ARGB8888);
     if (!rgba) { UnlockMouseBuffer(); return false; }
     for (int py=0; py<dh; ++py) for (int px=0; px<dw; ++px) {
-        const int sx=static_cast<int>(std::int64_t(px)*w/ww)+left;
-        const int sy=static_cast<int>(std::int64_t(py)*h/wh)+top;
+        const int sx=static_cast<int>(std::floor(px/sxScale))+left;
+        const int sy=static_cast<int>(std::floor(py/syScale))+top;
         UINT16 color=0;
         if (sx>=0 && sy>=0 && sx<cursorW && sy<cursorH) std::memcpy(&color,source+std::size_t(sy)*pitch+std::size_t(sx)*2,2);
         const unsigned r=(color>>11)&31u,g=(color>>5)&63u,b=color&31u;
@@ -426,7 +438,7 @@ bool sgp::RefreshNativeCursor()
         std::memcpy(static_cast<BYTE*>(rgba->pixels)+std::size_t(py)*static_cast<std::size_t>(rgba->pitch)+std::size_t(px)*4,&pixel,4);
     }
     UnlockMouseBuffer();
-    const int hx=static_cast<int>(std::int64_t(cursorX-left)*ww/w), hy=static_cast<int>(std::int64_t(cursorY-top)*wh/h);
+    const int hx=static_cast<int>(std::floor((cursorX-left)*sxScale)), hy=static_cast<int>(std::floor((cursorY-top)*syScale));
     SDL_Cursor* replacement=SDL_CreateColorCursor(rgba,hx,hy); SDL_DestroySurface(rgba);
     if (!replacement) return false;
     if (!SDL_SetCursor(replacement)) { SDL_DestroyCursor(replacement); return false; }
@@ -435,6 +447,6 @@ bool sgp::RefreshNativeCursor()
         SDL_DestroyCursor(replacement); return false;
     }
     if (cursor) SDL_DestroyCursor(cursor);
-    cursor=replacement; guiMouseBufferState=BUFFER_READY; cursorWindowW=ww; cursorWindowH=wh;
+    cursor=replacement; guiMouseBufferState=BUFFER_READY; cursorGeometry=geometry;
     return true;
 }

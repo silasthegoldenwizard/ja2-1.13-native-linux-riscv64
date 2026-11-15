@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: tests/native-core/native_cursor_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -151,6 +151,27 @@ int main()
         FreeMouseCursor(FALSE); check(SDL_SetWindowSize(owned(),128,80),"restore integer scaling");
         check(SDL_SyncWindow(owned()),"integer resize has completed");
         sgp::PumpNativeVideoEvents(); focus();
+        }
+        if (!isDummy) {
+            // Reapply an already active restriction through a changed fit;
+            // 32x20 in 128x112 is a 128x80 image at y=16.
+            SGPRect fittedClip{3,4,10,12}; RestrictMouseCursor(&fittedClip);
+            check(SDL_SetWindowSize(owned(),128,112) && SDL_SyncWindow(owned()),"letterbox restricted window resize");
+            motion(1000,1000);
+            const SDL_Rect* barrier=SDL_GetWindowMouseRect(owned());
+            check(barrier && barrier->x==12 && barrier->y==32 && barrier->w==28 && barrier->h==32,
+                  "resize automatically reapplies restriction inside fitted content");
+            check(gusMouseXPos==9 && gusMouseYPos==11,"fitted restriction retains last logical pixel");
+            SGPRect observed{}; GetRestrictedClipCursor(&observed);
+            check(observed.iLeft==3 && observed.iTop==4 && observed.iRight==10 && observed.iBottom==12,
+                  "fitted restriction readback is original logical rectangle");
+            FreeMouseCursor(FALSE);
+            SDL_WarpMouseInWindow(owned(),20,20); SDL_PumpEvents(); DequeueAllKeyBoardEvents();
+            SimulateMouseMovement(7,8); SDL_PumpEvents();
+            float wx=0,wy=0; SDL_GetMouseState(&wx,&wy);
+            check(wx>=28 && wx<32 && wy>=48 && wy<52,"fitted warp includes letterbox origin");
+            check(SDL_SetWindowSize(owned(),128,80) && SDL_SyncWindow(owned()),"restore exact-aspect cursor window");
+            sgp::PumpNativeVideoEvents(); focus();
         }
         FreeMouseCursor(FALSE); check(!IsCursorRestricted() && !SDL_GetWindowMouseRect(owned()),"actual SDL barrier released");
         motion(-4,-8); check(gusMouseXPos==-1 && gusMouseYPos==-2,"outside preserved after free");

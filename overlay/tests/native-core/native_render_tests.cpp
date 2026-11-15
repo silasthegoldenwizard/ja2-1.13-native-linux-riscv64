@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: tests/native-core/native_render_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -127,7 +127,10 @@ void surfacesTest()
         check(BltVideoSurface(id,tile,0,xy.first,xy.second,0,nullptr),"edge copy"); expect(id,g);
     }
     clear(id,5,4,9); blt_vs_fx fx{}; fx.SrcRect={1,0,3,2};
-    check(BltVideoSurface(id,tile,0,1,1,VS_BLT_SRCSUBRECT,&fx),"subrect");
+    // Original HandleTopMessages initializes only SrcRect. Other effects
+    // fields have meaning only when their corresponding flags select them.
+    fx.DestRegion=0x6a5a;
+    check(BltVideoSurface(id,tile,0,1,1,VS_BLT_SRCSUBRECT,&fx),"subrect ignores unselected destination-region effect");
     expect(id,{{9,9,9,9,9},{9,0,3,9,9},{9,0,3,9,9},{9,9,9,9,9}});
     fx.SrcRect={-1,-1,2,2}; clear(id,5,4,9);
     check(BltVideoSurface(id,tile,0,0,0,VS_BLT_SRCSUBRECT,&fx),"negative subrect");
@@ -141,7 +144,7 @@ void surfacesTest()
     fx.SrcRect={2,0,1,1}; check(!BltVideoSurface(id,tile,0,0,0,VS_BLT_SRCSUBRECT,&fx),"bad subrect");
     check(!BltVideoSurface(id,tile,0,0,0,VS_BLT_SRCSUBRECT,nullptr),"missing fx");
     check(!BltVideoSurface(id,tile,1,0,0,0,nullptr),"region rejected"); check(read(id)==before,"invalid rect atomic");
-    fx={}; fx.ColorFill=6; fx.FillRect={1,1,4,3};
+    fx={}; fx.ColorFill=6; fx.FillRect={1,1,4,3}; fx.DestRegion=0x6a5a;
     check(BltVideoSurface(id,0,0,0,0,VS_BLT_COLORFILL,&fx),"whole fill blit"); expect(id,Grid(4,std::vector<int>(5,6)));
     fx.ColorFill=8; check(BltVideoSurface(id,0,0,0,0,VS_BLT_COLORFILLRECT,&fx),"rect fill blit");
     expect(id,{{6,6,6,6,6},{6,8,8,8,6},{6,8,8,8,6},{6,6,6,6,6}});

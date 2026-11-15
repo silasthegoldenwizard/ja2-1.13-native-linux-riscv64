@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: sgp/native_video.h
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -114,7 +114,8 @@ void SetNativeVideoRegionSource(NativeVideoRegionSource);
 // Configuration is accepted only while inactive. Title is copied. Defaults are
 // 640x480, RGB565, scale 1. Dimensions must fit UINT16, scaled SDL dimensions
 // must fit int, and allocation arithmetic must fit size_t and ptrdiff_t.
-bool ConfigureNativeVideo(UINT32 width, UINT32 height, UINT32 depth, UINT32 scale, const char* title);
+bool ConfigureNativeVideo(UINT32 width, UINT32 height, UINT32 depth, UINT32 scale, const char* title,
+                          NativePresentationOptions options = {});
 // Idempotent. Refuses owned locks without closing the window or changing aliases.
 // Releases only video-owned surfaces; leaves the surface manager initialized.
 bool ShutdownNativeVideo();
@@ -138,6 +139,7 @@ bool NativeVideoQuitRequested();
 // Borrowed, main-thread event boundary; no input implementation dependency.
 // Geometry is logical framebuffer plus current actual SDL window dimensions.
 bool NativeVideoInputInfo(SDL_WindowID&, int&, int&, int&, int&);
+bool NativeVideoPresentationGeometry(NativePresentationGeometry&);
 bool AttachNativeVideoInput(PresentationEventSink, void*);
 void DetachNativeVideoInput(PresentationEventSink, void*);
 void PumpNativeVideoEvents();

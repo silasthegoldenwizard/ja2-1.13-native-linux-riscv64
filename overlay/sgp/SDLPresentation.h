@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: sgp/SDLPresentation.h
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -25,9 +25,17 @@
 
 #include <SDL3/SDL.h>
 #include <cstddef>
+#include "native_presentation.h"
 
 namespace sgp
 {
+enum class NativeDisplayTarget { Primary, Upper };
+struct NativePresentationOptions {
+    bool borderless=false;
+    NativeDisplayTarget display=NativeDisplayTarget::Primary;
+};
+// Resolve again at open: SDL display IDs can change across video initialization.
+bool QueryNativeDisplayBounds(NativeDisplayTarget, SDL_Rect&);
 // Optional borrowed main-thread sink. nullptr event means the window is closing;
 // the registration is already removed before that final notification.
 using PresentationEventSink = void (*)(void*, const SDL_Event*);
@@ -41,12 +49,14 @@ public:
     SDLPresentation(const SDLPresentation&) = delete;
     SDLPresentation& operator=(const SDLPresentation&) = delete;
 
-    bool Open(const char* title, int width, int height, int scale = 1);
+    bool Open(const char* title, int width, int height, int scale = 1,
+              NativePresentationOptions options = {});
     bool Present565(const void* pixels, std::size_t bytes, std::size_t pitch);
     bool SaveWindowSurface(const char* bmpPath);
     bool QuitRequested();
     void PumpEvents();
     bool InputInfo(SDL_WindowID& id, int& width, int& height, int& windowWidth, int& windowHeight) const;
+    bool Geometry(NativePresentationGeometry&) const;
     // One owner; an identical attachment is idempotent, a competitor is refused.
     bool AttachInput(PresentationEventSink, void*);
     void DetachInput(PresentationEventSink, void*);

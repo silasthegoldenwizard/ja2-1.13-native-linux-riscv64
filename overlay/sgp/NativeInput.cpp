@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: sgp/NativeInput.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -38,7 +38,7 @@ SDL_WindowID bound=0;
 UINT16 modifiers=0;
 SGPRect requestedRestriction{};
 bool restrictionRequested=false;
-int restrictionWindowW=0,restrictionWindowH=0;
+sgp::NativePresentationGeometry restrictionGeometry{};
 BOOLEAN x1Button=FALSE, x2Button=FALSE;
 std::array<bool,6> sides{};
 std::array<int,SDL_SCANCODE_COUNT> heldScan{}; // normalized index + 1, retained across NumLock changes
@@ -111,23 +111,27 @@ int normalized(SDL_Scancode s, SDL_Keymod mod)
     case SDL_SCANCODE_CAPSLOCK:return 20; case SDL_SCANCODE_NUMLOCKCLEAR:return 144; case SDL_SCANCODE_SCROLLLOCK:return 145; case SDL_SCANCODE_PAUSE:return 19; default:return -1;
     }
 }
-bool move(float x, float y)
+bool move(float x, float y, bool* inside=nullptr)
 {
     SDL_WindowID id=0; int w=0,h=0,ww=0,wh=0;
     if (!std::isfinite(x) || !std::isfinite(y) || !sgp::NativeVideoInputInfo(id,w,h,ww,wh) || id!=bound || ww<=0 || wh<=0) return false;
-    if (restrictionRequested && (restrictionWindowW!=ww || restrictionWindowH!=wh)) RestoreCursorClipRect();
+    sgp::NativePresentationGeometry geometry{};
+    if (!sgp::NativeVideoPresentationGeometry(geometry)) return false;
+    if (inside) *inside=sgp::NativePresentationContains(geometry,x,y);
+    if (restrictionRequested && restrictionGeometry!=geometry) RestoreCursorClipRect();
     // Preserve outside-client coordinates. Edge clamping belongs only to an
     // explicitly applied restriction, otherwise outside clicks hit edge buttons.
     double px=x, py=y;
-    const SDL_Rect* barrier=restrictionRequested ? SDL_GetWindowMouseRect(SDL_GetWindowFromID(bound)) : nullptr;
+    const SDL_Rect* barrier=restrictionRequested && (!inside || *inside) ? SDL_GetWindowMouseRect(SDL_GetWindowFromID(bound)) : nullptr;
     if (barrier) {
-        // The SDL rectangle is in window pixels. Subtract its exclusive edge
+        // The SDL rectangle is in window coordinates. Subtract its exclusive edge
         // in that domain before scaling; subtracting a whole logical pixel
         // breaks narrow restrictions when the resize factor is fractional.
         px=std::clamp(px,static_cast<double>(barrier->x),static_cast<double>(barrier->x+barrier->w-1));
         py=std::clamp(py,static_cast<double>(barrier->y),static_cast<double>(barrier->y+barrier->h-1));
     }
-    const double lx=px*w/ww, ly=py*h/wh;
+    double lx=0,ly=0;
+    if (!sgp::NativeWindowToLogical(geometry,px,py,lx,ly)) return false;
     gusMouseXPos=static_cast<INT16>(std::clamp(std::floor(lx),-32768.0,32767.0));
     gusMouseYPos=static_cast<INT16>(std::clamp(std::floor(ly),-32768.0,32767.0)); return true;
 }
@@ -153,13 +157,19 @@ void sink(void*, const SDL_Event* e)
     if (e->type==SDL_EVENT_MOUSE_BUTTON_DOWN || e->type==SDL_EVENT_MOUSE_BUTTON_UP) {
         BOOLEAN* state=nullptr; UINT16 down=0,up=0;
         switch(e->button.button) { case SDL_BUTTON_LEFT:state=&gfLeftButtonState;down=LEFT_BUTTON_DOWN;up=LEFT_BUTTON_UP;break; case SDL_BUTTON_RIGHT:state=&gfRightButtonState;down=RIGHT_BUTTON_DOWN;up=RIGHT_BUTTON_UP;break; case SDL_BUTTON_MIDDLE:state=&gfMiddleButtonState;down=MIDDLE_BUTTON_DOWN;up=MIDDLE_BUTTON_UP;break; case SDL_BUTTON_X1:state=&x1Button;down=X1_BUTTON_DOWN;up=X1_BUTTON_UP;break; case SDL_BUTTON_X2:state=&x2Button;down=X2_BUTTON_DOWN;up=X2_BUTTON_UP;break; default:return; }
-        if (!move(e->button.x,e->button.y)) return;
-        const bool pressed=e->type==SDL_EVENT_MOUSE_BUTTON_DOWN; const bool was=*state!=FALSE; *state=static_cast<BOOLEAN>(pressed); gfSGPInputReceived=TRUE;
+        bool inside=false;
+        if (!move(e->button.x,e->button.y,&inside)) return;
+        const bool pressed=e->type==SDL_EVENT_MOUSE_BUTTON_DOWN; const bool was=*state!=FALSE;
+        // Bars cannot start an action. A release after dragging out still clears
+        // the held state and reaches the UI at its outside logical coordinate.
+        if (!inside && (pressed || !was)) return;
+        *state=static_cast<BOOLEAN>(pressed); gfSGPInputReceived=TRUE;
         if (pressed || was) QueueEvent(pressed?down:up,0,position());
         return;
     }
     if (e->type==SDL_EVENT_MOUSE_WHEEL) {
-        if (!std::isfinite(e->wheel.y) || !move(e->wheel.mouse_x,e->wheel.mouse_y)) return;
+        bool inside=false;
+        if (!std::isfinite(e->wheel.y) || !move(e->wheel.mouse_x,e->wheel.mouse_y,&inside) || !inside) return;
         const double delta=static_cast<double>(e->wheel.y)*(e->wheel.direction==SDL_MOUSEWHEEL_FLIPPED ? -1.0 : 1.0);
         gsMouseWheelDeltaValue=static_cast<INT16>(std::clamp(delta,-32768.0,32767.0)); gfSGPInputReceived=TRUE;
         if (delta!=0) QueueEvent(delta>0?MOUSE_WHEEL_UP:MOUSE_WHEEL_DOWN,0,position());
@@ -277,12 +287,19 @@ extern "C" void RestrictMouseCursor(SGPRect* rectangle)
     const int l=std::clamp(rectangle->iLeft,0,w), t=std::clamp(rectangle->iTop,0,h);
     const int r=std::clamp(rectangle->iRight,0,w), b=std::clamp(rectangle->iBottom,0,h);
     if (l>=r || t>=b || ww<=0 || wh<=0) return;
-    // Original ClipCursor rectangles are half-open. Round inward so a barrier
-    // never includes a logical pixel outside the requested client rectangle.
-    const auto lower=[](int n,int pixels,int logical) { return static_cast<int>((std::int64_t(n)*pixels+logical-1)/logical); };
-    const auto upper=[](int n,int pixels,int logical) { return static_cast<int>(std::int64_t(n)*pixels/logical); };
-    SDL_Rect barrier{lower(l,ww,w),lower(t,wh,h),0,0};
-    barrier.w=upper(r,ww,w)-barrier.x; barrier.h=upper(b,wh,h)-barrier.y;
+    sgp::NativePresentationGeometry geometry{};
+    if (!sgp::NativeVideoPresentationGeometry(geometry)) return;
+    // ClipCursor is half-open. The fitted pixel rectangle must first be
+    // converted to SDL window coordinates; round inward in that domain.
+    const auto edge=[](int logical,int offset,int extent,int logicalExtent,int windowExtent,int pixelExtent) {
+        const long double numerator=static_cast<long double>(std::int64_t(offset)*logicalExtent+std::int64_t(logical)*extent)*windowExtent;
+        return numerator/(static_cast<long double>(logicalExtent)*pixelExtent);
+    };
+    SDL_Rect barrier{
+        static_cast<int>(std::ceil(edge(l,geometry.contentX,geometry.contentWidth,w,ww,geometry.pixelWidth))),
+        static_cast<int>(std::ceil(edge(t,geometry.contentY,geometry.contentHeight,h,wh,geometry.pixelHeight))),0,0};
+    barrier.w=static_cast<int>(std::floor(edge(r,geometry.contentX,geometry.contentWidth,w,ww,geometry.pixelWidth)))-barrier.x;
+    barrier.h=static_cast<int>(std::floor(edge(b,geometry.contentY,geometry.contentHeight,h,wh,geometry.pixelHeight)))-barrier.y;
     if (barrier.w<=0 || barrier.h<=0) return;
     SDL_Window* owner=SDL_GetWindowFromID(bound);
     SDL_Rect previous{};
@@ -290,7 +307,7 @@ extern "C" void RestrictMouseCursor(SGPRect* rectangle)
     const bool hadPrevious=old!=nullptr;
     if (old) previous=*old;
     if (SDL_SetWindowMouseRect(owner,&barrier)) {
-        requestedRestriction={l,t,r,b}; restrictionRequested=true; restrictionWindowW=ww; restrictionWindowH=wh;
+        requestedRestriction={l,t,r,b}; restrictionRequested=true; restrictionGeometry=geometry;
     } else {
         // SDL copies the proposed rectangle before invoking some backends.
         // Roll back that readback state on failure instead of claiming success.
@@ -320,12 +337,18 @@ extern "C" void GetRestrictedClipCursor(SGPRect* rectangle)
     *rectangle={0,0,0,0};
     SDL_WindowID id=0; int w=0,h=0,ww=0,wh=0;
     if (!active || terminal || !sgp::NativeVideoInputInfo(id,w,h,ww,wh) || id!=bound || ww<=0 || wh<=0) return;
+    sgp::NativePresentationGeometry geometry{};
+    if (!sgp::NativeVideoPresentationGeometry(geometry)) return;
+    if (restrictionRequested && restrictionGeometry!=geometry) RestoreCursorClipRect();
     const SDL_Rect* barrier=SDL_GetWindowMouseRect(SDL_GetWindowFromID(bound));
     if (!barrier) { *rectangle={0,0,w,h}; return; }
-    rectangle->iLeft=static_cast<INT32>(std::int64_t(barrier->x)*w/ww);
-    rectangle->iTop=static_cast<INT32>(std::int64_t(barrier->y)*h/wh);
-    rectangle->iRight=static_cast<INT32>((std::int64_t(barrier->x+barrier->w)*w+ww-1)/ww);
-    rectangle->iBottom=static_cast<INT32>((std::int64_t(barrier->y+barrier->h)*h+wh-1)/wh);
+    double l=0,t=0,r=0,b=0;
+    if (!sgp::NativeWindowToLogical(geometry,barrier->x,barrier->y,l,t) ||
+        !sgp::NativeWindowToLogical(geometry,barrier->x+barrier->w,barrier->y+barrier->h,r,b)) return;
+    rectangle->iLeft=static_cast<INT32>(std::floor(l));
+    rectangle->iTop=static_cast<INT32>(std::floor(t));
+    rectangle->iRight=static_cast<INT32>(std::ceil(r));
+    rectangle->iBottom=static_cast<INT32>(std::ceil(b));
 }
 extern "C" void SimulateMouseMovement(UINT32 x,UINT32 y)
 {
@@ -333,5 +356,7 @@ extern "C" void SimulateMouseMovement(UINT32 x,UINT32 y)
     if (!active || terminal || !sgp::NativeVideoInputInfo(id,w,h,ww,wh) || id!=bound || x>=static_cast<UINT32>(w) || y>=static_cast<UINT32>(h)) return;
     // SDL generates the actual window-relative motion; polling/FIFO update only
     // on receipt of that event, never on an unconfirmed desktop warp assumption.
-    SDL_WarpMouseInWindow(SDL_GetWindowFromID(bound),static_cast<float>((double(x)+0.5)*ww/w),static_cast<float>((double(y)+0.5)*wh/h));
+    sgp::NativePresentationGeometry geometry{}; double wx=0,wy=0;
+    if (!sgp::NativeVideoPresentationGeometry(geometry) || !sgp::NativeLogicalToWindow(geometry,double(x)+0.5,double(y)+0.5,wx,wy)) return;
+    SDL_WarpMouseInWindow(SDL_GetWindowFromID(bound),static_cast<float>(wx),static_cast<float>(wy));
 }

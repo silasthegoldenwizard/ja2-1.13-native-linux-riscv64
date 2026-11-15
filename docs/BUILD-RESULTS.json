@@ -1,0 +1,195 @@
+{
+  "schema": 2,
+  "release": "v0.1.0-alpha.1",
+  "revision": "attachment-fix-01",
+  "date": "2026-11-15",
+  "status": "Frozen engineering evidence: exact guard reconstruction, saved guarded-live 85/87 tests and accepted focused 24-case regression. No new exact packaged-source build is claimed.",
+  "current_source": {
+    "engine_manifest_sha256": "74d6b8c37fb6123542b5fb65b702d17b60de7fb11e6f0a9e296d77d279855df1",
+    "engine_overlay_tree": "3228089161c3ca000bb272ec701a90267ce16021",
+    "raknet_manifest_sha256": "0496779045ddd927b2b3f9954ceca15faf9556e2c460bd0bf166c4ceaaa48c87",
+    "raknet_tree": "459338a32ebbcff4359fbfa47560f5cbe4c84776",
+    "engine_upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
+    "reconstructed_main_files": 1492,
+    "reconstructed_main_tree": "668fa3cdd2de4f8bd844df80efd377a783673f9c",
+    "changed_source": "Tactical/Interface Items.cpp",
+    "owner_pre_notice_sha256": "ed70542e3d0a58e089a5f4c95a859ef6f1ae9d0947e698c9d1cb36be2bd8bfdd",
+    "change": "Guard gpItemPointer before post-DoAttachment exists() call.",
+    "exact_owner_supplied_file_pin_match": true
+  },
+  "current_package_validation": {
+    "reconstruction_replay": "PASS",
+    "compiled_or_executed": false,
+    "focused_regression": {
+      "status": "PASS within completion-only production-fragment scope; independent review accepted",
+      "normal_completion_checks": 24,
+      "strict_completion_checks": 24,
+      "fixed_runtime_stderr": "empty in both lanes",
+      "before_control": "UBSan null OBJECTTYPE member-call failure at original line 6352",
+      "summary_sha256": "dd31b74d4637d91a73d5318bfb60bdb295a528d0d9b5a4fe9f38afe780cc5b98",
+      "test_manifest_sha256": "b351e583ac708f17cc220f24902a293ce4c0268fa5e3e9bbab51910034da0dcd",
+      "test_sha256": "fa6dd03bf2669db4101d46a5547da746f437569b54d9ccea35006a4416461777",
+      "accepted_review_sha256": "964c37f680ceaab9cd77cff55de2f13d037efc7ab90da63feeb81b01bf3baeb0",
+      "replay_sha256": "f62e31bdd2a41255427a00921614760e89abaee0c3a72ca1257af4ee498c882b",
+      "raw_fixed_source_sha256": "ed70542e3d0a58e089a5f4c95a859ef6f1ae9d0947e698c9d1cb36be2bd8bfdd",
+      "actual_code": "DoAttachment, completion statements and real OBJECTTYPE lifetime code",
+      "test_doubles": "AttachObject outcomes, UI effects and map pointer clearing",
+      "limits": "Not actual attachment compatibility, complete callback/UI routing, full-game acceptance or live test integration. The candidate test is not included in this source export."
+    },
+    "focused_independent_review": "Final source/archive review is recorded separately; this summary reports engineering evidence only.",
+    "owner_export_acknowledgment_at_freeze": "not observed; record separately from the engineering evidence"
+  },
+  "prior_package_validation": {
+    "scope": "Exact earlier source without the attachment guard. Reused SDK/control evidence does not establish current guarded-package build or gameplay acceptance.",
+    "summary_sha256": "aeb526ec696ae6d34b01fcb45a9941f7bbe4c2601f09a042479ccf91d4044e4f",
+    "engineering_receipt_sha256": "1350d5e317cacb431eef5c7f4c3655a4edd376c5fc0eb342891d0902d0555ef0",
+    "build_inputs": {
+      "engine_manifest_sha256": "9a0e31ae7de12568b75e006a59af39c1aacc455ebad2d3d92ad78f54cd8b0179",
+      "engine_overlay_tree": "9c74a907984be5ce8b17b477356054cf5d2133d1",
+      "raknet_manifest_sha256": "0496779045ddd927b2b3f9954ceca15faf9556e2c460bd0bf166c4ceaaa48c87",
+      "raknet_tree": "459338a32ebbcff4359fbfa47560f5cbe4c84776",
+      "engine_upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
+      "sdk_upstream_commit": "a4c67c6c89b4e83b6d8455ac5e84719e288546f7",
+      "reconstructed_main_files": 1492,
+      "reconstructed_main_tree": "d6b1157dc1eca91ad2693c0bf3dd2754ffacb7e1",
+      "assembled_engine_files": 1616,
+      "assembled_engine_tree": "585ed9b4e306d0979ad3336253e94012d7f2aade"
+    },
+    "tool_versions": {
+      "clang": "Debian clang version 19.1.7 (3+b1)",
+      "clang++": "Debian clang version 19.1.7 (3+b1)",
+      "cmake": "cmake version 3.31.6",
+      "ctest": "ctest version 3.31.6",
+      "make": "GNU Make 4.4.1",
+      "python": "Python 3.13.5"
+    },
+    "sdk_builds": [
+      {
+        "mode": "debug",
+        "archive_members": 79,
+        "sha256": "6cb16e6f4b733ea2a23b23c6492a87aebadc85ec9b775b07ce9c1a9f947f6ce5",
+        "bytes": 6091486
+      },
+      {
+        "mode": "sanitized",
+        "archive_members": 79,
+        "sha256": "44bcb66e29b97a32d83078facb725046b0927386d9fcec776f3c8e494e5764e7",
+        "bytes": 17228382
+      }
+    ],
+    "full_game_builds": [
+      {
+        "mode": "debug",
+        "sha256": "d5a08bb25ae10ca6ce83114b283c390ec752e490dd4d28e7a24521c25eb8da6d",
+        "bytes": 69009888,
+        "executed": false
+      },
+      {
+        "mode": "sanitized",
+        "sha256": "ebfbbbc7b3a22b46786f62c1fbc5a51bea189fb3e3edcb5f201c828c63ba4c4b",
+        "bytes": 208873560,
+        "executed": false
+      }
+    ],
+    "fixture_suites": [
+      {
+        "mode": "debug",
+        "tests": 85,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "junit_sha256": "b1ba16b13137abcedf6909dfdf226f5479441f4a0e849319bbf85ac6ea55e749",
+        "log_sha256": "e81f1cf07f1d3eea741875a27eccc31d6e0a039732a58828d86459a652a19025"
+      },
+      {
+        "mode": "sanitized",
+        "tests": 87,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "junit_sha256": "2ffb4f559d49fe261bb3927eddfa39e952d5d996ed08996fe953c974d4fe08fc",
+        "log_sha256": "fc73bacddb11a85074ab1322aec5d3b15d0511b0b113b4448a5aaaf9a658237e"
+      }
+    ],
+    "build_history": {
+      "initial_workspace": "empty and isolated",
+      "initial_native_failure": "i18n/text.def omitted from reconstruction closure",
+      "correction": "Added the exact unchanged upstream blob 19e1772e6f16d5db2bc52c367e42fc4b35021015 to declared reconstruction inputs.",
+      "native_completion": "Resumed with only successful objects from the initial isolated build after exact unchanged-source/header/dependency checks. No prior development objects substituted.",
+      "sanitizer_lane": "Fresh SDK and engine build lanes.",
+      "profile_test_target": "p710_native_profile101_tests is EXCLUDE_FROM_ALL; built explicitly before the final complete CTest runs.",
+      "prior_failure_and_not_run_results": "Preserved in the engineering evidence."
+    },
+    "sanitizer_environment": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:abort_on_error=1:print_stacktrace=1"
+    }
+  },
+  "external_sdks_instrumented": false,
+  "external_uninstrumented_sdks": [
+    "SDL",
+    "FFmpeg",
+    "FreeType"
+  ],
+  "source_correlation": "Only the specified guard differs in reconstructed implementation. All other implementation files, build controls and notices remain exact. Reconstruction metadata records the changed source. Publication reader text and this summary have separate file identities.",
+  "limits": [
+    "The specific attachment action, item identity/count preservation, and later save/reload need their own bounded runtime evidence.",
+    "A pointer guard addresses the reported null dereference; this preparation is not complete attachment semantics or broad campaign acceptance.",
+    "Full game binaries from the earlier package were built but not executed by package validation. No new package build or game execution is claimed.",
+    "Native RISC-V, broad device/sound coverage, and executable-distribution/relinking acceptance remain separate."
+  ],
+  "guarded_live_source_validation": {
+    "status": "Saved Owner full-game build and fixture records verified; distinct from new exact packaged-source build",
+    "raw_fixed_source_sha256": "ed70542e3d0a58e089a5f4c95a859ef6f1ae9d0947e698c9d1cb36be2bd8bfdd",
+    "repair_pin_sha256": "569425da0e563b8eb62eb2a653816b3c389c38543610d0bac4e0a69dc52a1893",
+    "build_receipt_sha256": "e50f90782bfc0aa9e4b21677d98fba440bd7c715928c5e81fa4e7798927d2c69",
+    "suite_receipt_sha256": "45fcf99dea2045a48fef0a7123d2c5b774ec5052f09fcf5f5e49a3ad2cc85372",
+    "preservation_after_sha256": "06fd0755057fa55e663cf47cbc705108b1161ed5dd15d4ffe3d0b49ef38cad3a",
+    "full_game_builds": [
+      {
+        "mode": "debug",
+        "exit_code": 0,
+        "binary_sha256": "6c76354f63f23c87f89093d1a568e4eddba8f820a3e064196d55fef8e0681892",
+        "binary_bytes": 68996208,
+        "command_receipt_sha256": "377be944c6af640fe6cd7a5cebb4819938816f7579ff353226a82014866bb45b"
+      },
+      {
+        "mode": "sanitized",
+        "exit_code": 0,
+        "binary_sha256": "09613d8b21df7a86b3b2dbda2cd7e75575759d81dc7c18b6a617202f993b0286",
+        "binary_bytes": 208826368,
+        "command_receipt_sha256": "13b8cc6f75fb1ffc597124b9845a87fda616203e7e6271e8bedff8e18ad19236"
+      }
+    ],
+    "fixture_suites": [
+      {
+        "mode": "debug",
+        "test_cases": 85,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "ctest_exit_code": 0,
+        "junit_sha256": "558a127077552f647ff63938ef9fea2a4f16a3da6bd77eed1536b19c2ce8a17b"
+      },
+      {
+        "mode": "sanitized",
+        "test_cases": 87,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "ctest_exit_code": 0,
+        "junit_sha256": "83d24cf7bbcb7ffd62a323472b193ed0a9284408e3f328f1a746c794ab3860a2"
+      }
+    ],
+    "sanitizer_environment": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:abort_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:abort_on_error=1:print_stacktrace=1"
+    },
+    "scope": "One guarded raw source file differs from the prior development checkpoint. The prepared export maps that exact file through retained LF normalization and notices. This is reuse of live development results, not execution of the newly packaged source."
+  },
+  "reported_runtime_cold_load": {
+    "reported_by": "JA2 Port // Owner",
+    "checks": 75,
+    "scope": "Owner chat report for guarded live game; separate from exact package execution and the targeted inventory-action retest."
+  }
+}

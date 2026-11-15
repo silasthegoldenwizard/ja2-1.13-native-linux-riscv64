@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: tests/native-core/native_input_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -72,6 +72,36 @@ int main()
         key(SDL_SCANCODE_LSHIFT,true); button(SDL_BUTTON_RIGHT,true); button(SDL_BUTTON_MIDDLE,true); sgp::PumpNativeVideoEvents(); QueueEvent(KEY_REPEAT,65,0); windowEvent(SDL_EVENT_WINDOW_FOCUS_LOST); windowEvent(SDL_EVENT_WINDOW_HIDDEN); sgp::PumpNativeVideoEvents(); clearHeld(); atom(KEY_UP,97,0,0x000f000du); atom(LEFT_BUTTON_UP,0,0,0x000f000du); atom(RIGHT_BUTTON_UP,0,0,0x000f000du); atom(MIDDLE_BUTTON_UP,0,0,0x000f000du); empty(); key(SDL_SCANCODE_B,true); button(SDL_BUTTON_LEFT,true); empty(); clearHeld();
         windowEvent(SDL_EVENT_WINDOW_FOCUS_GAINED); key(SDL_SCANCODE_A,true); sgp::PumpNativeVideoEvents(); DequeueAllKeyBoardEvents(); for (unsigned i=0;i<256;++i) QueueEvent(KEY_REPEAT,i,i); key(SDL_SCANCODE_B,true); sgp::PumpNativeVideoEvents(); check(gfKeyState[65] && gfKeyState[66],"poll state updates at full FIFO"); windowEvent(SDL_EVENT_WINDOW_FOCUS_LOST); sgp::PumpNativeVideoEvents(); clearHeld(); atom(KEY_UP,97,0,0x000f000du); atom(KEY_UP,98,0,0x000f000du); empty();
         windowEvent(SDL_EVENT_WINDOW_FOCUS_GAINED); sgp::PumpNativeVideoEvents();
+        // Independent literal fit oracles: 32x20 in 256x192 has 16-pixel
+        // top/bottom bars; 320x160 has 32-pixel left/right bars.
+        check(SDL_SetWindowSize(SDL_GetWindowFromID(owned()),256,192) && SDL_SyncWindow(SDL_GetWindowFromID(owned())),"letterbox actual window");
+        reset();
+        sgp::NativePresentationGeometry fit{};
+        check(sgp::NativeVideoPresentationGeometry(fit) && fit.windowWidth==256 && fit.windowHeight==192 &&
+              fit.pixelWidth==256 && fit.pixelHeight==192 && fit.contentX==0 && fit.contentY==16 &&
+              fit.contentWidth==256 && fit.contentHeight==160,"literal letterbox fit readback");
+        motion(104,136); atom(MOUSE_POS,0,0,0x000f000du);
+        motion(0,16); atom(MOUSE_POS,0,0,0);
+        motion(255.5f,175.5f); atom(MOUSE_POS,0,0,0x0013001fu);
+        motion(104,8); atom(MOUSE_POS,0,0,0xffff000du);
+        button(SDL_BUTTON_LEFT,true,104,8); button(SDL_BUTTON_LEFT,false,104,8); empty();
+        check(!gfLeftButtonState,"letterbox press never becomes held");
+        SDL_Event barWheel{}; barWheel.type=SDL_EVENT_MOUSE_WHEEL; barWheel.wheel.windowID=owned();
+        barWheel.wheel.y=1; barWheel.wheel.mouse_x=104; barWheel.wheel.mouse_y=8; push(barWheel); empty();
+        button(SDL_BUTTON_LEFT,true,104,136); atom(LEFT_BUTTON_DOWN,0,0,0x000f000du);
+        button(SDL_BUTTON_LEFT,false,104,8); atom(LEFT_BUTTON_UP,0,0,0xffff000du);
+        check(!gfLeftButtonState,"held inside press releases through letterbox");
+        button(SDL_BUTTON_RIGHT,true,104,176); empty(); check(!gfRightButtonState,"exclusive fitted bottom cannot press");
+        check(SDL_SetWindowSize(SDL_GetWindowFromID(owned()),320,160) && SDL_SyncWindow(SDL_GetWindowFromID(owned())),"pillarbox actual window");
+        reset();
+        check(sgp::NativeVideoPresentationGeometry(fit) && fit.contentX==32 && fit.contentY==0 &&
+              fit.contentWidth==256 && fit.contentHeight==160,"literal pillarbox fit readback");
+        motion(136,120); atom(MOUSE_POS,0,0,0x000f000du);
+        motion(24,120); atom(MOUSE_POS,0,0,0x000fffffu);
+        button(SDL_BUTTON_LEFT,true,24,120); button(SDL_BUTTON_LEFT,false,24,120); empty();
+        button(SDL_BUTTON_MIDDLE,true,136,120); atom(MIDDLE_BUTTON_DOWN,0,0,0x000f000du);
+        button(SDL_BUTTON_MIDDLE,false,288,120); atom(MIDDLE_BUTTON_UP,0,0,0x000f0020u);
+        check(!gfMiddleButtonState,"held middle releases through exclusive pillarbox right edge");
         check(SDL_SetWindowSize(SDL_GetWindowFromID(owned()),512,320) && SDL_SyncWindow(SDL_GetWindowFromID(owned())),"resize actual window"); motion(208,240); atom(MOUSE_POS,0,0,0x000f000du);
         // Subsequent lifecycle cases close/reopen; do not assume the WM accepts an immediate shrink.
         windowEvent(SDL_EVENT_WINDOW_FOCUS_GAINED); key(SDL_SCANCODE_A,true); key(SDL_SCANCODE_A,false); SDL_Event quit{}; quit.type=SDL_EVENT_QUIT; push(quit); key(SDL_SCANCODE_B,true); check(sgp::NativeVideoQuitRequested() && sgp::NativeVideoQuitRequested(),"global quit latched, complete pump"); atom(KEY_DOWN,97,0,0x000f000du); atom(KEY_UP,97,0,0x000f000du); empty(); clearHeld();

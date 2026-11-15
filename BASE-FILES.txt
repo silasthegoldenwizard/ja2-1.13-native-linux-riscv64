@@ -1192,6 +1192,7 @@ i18n/include/_Ja25PolishText.h
 i18n/include/_Ja25RussianText.h
 i18n/include/language.hpp
 i18n/language.cpp
+i18n/text.def
 lua/CMakeLists.txt
 lua/Lua Interpreter.h
 lua/lua.cpp

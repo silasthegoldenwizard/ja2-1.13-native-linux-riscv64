@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: tests/native-core/native_video_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -163,12 +163,22 @@ int main()
         fill(FRAME_BUFFER,14); SGPRect one{0,0,1,1}; InvalidateRegions(&one,UINT_MAX);
         SuspendVideoManager(); check(!sgp::RefreshNativeVideo(),"suspended pending work"); expect(BACKBUFFER,image(12)); expect(PRIMARY_SURFACE,image(12));
         check(RestoreVideoManager() && sgp::RefreshNativeVideo(),"resume without recreation"); expect(PRIMARY_SURFACE,image(14));
-        for (auto invalidate : {InvalidateScreen,InvalidateFrameBuffer,EndFrameBufferRender})
+        for (auto invalidate : {InvalidateScreen,InvalidateFrameBuffer})
         {
             fill(FRAME_BUFFER,15); fill(BACKBUFFER,16); StartFrameBufferRender(); invalidate();
             check(!CanBlitToFrameBuffer(),"full invalidation remains dirty until transferred");
             check(sgp::RefreshNativeVideo(),"legacy full invalidation"); expect(BACKBUFFER,image(15)); expect(PRIMARY_SURFACE,image(15));
         }
+        fill(FRAME_BUFFER,17); fill(BACKBUFFER,18); StartFrameBufferRender();
+        InvalidateRegion(2,3,10,7); EndFrameBufferRender();
+        check(!CanBlitToFrameBuffer(),"end-render marks BUFFER_DIRTY without full invalidation");
+        check(sgp::RefreshNativeVideo(),"end-render transfers only requested dirty work");
+        expected=image(18); patch(expected,2,3,10,7,17); expect(BACKBUFFER,expected); expect(PRIMARY_SURFACE,expected);
+        check(CanBlitToFrameBuffer(),"successful end-render clears BUFFER_DIRTY");
+        fill(FRAME_BUFFER,19); StartFrameBufferRender(); EndFrameBufferRender();
+        check(!CanBlitToFrameBuffer(),"end-render without rectangles is still pending");
+        check(sgp::RefreshNativeVideo(),"end-render without rectangles preserves direct backbuffer work");
+        expect(BACKBUFFER,expected); expect(PRIMARY_SURFACE,expected);
         check(CanBlitToFrameBuffer(),"frame available"); UINT32 pitch=0; check(LockFrameBuffer(&pitch)!=nullptr,"frame lock"); check(!CanBlitToFrameBuffer(),"locked frame unavailable"); UnlockFrameBuffer();
         sgp::SetNativeVideoRegionSource(&readRegionState);
         fill(FRAME_BUFFER,21); fill(BACKBUFFER,22); fill(PRIMARY_SURFACE,23);

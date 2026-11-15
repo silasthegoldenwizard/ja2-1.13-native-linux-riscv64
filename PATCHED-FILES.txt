@@ -248,6 +248,7 @@ TileEngine/renderworld.cpp
 TileEngine/renderworld.h
 TileEngine/structure.cpp
 TileEngine/worlddef.cpp
+TileEngine/worldman.cpp
 Utils/Animated ProgressBar.cpp
 Utils/Cinematics Bink.h
 Utils/Cinematics.cpp

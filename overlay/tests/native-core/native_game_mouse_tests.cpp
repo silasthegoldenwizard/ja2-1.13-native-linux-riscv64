@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: tests/native-core/native_game_mouse_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -166,6 +166,110 @@ void anchors() {
     windowEvent(SDL_EVENT_WINDOW_FOCUS_GAINED); button(SDL_BUTTON_LEFT,true,4,5); button(SDL_BUTTON_LEFT,false,4,5); frame();
     check(buttonDowns==3 && buttonUps==1,"fresh inside click activates after reset");
 }
+void fittedDispatch() {
+    auto* window=SDL_GetWindowFromID(geometry().id);
+    check(SDL_SetWindowSize(window,256,192) && SDL_SyncWindow(window),"resize production dispatch window to letterbox");
+    fresh(); buttonDowns=buttonUps=0;
+    const auto id=CreateHotSpot(2,3,7,5,31,DEFAULT_MOVE_CALLBACK,buttonRecord);
+    check(id>=0,"fitted real hotspot");
+    // This visible target models a momentary command. Ordinary hotspots are
+    // toggles; explicitly select momentary behavior before testing an off-state
+    // restoration rather than changing the original anchor/toggle contract.
+    GetButtonPtr(id)->uiFlags |= BUTTON_NO_TOGGLE;
+    check(ColorFillVideoSurfaceArea(FRAME_BUFFER,0,0,32,20,0x2104) &&
+          ColorFillVideoSurfaceArea(FRAME_BUFFER,2,3,9,8,0x001f),"draw authored blue control through original framebuffer");
+    InvalidateScreen(); check(sgp::RefreshNativeVideo(),"present authored fitted control");
+    // Literal oracle: fitted image is (0,16,256,160). Window (36,60)
+    // lies on the visible blue control and maps to logical (4,5).
+    auto* surface=SDL_GetWindowSurface(window); Uint8 red=0,green=0,blue=0,alpha=0;
+    check(surface && SDL_ReadSurfacePixel(surface,36,60,&red,&green,&blue,&alpha) &&
+          red==0 && green==0 && blue==255,"actual fitted control pixel matches blue target");
+    check(SDL_ReadSurfacePixel(surface,36,8,&red,&green,&blue,&alpha) && red==0 && green==0 && blue==0,
+          "actual presentation bar is black");
+    const auto physicalButton=[&](bool down,float x,float y) {
+        SDL_Event e{}; e.type=down?SDL_EVENT_MOUSE_BUTTON_DOWN:SDL_EVENT_MOUSE_BUTTON_UP;
+        e.button.windowID=geometry().id; e.button.button=SDL_BUTTON_LEFT; e.button.down=down;
+        e.button.x=x; e.button.y=y; push(e);
+    };
+    physicalButton(true,36,60); physicalButton(false,36,60); frame();
+    check(buttonDowns==1 && buttonUps==1 && GetButtonPtr(id)->Area.MouseXPos==4 &&
+          GetButtonPtr(id)->Area.MouseYPos==5,"visible fitted target activates once through SDL input and GameLoop dispatch");
+    check(!(GetButtonPtr(id)->uiFlags & BUTTON_CLICKED_ON),"momentary target is off before cancellation regression");
+    physicalButton(true,92,60); physicalButton(false,92,60); frame();
+    check(buttonDowns==1 && buttonUps==1,"visible neighboring background misses fitted control");
+    physicalButton(true,36,60); frame();
+    check(GetButtonPtr(id)->uiFlags & BUTTON_CLICKED_ON,"fitted inside press anchors control");
+    physicalButton(false,36,8); frame();
+    check(!gfLeftButtonState && !(GetButtonPtr(id)->uiFlags & BUTTON_CLICKED_ON) &&
+          buttonDowns==2 && buttonUps==1,"release into bar clears original anchor without activation");
+    physicalButton(true,36,8); physicalButton(false,36,8); frame();
+    check(buttonDowns==2 && buttonUps==1 && !gfLeftButtonState,"bar click cannot activate or hold control");
+    physicalButton(true,36,60); physicalButton(false,36,60); frame();
+    check(buttonDowns==3 && buttonUps==2,"fresh fitted click works after bar cancellation");
+    // Retain the ordinary-toggle counterpart: outside release must restore its
+    // prior on state, which is deliberately different from the momentary case.
+    GetButtonPtr(id)->uiFlags &= ~static_cast<UINT32>(BUTTON_NO_TOGGLE);
+    physicalButton(true,36,60); physicalButton(false,36,60); frame();
+    check(buttonDowns==4 && buttonUps==3 && (GetButtonPtr(id)->uiFlags & BUTTON_CLICKED_ON),
+          "ordinary fitted toggle remains on after accepted click");
+    physicalButton(true,36,60); frame(); physicalButton(false,36,8); frame();
+    check(buttonDowns==5 && buttonUps==3 && !gfLeftButtonState && (GetButtonPtr(id)->uiFlags & BUTTON_CLICKED_ON),
+          "bar release restores prior on state of ordinary toggle without activation");
+    // Untracked motion still updates final polling, allowing the real UI hover
+    // to leave the control when no motion atom is requested.
+    SDL_Event e{}; e.type=SDL_EVENT_MOUSE_MOTION; e.motion.windowID=geometry().id;
+    e.motion.x=36; e.motion.y=8; push(e); frame();
+    check(!(GetButtonPtr(id)->Area.uiFlags & MSYS_MOUSE_IN_AREA) && gusMouseYPos==-1,
+          "bar motion clears production hover through empty-queue polling");
+    check(SDL_SetWindowSize(window,256,160) && SDL_SyncWindow(window),"restore exact-aspect dispatch window");
+    sgp::PumpNativeVideoEvents(); DequeueAllKeyBoardEvents();
+}
+void resolutionDispatch() {
+    // Literal fitted rectangles for the existing authored 32x20 UI scene.
+    const int cases[][6]={
+        {1024,768,0,64,1024,640},{1280,720,64,0,1152,720},
+        {1280,1024,0,112,1280,800},{1366,768,69,0,1228,768},
+        {1600,900,80,0,1440,900},{1920,1080,96,0,1728,1080},
+        {2560,1080,416,0,1728,1080},{2560,1440,128,0,2304,1440},
+        {3440,1440,568,0,2304,1440},{3840,2160,192,0,3456,2160}
+    };
+    auto* window=SDL_GetWindowFromID(geometry().id);
+    for (const auto& c:cases) {
+        check(SDL_SetWindowSize(window,c[0],c[1]) && SDL_SyncWindow(window),"resize production UI to matrix output");
+        fresh(); buttonDowns=buttonUps=0;
+        const auto id=CreateHotSpot(2,3,7,5,31,DEFAULT_MOVE_CALLBACK,buttonRecord);
+        check(id>=0,"matrix production hotspot"); GetButtonPtr(id)->uiFlags |= BUTTON_NO_TOGGLE;
+        check(ColorFillVideoSurfaceArea(FRAME_BUFFER,0,0,32,20,0x2104) &&
+              ColorFillVideoSurfaceArea(FRAME_BUFFER,2,3,9,8,0x001f),"draw matrix control using original framebuffer");
+        InvalidateScreen();check(sgp::RefreshNativeVideo(),"present matrix production control");
+        const float left=static_cast<float>(c[2]),top=static_cast<float>(c[3]);
+        const float fittedWidth=static_cast<float>(c[4]),fittedHeight=static_cast<float>(c[5]);
+        const float targetX=left+4.25f*fittedWidth/32,targetY=top+5.25f*fittedHeight/20;
+        const float missX=left+11.25f*fittedWidth/32;
+        auto* surface=SDL_GetWindowSurface(window);Uint8 red=0,green=0,blue=0,alpha=0;
+        check(surface && surface->w==c[0] && surface->h==c[1] &&
+              SDL_ReadSurfacePixel(surface,static_cast<int>(targetX),static_cast<int>(targetY),&red,&green,&blue,&alpha) &&
+              red==0 && green==0 && blue==255,"matrix event point is visibly on the authored blue control");
+        check(SDL_ReadSurfacePixel(surface,0,0,&red,&green,&blue,&alpha) && !red && !green && !blue,
+              "matrix cancellation point is visibly in a black bar");
+        const auto physicalButton=[&](bool down,float x,float y) {
+            SDL_Event e{};e.type=down?SDL_EVENT_MOUSE_BUTTON_DOWN:SDL_EVENT_MOUSE_BUTTON_UP;
+            e.button.windowID=geometry().id;e.button.button=SDL_BUTTON_LEFT;e.button.down=down;
+            e.button.x=x;e.button.y=y;push(e);
+        };
+        physicalButton(true,targetX,targetY);physicalButton(false,targetX,targetY);frame();
+        check(buttonDowns==1 && buttonUps==1 && GetButtonPtr(id)->Area.MouseXPos==4 &&
+              GetButtonPtr(id)->Area.MouseYPos==5,"matrix visible control activates at expected logical coordinates");
+        physicalButton(true,missX,targetY);physicalButton(false,missX,targetY);frame();
+        check(buttonDowns==1 && buttonUps==1,"matrix neighboring background does not activate control");
+        physicalButton(true,targetX,targetY);frame();physicalButton(false,0,0);frame();
+        check(buttonDowns==2 && buttonUps==1 && !gfLeftButtonState &&
+              !(GetButtonPtr(id)->uiFlags & BUTTON_CLICKED_ON),"matrix bar release cancels original anchor without activation");
+        std::cout<<"UI MATRIX "<<c[0]<<'x'<<c[1]<<" PASS\n";
+    }
+    check(SDL_SetWindowSize(window,256,160) && SDL_SyncWindow(window),"restore dispatch window after resolution matrix");
+    sgp::PumpNativeVideoEvents();DequeueAllKeyBoardEvents();
+}
 unsigned mutationCount=0; bool nested=false;
 void mutate(MOUSE_REGION* r,INT32 reason) {
     if (reason!=MSYS_CALLBACK_REASON_GAIN_MOUSE) return;
@@ -251,7 +355,7 @@ int main() {
         check(sgp::ConfigureNativeVideo(32,20,16,8,"P710 original GameLoop mouse contracts") && InitializeVideoManager(nullptr,0,nullptr),"open native owned window");
         check(std::strcmp(sgp::NativeVideoDriver(),"x11")==0,"real X11 window required");
         check(InitializeInputManager(),"bind actual input service");
-        queuedHistory(); keyboardBoundary(); priorityTies(); hoverReset(); extendedState(); clickedWheel(); wheelBounds(); anchors(); callbackLifetime(); fastHelpMetadata(); fastHelpGain(); terminalBacklog(); cleanup();
+        queuedHistory(); keyboardBoundary(); priorityTies(); hoverReset(); extendedState(); clickedWheel(); wheelBounds(); anchors(); fittedDispatch(); resolutionDispatch(); callbackLifetime(); fastHelpMetadata(); fastHelpGain(); terminalBacklog(); cleanup();
         std::cout<<"PASS: "<<checks<<" original GameLoop mouse bridge assertions; real X11 owned window; synthetic SDL input, no human-input claim\n"; return 0;
     } catch (const std::exception& e) { cleanup(); std::cerr<<"FAIL after "<<checks<<" assertions: "<<e.what()<<'\n'; return 1; }
 }

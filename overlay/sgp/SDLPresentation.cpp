@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: sgp/SDLPresentation.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -24,9 +24,46 @@
 #include "himage.h"
 #include <limits>
 
+namespace {
+SDL_DisplayID selectDisplay(sgp::NativeDisplayTarget target, SDL_Rect& bounds)
+{
+    SDL_DisplayID selected=0;
+    SDL_Rect chosen{};
+    if (target==sgp::NativeDisplayTarget::Primary) {
+        selected=SDL_GetPrimaryDisplay();
+        if (!selected || !SDL_GetDisplayBounds(selected,&chosen)) return 0;
+    } else if (target==sgp::NativeDisplayTarget::Upper) {
+        int count=0;
+        SDL_DisplayID* displays=SDL_GetDisplays(&count);
+        if (!displays) return 0;
+        for (int i=0;i<count;++i) {
+            SDL_Rect rect{};
+            if (!SDL_GetDisplayBounds(displays[i],&rect) || rect.w<=0 || rect.h<=0) continue;
+            if (!selected || rect.y<chosen.y || (rect.y==chosen.y && rect.x<chosen.x)) {
+                selected=displays[i];chosen=rect;
+            }
+        }
+        SDL_free(displays);
+    }
+    if (!selected || chosen.w<=0 || chosen.h<=0) return 0;
+    bounds=chosen;return selected;
+}
+}
+
+bool sgp::QueryNativeDisplayBounds(NativeDisplayTarget target, SDL_Rect& bounds)
+{
+    if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) return false;
+    SDL_Rect chosen{};
+    const bool ok=SDL_IsMainThread() && selectDisplay(target,chosen)!=0;
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+    if (ok) bounds=chosen;
+    return ok;
+}
+
 sgp::SDLPresentation::~SDLPresentation() { Close(); }
 
-bool sgp::SDLPresentation::Open(const char* title, int width, int height, int scale)
+bool sgp::SDLPresentation::Open(const char* title, int width, int height, int scale,
+                               NativePresentationOptions options)
 {
     Close();
     if (width <= 0 || height <= 0 || scale <= 0 ||
@@ -35,9 +72,32 @@ bool sgp::SDLPresentation::Open(const char* title, int width, int height, int sc
         return false;
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) return false;
     initialized_ = true;
-    window_ = SDL_CreateWindow(title ? title : "JA2 v1.13 native Linux", width * scale, height * scale, 0);
-    if (!window_) { Close(); return false; }
-    if (!SDL_SyncWindow(window_)) { Close(); return false; }
+    const auto failed=[&](const char* stage) {
+        char error[512];SDL_snprintf(error,sizeof(error),"%s: %s",stage,SDL_GetError());
+        Close();SDL_SetError("%s",error);return false;
+    };
+    SDL_Rect bounds{};
+    const auto display=selectDisplay(options.display,bounds);
+    if (!display) return failed("select display");
+    const SDL_WindowFlags flags=SDL_WINDOW_HIDDEN | (options.borderless ? SDL_WINDOW_BORDERLESS : 0);
+    window_ = SDL_CreateWindow(title ? title : "JA2 v1.13 native Linux", width * scale, height * scale, flags);
+    if (!window_) return failed("create presentation window");
+    if (!SDL_SetWindowPosition(window_,SDL_WINDOWPOS_CENTERED_DISPLAY(display),SDL_WINDOWPOS_CENTERED_DISPLAY(display))) return failed("select window position");
+    // A null mode requests the existing desktop, never an exclusive mode switch.
+    if (options.borderless && !SDL_SetWindowFullscreenMode(window_,nullptr)) return failed("select desktop fullscreen mode");
+    if (options.borderless && !SDL_SetWindowFullscreen(window_,true)) return failed("request desktop fullscreen");
+    if (!SDL_ShowWindow(window_)) return failed("show presentation window");
+    if (!SDL_SyncWindow(window_)) return failed("synchronize presentation window");
+    if (options.borderless) {
+        int x=0,y=0,w=0,h=0;
+        if (!(SDL_GetWindowFlags(window_)&SDL_WINDOW_FULLSCREEN) ||
+            SDL_GetDisplayForWindow(window_)!=display ||
+            !SDL_GetWindowPosition(window_,&x,&y) || !SDL_GetWindowSize(window_,&w,&h) ||
+            x!=bounds.x || y!=bounds.y || w!=bounds.w || h!=bounds.h) {
+            SDL_SetError("Desktop fullscreen bounds were not applied: got %dx%d at %d,%d; expected %dx%d at %d,%d",w,h,x,y,bounds.w,bounds.h,bounds.x,bounds.y);
+            return failed("verify selected fullscreen display");
+        }
+    }
     width_ = width;
     height_ = height;
     quit_ = false;
@@ -58,8 +118,17 @@ bool sgp::SDLPresentation::Present565(const void* pixels, std::size_t bytes, std
         const_cast<void*>(pixels), static_cast<int>(pitch));
     if (!source) return false;
     SDL_Surface* destination = SDL_GetWindowSurface(window_);
-    const bool result = destination && SDL_BlitSurfaceScaled(source, nullptr, destination, nullptr, SDL_SCALEMODE_NEAREST) &&
+    int ww=0,wh=0;
+    NativePresentationGeometry geometry{};
+    bool result=destination && SDL_GetWindowSize(window_,&ww,&wh) &&
+        MakeNativePresentationGeometry(width_,height_,ww,wh,destination->w,destination->h,geometry);
+    if (result) {
+        SDL_Rect rect{geometry.contentX,geometry.contentY,geometry.contentWidth,geometry.contentHeight};
+        if (rect.w!=destination->w || rect.h!=destination->h)
+            result=SDL_FillSurfaceRect(destination,nullptr,SDL_MapSurfaceRGB(destination,0,0,0));
+        result=result && SDL_BlitSurfaceScaled(source,nullptr,destination,&rect,SDL_SCALEMODE_NEAREST) &&
                         SDL_UpdateWindowSurface(window_);
+    }
     SDL_DestroySurface(source);
     return result;
 }
@@ -81,6 +150,15 @@ bool sgp::SDLPresentation::InputInfo(SDL_WindowID& id, int& w, int& h, int& ww, 
 {
     if (!window_ || !SDL_IsMainThread() || !SDL_GetWindowSize(window_,&ww,&wh)) return false;
     id=SDL_GetWindowID(window_); w=width_; h=height_; return id!=0 && ww>0 && wh>0;
+}
+
+bool sgp::SDLPresentation::Geometry(NativePresentationGeometry& out) const
+{
+    if (!window_ || !SDL_IsMainThread()) return false;
+    int ww=0,wh=0;
+    SDL_Surface* surface=SDL_GetWindowSurface(window_);
+    return surface && SDL_GetWindowSize(window_,&ww,&wh) &&
+        MakeNativePresentationGeometry(width_,height_,ww,wh,surface->w,surface->h,out);
 }
 
 bool sgp::SDLPresentation::AttachInput(PresentationEventSink fn, void* context)

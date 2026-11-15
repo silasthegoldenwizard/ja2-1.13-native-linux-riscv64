@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: sgp/NativeText.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -16,6 +16,9 @@
 #include <cstring>
 #include <cwchar>
 #include <string>
+#include <iterator>
+#include <vector>
+#include "../ext/VFS/ext/utfcpp/source/utf8.h"
 
 namespace {
 template<typename C, typename Convert>
@@ -63,4 +66,50 @@ bool sgp::Utf8FieldToNativeWide(const char* source, std::size_t fieldBytes,
     if (!units) return false;
     destination[units] = 0;
     return true;
+}
+
+bool sgp::NativeWideToUtf16LE(const wchar_t* source, std::size_t maxWireUnits,
+                              std::vector<unsigned char>& output) noexcept
+{
+    if (!source || !maxWireUnits || maxWireUnits > static_cast<std::size_t>(INT_MAX) / 4) return false;
+    try {
+        const int size = NativeWideToUtf8(source, -1, nullptr, 0);
+        if (size <= 0 || static_cast<std::size_t>(size) > maxWireUnits * 4) return false;
+        std::vector<char> text(size);
+        if (!NativeWideToUtf8(source, -1, text.data(), text.size())) return false;
+        std::vector<unsigned short> units;
+        utf8::utf8to16(text.begin(), text.end(), std::back_inserter(units));
+        if (units.size() > maxWireUnits) return false;
+        std::vector<unsigned char> bytes;
+        bytes.reserve(units.size() * 2);
+        for (auto unit : units) {
+            bytes.push_back(static_cast<unsigned char>(unit));
+            bytes.push_back(static_cast<unsigned char>(unit >> 8));
+        }
+        output.swap(bytes);
+        return true;
+    } catch (...) { return false; }
+}
+
+bool sgp::Utf16LEToNativeWide(const unsigned char* source, std::size_t bytes,
+                              std::size_t maxWireUnits, std::wstring& output) noexcept
+{
+    if (!source || bytes < 2 || bytes % 2 || bytes / 2 > maxWireUnits || bytes > INT_MAX) return false;
+    try {
+        std::vector<unsigned short> units;
+        units.reserve(bytes / 2);
+        for (std::size_t i = 0; i < bytes; i += 2)
+            units.push_back(static_cast<unsigned short>(source[i] | (unsigned(source[i + 1]) << 8)));
+        if (units.back() || std::find(units.begin(), units.end() - 1, 0) != units.end() - 1) return false;
+        std::vector<char> text;
+        utf8::utf16to8(units.begin(), units.end(), std::back_inserter(text));
+        if (text.size() > static_cast<std::size_t>(INT_MAX)) return false;
+        const int size = Utf8ToNativeWide(text.data(), static_cast<int>(text.size()), nullptr, 0);
+        if (size <= 0) return false;
+        std::wstring wide(size, 0);
+        if (!Utf8ToNativeWide(text.data(), static_cast<int>(text.size()), wide.data(), wide.size())) return false;
+        wide.resize(size - 1);
+        output.swap(wide);
+        return true;
+    } catch (...) { return false; }
 }

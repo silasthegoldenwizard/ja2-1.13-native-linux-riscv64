@@ -1,61 +1,65 @@
-# Accepted source status — November 14, 2026
+# November 15 experimental source status
 
-This page describes the accepted live-source checkpoint.
-It does not describe later live-source changes.
+## Accepted local source
 
-The original engine starts on native x86-64.
-It completes menu and Preferences transitions and enters an original campaign.
-Normal and unsuppressed sanitizer runs both completed first-sector A9 victory.
-Both accepted victory runs closed normally with exit 0.
+The historical development checkpoint passed 85 native tests and 87 strict sanitizer tests, with no failures or skips.
+Sanitizer checks keep fatal ASan/UBSan behavior, leak detection, and no suppressions.
+The source includes these completed repairs:
 
-The stable victory checks recorded these results:
+- Borderless upper-monitor presentation and aspect-preserving UI/input scaling.
+- Explosion-count, soldier-layout, animation-cache, and UTF16LE save/load boundaries.
+- Dirty-region scrolling and the stale top strip confirmed by the user.
+- Zero-direction recoil and retired bullet-graphics node handling.
+- Dynamic-dialogue allocation and registry ownership.
+- Lit-door redraw after structure retirement.
+- Twelve valid NPC voice sets and invalid saved voice rejection.
+- C++ ownership during sector-inventory sorting and equal empty-slot comparison.
 
-- A9 was player-owned.
-- Enemy counts were zero.
-- Combat/busy state was clear.
-- First-battle facts were complete.
-- All four original hostiles had dead/inactive status.
-- The three hired mercenaries were alive.
+The inventory regression reproduces the original list failure before correction.
+It checks permutations, nested attachments, empty entries, partial ranges, exact identity multiplicities, and a 64-entry partition case.
+Independent source review found no blocking issue, with bounded coverage gaps retained.
 
-The final complete suites passed 72/72 native tests and 74/74 sanitizer tests.
-No test failed or was skipped.
-A bounded independent source/evidence review gave the result PASS WITH GAPS.
-These records apply to the original source bytes, which remained uncommitted.
-The package with notice changes has exact source-reconstruction checks.
-It has no new compilation, runtime test, or human visual acceptance.
+## Gameplay limits
 
-A later source review found an untested lifetime issue in the accepted snapshot.
-It is in the lit-door branch of `InternalSwapStructureForPartner` in `TileEngine/structure.cpp`.
-The routine calls `DeleteStructureFromWorld`.
-This call can free the old structure.
-The lit-door path can then read `pBaseStructure->sGridNo` before `LightSpriteStateChangePost`.
+A protected earlier campaign completed A9 through ordinary controls in native and sanitizer runs.
+The later all-feature campaign has not yet completed the same acceptance.
+Separate live development trials passed transfers, stack merging, and cross-build reload checks after the stash-close repair.
+These are bounded development observations, separate from packaged-source runtime acceptance.
+The final sanitizer build cold-loads the preserved A9 entry and passes 71 saved-state checks.
+Observed cold loads take approximately 71–77 seconds and can trigger a temporary desktop not-responding prompt.
+No loading-performance repair is included.
+Sound-enabled play, physical devices, broader campaigns, post-victory saves, and RISC-V remain open.
 
-Source review supports this issue.
-The recorded review did not reproduce a new runtime crash.
-This snapshot keeps the issue and includes no packaging repair.
+A later live sanitizer trial found a null-pointer abort while sunglasses were attached to a camo helmet.
+This revision includes the one-line pointer guard after `DoAttachment`.
+Its complete pre-notice file matches Owner's supplied hash.
+Saved guarded-source build receipts and JUnit reports pass 85 native and 87 strict sanitizer tests without skips.
+Owner separately reports a 75-check cold load.
+The focused completion regression passed 24 checks in both normal and strict sanitizer lanes.
+Its independent review accepted the bound production fragments and replay evidence.
+Attachment outcomes, UI effects, and map pointer clearing remain test doubles.
+At this freeze, Owner's acknowledgment of the mechanical export and the targeted in-game retest are unconfirmed.
+The final source/archive review is recorded separately.
 
-The review of the listed source findings is complete.
-Repairs and runtime reachability tests are still open.
-A separate synchronous non-person destruction path can also expose a stale alias.
-Source review supports this conditional path.
-The recorded review did not reproduce a new runtime crash in that path.
+## VFS status
 
-The package does not include these items:
+The live engine continues to use bfVFS.
+The independent API replacement and its property/startup compatibility candidates are not integrated into this source.
+Owner's isolated current-caller admission passes 49 FileMan, 85 INIReader, and 41 NativeText assertions per mode.
+That result does not establish full provider compatibility or a live replacement.
+The separately scoped startup candidate reaches a further bootstrap-path runtime gap.
+Its task acceptance and future integration remain separate from this export.
 
-- Proprietary resources, images, binaries, or builds
-- Profiles or saves
-- Raw logs
-- Authentication or environment state
-- API, provider, or accounting state
-- CI configuration
+## Paired source packages
 
-The two modified RakNet headers stay on local storage.
-The separately modified RakNet 3.401 library also stays there.
-Their exact component terms need a review.
-Current engine callers and build files keep references to this dependency.
-This package alone cannot reproduce the complete engine.
-
-At this checkpoint, the next engineering result was a separate post-A9 save/reload trial.
-That trial needed separate authorization and had not started.
-Sound and physical devices, human visual acceptance, and broad campaign reliability remained unproved.
-General projectile lifetime safety and native RISC-V also remained unproved.
+The main package excludes both modified game RakNet headers and the external SDK implementation.
+The separately reviewed companion supplies the game headers, SDK source, native adaptations, and component notices.
+Download both source archives from the release.
+The [packaged-source build record](BUILD-RESULTS.json) identifies the clean-build result and tested inputs.
+The prior exact package passed both SDK and full-engine build modes.
+Its fresh fixture suites passed 85/85 native and 87/87 strict sanitizer tests, with no failures or skips.
+Those full game binaries were not executed by package validation.
+The new attachment guard changes one reconstructed implementation file.
+No new build or game execution of this refreshed package is claimed.
+The earlier 85/87 results above remain evidence for local source before packaging.
+Source reconstruction and clean compilation do not establish complete gameplay or executable-distribution acceptance.

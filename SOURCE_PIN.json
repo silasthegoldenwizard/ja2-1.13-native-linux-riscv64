@@ -1,12 +1,12 @@
 {
   "schema": 2,
-  "checkpoint": "native-a9-victory-20261114",
-  "preparation_date": "2026-11-14",
-  "status": "This frozen snapshot contains source files for the private repository only. A separate record describes publication delivery.",
+  "checkpoint": "native-inventory-transfers-20261115",
+  "preparation_date": "2026-11-15",
+  "status": "Frozen local experimental source update prepared for independent review; no upload or public release.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
-  "previous_private_commit": "b1bc53dfd519a543eed1e31267cc325fd0370b41",
-  "previous_private_tree": "24537b39e85b0241e7351175ecece85feeffe225",
+  "previous_private_commit": "5c2ede3cb4245a842eca922be9abae4192fa8e20",
+  "previous_private_tree": "5d5447911f754f0eb19e78525195e2b7b2bf2c97",
   "sdl3": {
     "repository": "https://github.com/libsdl-org/SDL",
     "tag": "release-3.4.20",
@@ -37,7 +37,7 @@
     "references_in_engine_build_and_callers": true,
     "status": "This component stays on local storage until its license review is complete. Modified headers and native SDK changes are absent. This package alone cannot build the complete engine."
   },
-  "known_issue": "The lit-door path reads the pBaseStructure grid after deletion in InternalSwapStructureForPartner. Source review supports this untested issue. No new runtime crash was reproduced. This snapshot includes no fix.",
-  "verification": "The original source snapshot passed exact reconstruction checks. The export with notice changes has no new build, runtime, or RISC-V test result.",
+  "known_issue": "All-feature A9 victory and sector-to-mercenary transfers remain unverified. The observed list corruption during stash close has a production repair and regression; real populated transfers remain pending.",
+  "verification": "Accepted local source passes 85/85 native and 87/87 strict ASan/UBSan/LSan tests. Exact package reconstruction is checked separately; no build of the package with notices is claimed.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms."
 }

@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: platform/linux/NativeRuntime.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -137,11 +137,24 @@ bool p710::ContinueNativeWindowedFrame(bool running,bool quitRequested,bool inpu
     return running && !quitRequested && !inputTerminated;
 }
 
+bool p710::NativeScaledGameDimensions(int displayWidth,int displayHeight,int uiScale,
+                                      int& logicalWidth,int& logicalHeight) noexcept {
+    if (displayWidth<=0 || displayHeight<=0 || uiScale<1 || uiScale>4) return false;
+    std::int64_t w=std::max(1280,displayWidth/uiScale),h=std::max(720,displayHeight/uiScale);
+    if (w*displayHeight<h*displayWidth) w=(h*displayWidth+displayHeight-1)/displayHeight;
+    else h=(w*displayHeight+displayWidth-1)/displayWidth;
+    // Original centered panel offsets assume an even difference from the base.
+    w=(w+1)&~std::int64_t(1);h=(h+1)&~std::int64_t(1);
+    if (w>32768 || h>32768) return false;
+    logicalWidth=static_cast<int>(w);logicalHeight=static_cast<int>(h);return true;
+}
+
 const char* p710::NativeUsage() {
-    return "Usage: p710_native_game --profile DIR --temp DIR/Maps/Temp --settings DIR --assets DIR [--assets DIR ...] [--check-profile] [--KEY=VALUE] [/NOSOUND] [/WINDOW]\n"
+    return "Usage: p710_native_game --profile DIR --temp DIR/Maps/Temp --settings DIR --assets DIR [--assets DIR ...] [--check-profile] [--KEY=VALUE] [/NOSOUND] [/WINDOW|/FULLSCREEN]\n"
            "All roots must already exist, be absolute and contain no symlinks. Settings must equal profile; temp must equal profile/Maps/Temp. Assets are separate read-only VFS roots.\n"
            "Place Ja2.ini, Language.ini and original VFS INI files in the isolated profile. Existing game installations are outside this entry's authorization.\n"
-           "--help and --check-profile never initialize original game services or write settings.\n";
+           "--help and --check-profile never initialize original game services or write settings.\n"
+           "/FULLSCREEN uses borderless desktop mode. --NATIVE_DISPLAY=upper selects the upper monitor; --NATIVE_UI_SCALE=2 enlarges the UI (range1-4; fullscreen default2).\n";
 }
 p710::NativeOptions p710::ParseNativeOptions(int argc,const char* const* argv) {
     NativeOptions out;
@@ -162,7 +175,7 @@ p710::NativeOptions p710::ParseNativeOptions(int argc,const char* const* argv) {
         }
         if(arg=="/NOSOUND") { out.noSound=true; }
         else if(arg=="/WINDOW") out.overrides.emplace_back("SCREEN_MODE_WINDOWED","1");
-        else if(arg=="/FULLSCREEN") fail("Native fullscreen switching is not implemented; use /WINDOW");
+        else if(arg=="/FULLSCREEN") out.overrides.emplace_back("SCREEN_MODE_WINDOWED","0");
         else {
             std::size_t start=arg.rfind("--",0)==0?2:arg.rfind("-",0)==0?1:arg.rfind("/",0)==0?1:0;
             auto equal=arg.find_first_of("=:",start);
@@ -285,8 +298,24 @@ void GetRuntimeSettings() {
     virtualPath(forcedStructure);
     iResolution=static_cast<int>(props.getIntProperty("Ja2 Settings",L"SCREEN_RESOLUTION",-1));
     static constexpr int sizes[][2]={{640,480},{960,540},{800,600},{1024,600},{1280,720},{1024,768},{1280,768},{1360,768},{1366,768},{1280,800},{1440,900},{1600,900},{1280,960},{1440,960},{1770,1000},{1280,1024},{1360,1024},{1600,1024},{1440,1050},{1680,1050},{1920,1080},{1600,1200},{1920,1200},{2560,1440},{2560,1600}};
+    const auto requestedMode=props.getIntProperty("Ja2 Settings",L"SCREEN_MODE_WINDOWED",1);
+    if (requestedMode!=0 && requestedMode!=1) fail("Native display mode must be windowed1 or borderless0");
+    sgp::NativePresentationOptions presentation;
+    presentation.borderless=requestedMode==0;
+    const auto target=props.getStringProperty("Ja2 Settings",L"NATIVE_DISPLAY",L"primary").utf8();
+    if (target=="upper") presentation.display=sgp::NativeDisplayTarget::Upper;
+    else if (target!="primary") fail("NATIVE_DISPLAY must be primary or upper");
+    const auto uiScale=props.getIntProperty("Ja2 Settings",L"NATIVE_UI_SCALE",presentation.borderless?2:1);
+    if (uiScale<1 || uiScale>4) fail("NATIVE_UI_SCALE must be between1 and4");
     int width,height;
-    if(iResolution==_CustomRes) {
+    if (presentation.borderless) {
+        SDL_Rect bounds{};
+        if (!sgp::QueryNativeDisplayBounds(presentation.display,bounds) ||
+            !p710::NativeScaledGameDimensions(bounds.w,bounds.h,static_cast<int>(uiScale),width,height))
+            fail("Cannot derive native layout for the selected display");
+        iResolution=width>=1024 && height>=768?_1024x768:width>=1280 && height>=720?_1280x720:
+                    width>=800 && height>=600?_800x600:_640x480;
+    } else if(iResolution==_CustomRes) {
         width=std::max(640,static_cast<int>(props.getIntProperty("Ja2 Settings",L"CUSTOM_SCREEN_RESOLUTION_X",640)));
         height=std::max(480,static_cast<int>(props.getIntProperty("Ja2 Settings",L"CUSTOM_SCREEN_RESOLUTION_Y",480)));
         iResolution=width<800 || height<600?_640x480:width<1024 || height<768?_800x600:_1024x768;
@@ -303,8 +332,9 @@ void GetRuntimeSettings() {
     const int baseHeight=iResolution<_800x600?480:iResolution<_1024x768?600:768;
     xResOffset=(width-baseWidth)/2; yResOffset=(height-baseHeight)/2;
     xResSize=width-2*xResOffset; yResSize=height-2*yResOffset;
-    iWindowedMode=static_cast<int>(props.getIntProperty("Ja2 Settings",L"SCREEN_MODE_WINDOWED",1));
-    if(iWindowedMode!=1) fail("Native fullscreen mode is not implemented; configure SCREEN_MODE_WINDOWED=1");
+    // SDL desktop fullscreen retains the original windowed engine/frame policy.
+    // Presentation alone owns fullscreen state and monitor bounds.
+    iWindowedMode=1;
     iScreenMode=iWindowedMode; bScreenModeCmdLine=TRUE;
     iPlayIntro=static_cast<int>(props.getIntProperty("Ja2 Settings",L"PLAY_INTRO",iPlayIntro));
     iUseWinFonts=static_cast<int>(props.getIntProperty("Ja2 Settings",L"USE_WINFONTS",iUseWinFonts));
@@ -313,7 +343,8 @@ void GetRuntimeSettings() {
     fTooltipScaleFactor=std::max(1.0f,fTooltipScaleFactor);
     iDisableMouseScrolling=static_cast<int>(props.getIntProperty("Ja2 Settings",L"DISABLE_MOUSE_SCROLLING",iDisableMouseScrolling));
     SetHiSpeedClockMode(TRUE);
-    if(!sgp::ConfigureNativeVideo(SCREEN_WIDTH,SCREEN_HEIGHT,16,1,APPLICATION_NAME)) fail("Native video configuration rejected");
+    if(!sgp::ConfigureNativeVideo(SCREEN_WIDTH,SCREEN_HEIGHT,16,
+        presentation.borderless?1:static_cast<UINT32>(uiScale),APPLICATION_NAME,presentation)) fail("Native video configuration rejected");
 }
 
 BOOLEAN InitializeStandardGamingPlatform(void* instance,int show) {

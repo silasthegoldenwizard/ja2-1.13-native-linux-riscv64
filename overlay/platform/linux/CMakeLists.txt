@@ -1,8 +1,8 @@
 # P710 native snapshot update: platform/linux/CMakeLists.txt
-# Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+# Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
 # This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
 # Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
-# Update notice inserted during source-only package preparation: 2026-11-14.
+# Update notice inserted during source-only package preparation: 2026-11-15.
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
@@ -95,6 +95,7 @@ target_link_libraries(p710_movies PRIVATE p710_engine_contract FFmpeg::avformat
   FFmpeg::avcodec FFmpeg::avutil FFmpeg::swscale)
 add_library(p710_native_runtime STATIC
   "${P710_ENGINE_ROOT}/platform/linux/NativeRuntime.cpp"
+  "${P710_ENGINE_ROOT}/Utils/NativeEncryptedText.cpp"
   "${P710_ENGINE_ROOT}/sgp/NativeFontTranslation.cpp")
 target_link_libraries(p710_native_runtime PRIVATE p710_engine_contract)
 target_compile_options(p710_native_runtime PRIVATE -ffunction-sections -fdata-sections)
@@ -123,7 +124,8 @@ foreach(module Editor Ja2 Laptop ModularizedTacticalAI sgp Strategic Tactical Ta
     get_filename_component(name "${source}" NAME)
     if(module STREQUAL "sgp" AND name IN_LIST P710_REPLACED_SGP)
       set(selection "native-backend-interface-integration")
-    elseif(module STREQUAL "Utils" AND name STREQUAL "Cinematics Bink.cpp")
+    elseif(module STREQUAL "Utils" AND
+           (name STREQUAL "Cinematics Bink.cpp" OR name STREQUAL "Encrypted File.cpp"))
       set(selection "native-backend-interface-integration")
     elseif(module STREQUAL "Utils" AND name STREQUAL "dsutil.cpp")
       # Only the unselected Windows sample Win Util.cpp calls these DS helpers.
@@ -176,6 +178,60 @@ target_link_libraries(p710_native_game PRIVATE ${P710_ENGINE_TARGETS} Lua ${P710
 add_executable(p710_native_profile101_tests EXCLUDE_FROM_ALL
   "${P710_ENGINE_ROOT}/tests/native-core/native_profile101_tests.cpp")
 target_link_libraries(p710_native_profile101_tests PRIVATE ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_explosion_queue_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_explosion_queue_save_tests.cpp")
+target_link_libraries(p710_native_explosion_queue_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME saves.original_explosion_queue_count COMMAND p710_native_explosion_queue_save_tests)
+foreach(_p710_save_test email soldier map_message)
+  add_executable(p710_native_${_p710_save_test}_save_tests
+    "${P710_ENGINE_ROOT}/tests/native-core/native_${_p710_save_test}_save_tests.cpp")
+  target_link_libraries(p710_native_${_p710_save_test}_save_tests PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+endforeach()
+add_test(NAME saves.original_email_utf16_subject COMMAND p710_native_email_save_tests)
+add_test(NAME saves.original_soldier_native_layout COMMAND p710_native_soldier_save_tests)
+add_test(NAME saves.original_map_message_utf16 COMMAND p710_native_map_message_save_tests)
+add_executable(p710_native_recoil_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_recoil_tests.cpp")
+target_link_libraries(p710_native_recoil_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME combat.original_ncth_counter_force COMMAND p710_native_recoil_tests)
+add_executable(p710_native_world_node_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_world_node_tests.cpp")
+target_link_libraries(p710_native_world_node_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME world.original_struct_node_lifetime COMMAND p710_native_world_node_tests)
+add_executable(p710_native_dynamic_dialogue_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_dynamic_dialogue_tests.cpp")
+target_link_libraries(p710_native_dynamic_dialogue_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME dialogue.original_dynamic_box_lifetime COMMAND p710_native_dynamic_dialogue_tests)
+add_executable(p710_native_battle_sound_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_battle_sound_tests.cpp")
+target_link_libraries(p710_native_battle_sound_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME audio.original_npc_battle_sound_cache COMMAND p710_native_battle_sound_tests)
+add_executable(p710_native_sector_inventory_sort_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_sector_inventory_sort_tests.cpp")
+target_link_libraries(p710_native_sector_inventory_sort_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME inventory.original_sector_sort_lifetime COMMAND p710_native_sector_inventory_sort_tests)
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/door_swap_function.inc"
+  COMMAND "${Python3_EXECUTABLE}" -B "${P710_ENGINE_ROOT}/tests/native-core/extract_door_swap.py"
+    "${P710_ENGINE_ROOT}/TileEngine/structure.cpp" "${CMAKE_CURRENT_BINARY_DIR}/door_swap_function.inc"
+  DEPENDS "${P710_ENGINE_ROOT}/TileEngine/structure.cpp"
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_door_swap.py")
+add_executable(p710_native_door_swap_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/door_swap_lifetime.cpp"
+  "${CMAKE_CURRENT_BINARY_DIR}/door_swap_function.inc")
+target_include_directories(p710_native_door_swap_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_door_swap_tests PRIVATE -fsanitize=address,undefined
+    -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_door_swap_tests PRIVATE -fsanitize=address,undefined)
+endif()
+add_test(NAME world.original_door_swap_lifetime COMMAND p710_native_door_swap_tests)
 add_test(NAME profiles.original_windows101_wire COMMAND p710_native_profile101_tests)
 add_executable(p710_native_vobject_bridge_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_vobject_bridge_tests.cpp")
@@ -227,6 +283,13 @@ add_executable(p710_native_format_caller_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_format_caller_tests.cpp")
 target_link_libraries(p710_native_format_caller_tests PRIVATE p710_engine_contract)
 add_test(NAME text.original_caller_capacities COMMAND p710_native_format_caller_tests)
+add_executable(p710_native_encrypted_text_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_encrypted_text_tests.cpp"
+  "${P710_ENGINE_ROOT}/Utils/NativeEncryptedText.cpp")
+target_link_libraries(p710_native_encrypted_text_tests PRIVATE p710_engine_contract
+  p710_fileman p710_fileman_vfs bfVFS)
+add_test(NAME text.legacy_encrypted_utf16 COMMAND p710_native_encrypted_text_tests
+  "${CMAKE_CURRENT_BINARY_DIR}/artifacts/encrypted-text")
 add_executable(p710_native_item_file_services_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_item_file_services_tests.cpp")
 target_link_libraries(p710_native_item_file_services_tests PRIVATE p710_engine_contract

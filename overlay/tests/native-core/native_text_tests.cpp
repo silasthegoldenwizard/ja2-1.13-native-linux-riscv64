@@ -1,9 +1,9 @@
 /*
  * P710 native snapshot update: tests/native-core/native_text_tests.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -61,6 +61,33 @@ int main()
         check(!sgp::NativeWideToUtf8(expected.c_str(), -1, utf8.data(), 1) && utf8 == utf8Before, "narrow capacity failure unchanged");
         const wchar_t bad[] = {0xd800, 0};
         check(!sgp::NativeWideToUtf8(bad, -1, utf8.data(), utf8.size()) && utf8 == utf8Before, "native wide surrogate rejected");
+        std::vector<unsigned char> wire{0xa5};
+        check(sgp::NativeWideToUtf16LE(expected.c_str(), 6, wire) &&
+              wire == std::vector<unsigned char>({0x41,0,0xe9,0,0x2d,0x4e,0x3d,0xd8,0,0xde,0,0}),
+              "literal UTF16LE bytes and surrogate pair");
+        std::wstring native = L"old";
+        check(sgp::Utf16LEToNativeWide(wire.data(), wire.size(), 6, native) && native == expected,
+              "UTF16LE literal becomes equal native text");
+        const auto wireBefore = wire;
+        check(!sgp::NativeWideToUtf16LE(expected.c_str(), 5, wire) && wire == wireBefore,
+              "UTF16 wire capacity failure preserves output");
+        check(!sgp::NativeWideToUtf16LE(bad, 6, wire) && wire == wireBefore,
+              "invalid native scalar preserves UTF16 output");
+        check(sgp::NativeWideToUtf16LE(L"", 1, wire) && wire == std::vector<unsigned char>({0,0}),
+              "empty string is one UTF16 NUL unit");
+        check(sgp::Utf16LEToNativeWide(wire.data(), wire.size(), 1, native) && native.empty(),
+              "empty UTF16 field decodes");
+        native = L"guard";
+        for (const auto& invalid : std::vector<std::vector<unsigned char>>{
+                {}, {0}, {0x41,0}, {0,0,0x41,0,0,0}, {0,0xd8,0,0}, {0,0xdc,0,0},
+                {0,0xd8,0x41,0,0,0}})
+            check(!sgp::Utf16LEToNativeWide(invalid.data(), invalid.size(), 6, native) && native == L"guard",
+                  "invalid UTF16 field preserves output");
+        check(!sgp::Utf16LEToNativeWide(wireBefore.data(), wireBefore.size(), 5, native) && native == L"guard",
+              "UTF16 input wire bound is enforced");
+        check(!sgp::NativeWideToUtf16LE(nullptr, 6, wire) &&
+              !sgp::NativeWideToUtf16LE(L"A", 0, wire) &&
+              !sgp::Utf16LEToNativeWide(nullptr, 2, 6, native), "UTF16 invalid arguments reject");
         check(_stricmp("Data\\Name", "data\\name") == 0 && _stricmp("a", "b") < 0 && _stricmp("b", "a") > 0, "CRT comparison ordering");
         check(_strnicmp("ABCtail", "abcDIFF", 3) == 0 && _strnicmp("a", "B", 1) < 0, "bounded CRT comparison");
         check(_wcsicmp(L"Actor", L"ACTOR") == 0 && _wcsnicmp(L"Alpha", L"ALTERNATE", 2) == 0, "wide comparison");

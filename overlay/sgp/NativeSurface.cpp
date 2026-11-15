@@ -12,10 +12,10 @@
 
 /*
  * P710 native snapshot update: sgp/NativeSurface.cpp
- * Native Linux source/build/test adaptations captured in the accepted A9 snapshot dated 2026-11-14.
+ * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
  * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
  * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
- * Update notice inserted during source-only package preparation: 2026-11-14.
+ * Update notice inserted during source-only package preparation: 2026-11-15.
  * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
@@ -99,7 +99,7 @@ BOOLEAN blit(NativeSurface* d, NativeSurface* s, UINT16 index, INT32 x, INT32 y,
     const UINT32 fills = flags & (VS_BLT_COLORFILL | VS_BLT_COLORFILLRECT);
     if (fills)
     {
-        if (!fx || fx->DestRegion || fills == (VS_BLT_COLORFILL | VS_BLT_COLORFILLRECT) ||
+        if (!fx || fills == (VS_BLT_COLORFILL | VS_BLT_COLORFILLRECT) ||
             (flags & (VS_BLT_USECOLORKEY | VS_BLT_SRCSUBRECT))) return FALSE;
         // Validate the original COLORVAL before RGB565's legacy narrowing.
         // Otherwise high-word index values such as0x10000 become index zero.
@@ -107,7 +107,9 @@ BOOLEAN blit(NativeSurface* d, NativeSurface* s, UINT16 index, INT32 x, INT32 y,
         return fill(d, fills == VS_BLT_COLORFILL ? bounds(d) : rect(fx->FillRect),
                     static_cast<UINT16>(fx->ColorFill), (flags & VS_BLT_CLIPPED) != 0);
     }
-    if (!s || s->locked || (fx && fx->DestRegion) ||
+    // Effects fields are selected by flags. Original callers can initialize
+    // SrcRect alone; VS_BLT_DESTREGION remains rejected by the flag mask above.
+    if (!s || s->locked ||
         (d->depth==8 && s->depth!=8) || (d->depth==16 && s->depth==8 && !s->colors)) return FALSE;
     Rect src = bounds(s);
     if (flags & VS_BLT_SRCSUBRECT)

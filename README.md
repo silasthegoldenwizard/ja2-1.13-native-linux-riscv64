@@ -1,43 +1,59 @@
-# Jagged Alliance 2 v1.13 for Linux
+# Jagged Alliance 2 v1.13 for native Linux
 
-This experimental project ports **JA2 v1.13** to Linux.
-It must keep the original gameplay and mechanics.
-Linux x86-64 is the first target.
-RISC-V64 is a later target.
+This experimental project ports JA2 v1.13 to Linux while retaining its gameplay and mechanics.
+Linux x86-64 is the current development target. RISC-V64 remains untested.
 
-> [!IMPORTANT]
-> **Source snapshot: November 14, 2026. Private repository. Source files only.**
-> Some necessary RakNet header and library changes are outside this package.
-> These changes need a component license review.
-> This package alone cannot reproduce the complete engine build.
-> The package does not include proprietary game assets or compiled binaries.
+This is the `v0.1.0-alpha.1` experimental source preview.
+Use both the engine overlay and the RakNet 3.401 source companion from the [release](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1).
+Together they supply the selected engine and native SDK source inputs.
+The engine overlay alone does not include the RakNet headers or library source.
+Original game data is required separately.
+The source packages contain no proprietary game assets, profiles, saves, credentials, or compiled binaries.
 
-## Progress so far
+## Tested development source
 
-The development build reached the original menu.
-It started a campaign and hired mercenaries.
-It entered A9 and completed the first sector battle on native Linux x86-64.
+| Check | Saved result |
+|---|---|
+| Native regression suite | 85/85 pass |
+| Strict ASan/UBSan/LSan suite | 87/87 pass, with leak detection and no suppressions |
+| Sector-inventory sorting | 2,204 assertions per mode |
+| Dynamic dialogue | 56 lifecycle assertions per mode |
+| Lit-door lifetime | 545 checks across 24 scenarios per mode |
+| NPC battle-sound cache | 147 assertions per mode |
+| Real upper-monitor cold load | 71/71 saved-state checks on the final sanitizer build |
 
-| Area | Recorded result |
-| --- | --- |
-| Native test suite | 72/72 passed |
-| ASan/UBSan/LSan suite | 74/74 passed, without suppressions |
-| Source package | Exact source reconstruction passed. The independent package check passed with gaps. |
-| Tests still necessary | Save/reload, sound and physical devices, human visual acceptance, broader campaigns, and RISC-V64 |
+The local build previously completed A9 in a protected ordinary campaign.
+The later all-feature campaign exposed additional defects, now covered by focused regressions.
+Broad all-feature gameplay acceptance remains open.
+Separate live development trials exercised transfers, stack merging, and cross-build saves after the inventory-sort repair.
+Those trials are separate from the packaged-source fixture runs.
 
-The engine results apply to the local development checkpoint before the package was made.
-This source snapshot has no new build or runtime test.
-Source review found an untested lifetime issue in the lit-door path.
-The [status and known issues](docs/STATUS.md) page gives the details.
+**Attachment guard included:** the item-attachment callback now checks the held-item pointer after `DoAttachment`.
+That operation can clear the pointer before the refresh call.
+The exact pre-notice file matches Owner's supplied SHA-256.
+An independently accepted completion-only regression reproduces the earlier null member call.
+The fixed normal and strict sanitizer lanes each pass 24 checks with empty runtime stderr.
+Actual production fragments execute, but attachment outcomes and UI effects are test doubles.
+At this freeze, Owner's acknowledgment of the mechanical export and the targeted in-game retest are unconfirmed.
+The final source/archive review is separate from these engineering results.
 
-## Explore and reconstruct the source
+The table above describes the accepted development checkpoint before the attachment guard and package notices.
+The [packaged-source build record](docs/BUILD-RESULTS.json) identifies the separate clean-build result and its exact inputs.
+The earlier package built both native and sanitizer game targets and passed 85/85 and 87/87 fixture tests without skips.
+Those package results precede the attachment guard.
+Saved Owner build receipts show successful guarded native and sanitizer game builds.
+Their JUnit reports contain 85 and 87 passing tests, with no failures or skips.
+Owner separately reports a 75-check cold load after the guard.
+The refreshed packaged source has not had a new build or game execution.
+The build record keeps the prior package evidence separate from current reported results.
+Source pins and reconstruction records retain their snapshot-preparation scope.
+Build verification does not establish broad campaign reliability or native RISC-V support.
+The two extra sanitizer tests are intentional diagnostic canaries.
 
-The source overlay contains changes for a separate upstream source copy.
-Reconstruction applies these changes to that copy.
+## Reconstruct the source
 
-1. Use an existing local upstream Git repository with the revision in [SOURCE_PIN.json](SOURCE_PIN.json).
-2. Select an output path that does not exist.
-3. Run this command:
+Use an existing local upstream Git object store with the pinned revision.
+Select an output directory that does not exist.
 
 ```sh
 python3 reconstruct.py \
@@ -45,24 +61,17 @@ python3 reconstruct.py \
   --output /path/to/new-empty-source
 ```
 
-The helper reads pinned Git objects.
-It does not fetch objects.
-It compares the reconstructed files with the manifest.
+The helper reads pinned objects and verifies every declared reconstructed file.
+It does not fetch source, install dependencies, compile, or launch the game.
 
-The [Linux build guide](docs/BUILD-LINUX.md) gives the development environment, dependencies, and full-build limitation.
-The [changelog](docs/CHANGELOG.md) lists the changes in this snapshot.
+- [Status and remaining checks](docs/STATUS.md)
+- [Linux build context and RakNet closure](docs/BUILD-LINUX.md)
+- [Packaged-source build record](docs/BUILD-RESULTS.json)
+- [Changes since the previous source update](docs/CHANGELOG.md)
+- [Saved test identities](docs/TEST-EVIDENCE.json)
+- [Source and dependency pins](SOURCE_PIN.json)
+- [Component limits](docs/PUBLICATION-LIMITS.md)
+- [Notices](notices/)
 
-## Source and licensing
-
-Each component keeps its own license terms.
-The historical SFI terms give a qualified basis for the original engine source.
-bfVFS keeps LGPL 2.1-or-later terms.
-Other components keep their own notices.
-Private hosting does not replace these terms.
-Public access and binary releases need separate decisions.
-
-The following records give the details:
-
-- [Publication scope and licensing](docs/PUBLICATION-LIMITS.md)
-- [License notices](notices/)
-- [Reconstruction manifest](RECONSTRUCTION-MANIFEST.json)
+The engine and libraries retain their individual terms.
+No whole-project relicensing or complete legal clearance is asserted.
