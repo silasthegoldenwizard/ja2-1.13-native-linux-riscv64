@@ -38,6 +38,7 @@ VFS, image, SDL, FFmpeg, FreeType, RakNet, and full-game integration are outside
 
 The [attachment regression](../tests/attachment-completion/README.md) adds 24 controlled completion cases in normal and strict sanitizer modes.
 It binds its production fragments to the reconstructed source and uses real engine headers.
+Those declarations also need headers from the project's pinned SDL source; this lane does not build or link SDL.
 It does not add a new production guard; the guard is already in `v0.1.0-alpha.1`.
 Its controlled outcomes do not establish full callback, attachment-policy, UI, or campaign behavior.
 
