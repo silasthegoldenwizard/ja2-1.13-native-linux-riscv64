@@ -48,9 +48,13 @@ jobs:
           done
       - name: Verify attachment completion regression
         run: |
-          cmake -S tests/attachment-completion -B "$RUNNER_TEMP/attachment-sanitized" \
-            -DCMAKE_CXX_COMPILER=clang++ -DP710_ENGINE_SOURCE="$RUNNER_TEMP/p710/source" \
-            -DP710_SDL_HEADERS="$RUNNER_TEMP/p710/sdl/include" \
-            -DP710_SANITIZERS=ON -DP710_ATTACHMENT_UNGUARDED=ON
-          cmake --build "$RUNNER_TEMP/attachment-sanitized" --parallel 2
-          ctest --test-dir "$RUNNER_TEMP/attachment-sanitized" --output-on-failure --no-tests=error
+          for mode in debug sanitized; do
+            sanitize=OFF
+            if [ "$mode" = sanitized ]; then sanitize=ON; fi
+            cmake -S tests/attachment-completion -B "$RUNNER_TEMP/attachment-$mode" \
+              -DCMAKE_CXX_COMPILER=clang++ -DP710_ENGINE_SOURCE="$RUNNER_TEMP/p710/source" \
+              -DP710_SDL_HEADERS="$RUNNER_TEMP/p710/sdl/include" \
+              -DP710_SANITIZERS="$sanitize" -DP710_ATTACHMENT_UNGUARDED=OFF
+            cmake --build "$RUNNER_TEMP/attachment-$mode" --parallel 2
+            ctest --test-dir "$RUNNER_TEMP/attachment-$mode" --verbose --no-tests=error
+          done
