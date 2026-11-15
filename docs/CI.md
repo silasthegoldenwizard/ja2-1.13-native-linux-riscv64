@@ -28,3 +28,20 @@ The short pull request title becomes the squash commit title.
 This documentation check does not validate engine behavior or workflow security.
 Code and workflow changes still need their applicable technical review and checks.
 Release tags, release notes, and release assets use a separate publication step.
+
+## Native component checks
+
+The `native` job reconstructs the 1,492 declared source files from the pinned public base and this overlay.
+The existing CMake/CTest component lane builds production code with C++17 and Clang on Ubuntu 24.04.
+It runs seven normal tests and nine sanitizer tests, including the existing sanitizer diagnostic probes.
+VFS, image, SDL, FFmpeg, FreeType, RakNet, and full-game integration are outside this component lane.
+
+The [attachment regression](../tests/attachment-completion/README.md) adds 24 controlled completion cases in normal and strict sanitizer modes.
+It binds its production fragments to the reconstructed source and uses real engine headers.
+Those declarations also need headers from the project's pinned SDL source; this lane does not build or link SDL.
+It does not add a new production guard; the guard is already in `v0.1.0-alpha.1`.
+Its controlled outcomes do not establish full callback, attachment-policy, UI, or campaign behavior.
+
+The jobs run for every PR without path filters.
+Only checks with a demonstrated failing control and corrected pass become required.
+Future source changes that affect the frozen regression bindings need a reviewed binding update.
