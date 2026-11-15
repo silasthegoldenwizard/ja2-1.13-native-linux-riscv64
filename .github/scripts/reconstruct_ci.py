@@ -30,14 +30,10 @@ def main():
     run('git', '-C', base, 'fetch', '--filter=blob:none', '--depth=1', '--no-tags',
         'origin', manifest['base_commit'])
     paths = sorted({row['path'] for row in manifest['records'] if row.get('upstream_blob_sha1')})
-    blobs = sorted({row['upstream_blob_sha1'] for row in manifest['records'] if row.get('upstream_blob_sha1')})
-    # Use Git's bulk promisor-fetch route instead of one lazy fetch per file.
-    subprocess.run(['git', '-C', str(base), 'fetch', '--quiet', '--no-tags',
-                    '--no-write-fetch-head', '--recurse-submodules=no', '--filter=blob:none',
-                    'origin', '--stdin'], input='\n'.join(blobs) + '\n', text=True, check=True)
     path_list = args.work / 'base-paths'
     path_list.write_bytes(b'\0'.join(path.encode() for path in paths) + b'\0')
-    # reconstruct.py reads the prefetched objects with lazy fetching disabled.
+    # Restore obtains the declared public blobs through the partial clone.
+    # reconstruct.py then reads them with lazy fetching disabled and checks hashes.
     run('git', '--literal-pathspecs', '-C', base, 'restore', '--source=FETCH_HEAD',
         '--worktree', '--pathspec-from-file=' + str(path_list), '--pathspec-file-nul')
     run(sys.executable, payload / 'reconstruct.py', '--base-repo', base / '.git',
