@@ -13,7 +13,7 @@ Run the same check locally:
 python3 .github/scripts/check_docs.py
 ```
 
-The [workflow](../.github/workflows/pilot-missing.yml) uses a GitHub-hosted runner and a read-only repository token.
+The [workflow](../.github/workflows/docs.yml) uses a GitHub-hosted runner and a read-only repository token.
 It uses no game assets, private secrets, or installed Python packages.
 
 ## Merge process
