@@ -7,7 +7,6 @@ RISC-V64 remains untested.
 ## Current release
 
 [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1) is a source preview, released on November 15, 2026.
-It includes the attachment crash fix.
 Full campaign reliability remains unverified, and a sanitizer shutdown leak remains open.
 
 The release contains no game assets or prebuilt game binaries.
