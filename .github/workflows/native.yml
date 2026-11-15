@@ -50,6 +50,7 @@ jobs:
         run: |
           cmake -S tests/attachment-completion -B "$RUNNER_TEMP/attachment-sanitized" \
             -DCMAKE_CXX_COMPILER=clang++ -DP710_ENGINE_SOURCE="$RUNNER_TEMP/p710/source" \
+            -DP710_SDL_HEADERS="$RUNNER_TEMP/p710/sdl/include" \
             -DP710_SANITIZERS=ON -DP710_ATTACHMENT_UNGUARDED=ON
           cmake --build "$RUNNER_TEMP/attachment-sanitized" --parallel 2
           ctest --test-dir "$RUNNER_TEMP/attachment-sanitized" --output-on-failure --no-tests=error
