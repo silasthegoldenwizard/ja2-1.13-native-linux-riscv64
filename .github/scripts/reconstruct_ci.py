@@ -38,6 +38,16 @@ def main():
         '--worktree', '--pathspec-from-file=' + str(path_list), '--pathspec-file-nul')
     run(sys.executable, payload / 'reconstruct.py', '--base-repo', base / '.git',
         '--output', args.work / 'source')
+    # Item Types.h reaches SDL declarations through the real UI headers.
+    # Only headers are needed for the completion fixture; no SDL library is built.
+    sdl = args.work / 'sdl'
+    run('git', 'clone', '--filter=blob:none', '--no-checkout', '--depth=1', '--no-tags',
+        '--branch', pin['sdl3']['tag'], pin['sdl3']['repository'] + '.git', sdl)
+    revision = subprocess.check_output(['git', '-C', str(sdl), 'rev-parse', 'HEAD'], text=True).strip()
+    if revision != pin['sdl3']['commit']:
+        parser.error('The SDL header tag does not match the pinned commit.')
+    run('git', '-C', sdl, 'restore', '--source=HEAD', '--worktree', 'include')
+    print('SDL declaration headers:', revision, flush=True)
     print('Public base:', manifest['base_commit'], flush=True)
     print('Verified reconstruction:', len(manifest['records']), 'files', flush=True)
 
