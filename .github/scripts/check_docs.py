@@ -42,10 +42,10 @@ def main():
     checked = 0
     for path in files:
         text = path.read_text(encoding='utf-8')
-        for number, line in enumerate(text.splitlines(), 1):
-            if re.match(r'^(<<<<<<< |=======\s*$|>>>>>>> )', line):
-                errors.append(f'{path.relative_to(ROOT)}:{number}: merge conflict marker')
         body = prose(text)
+        for number, line in enumerate(body.splitlines(), 1):
+            if re.match(r'^(<<<<<<< |>>>>>>> )', line):
+                errors.append(f'{path.relative_to(ROOT)}:{number}: merge conflict marker')
         for pattern in (INLINE_LINK, REFERENCE):
             for match in pattern.finditer(body):
                 target = match[1] or match[2]
