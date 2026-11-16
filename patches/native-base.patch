@@ -10274,6 +10274,49 @@
  		SetBoxPosition( ghMoveBox, Position );
  	}
  }
+--- a/Strategic/Merc Contract.cpp
++++ b/Strategic/Merc Contract.cpp
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: Strategic/Merc Contract.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ 
+ 	#include "types.h"
+ 	#include "Merc Contract.h"
+@@ -19,6 +29,7 @@
+ 	#include "Interface Control.h"
+ 	#include "gamescreen.h"
+ 	#include "jascreens.h"
++	#include "gameloop.h"
+ 	#include "random.h"
+ 	#include "Assignments.h"
+ 	#include "Strategic Movement.h"
+@@ -251,6 +262,18 @@
+ 				EndCurrentContractRenewal( );
+ 			}
+ 		}
++		else if ( gfInContractMenuFromRenewSequence && !fShowContractMenu &&
++			!fOneFrame && !fShowAssignmentMenu && !fShowUpdateBox &&
++			guiCurrentScreen == MAP_SCREEN && guiPendingScreen == NO_PENDING_SCREEN &&
++			( !PauseStateLocked() || guiLockPauseStateLastReasonId == 7 ) &&
++			DialogueQueueIsEmptyOrSomebodyTalkingNow() )
++		{
++			// Escape or an outside click can hide the outstanding renewal choice.
++			// Restore only the menu after pending dialogue and UI transitions finish.
++			// Reason 7 belongs to this renewal sequence and must remain locked.
++			TacticalCharacterDialogueWithSpecialEvent( pSoldier, 0,
++				DIALOGUE_SPECIAL_EVENT_SHOW_CONTRACT_MENU, 0, 0 );
++		}
+ 	}
+ }
+ 
 --- a/Strategic/MilitiaIndividual.cpp
 +++ b/Strategic/MilitiaIndividual.cpp
 @@ -1,3 +1,13 @@
@@ -16262,7 +16305,7 @@
  }
 --- a/Tactical/Interface Enhanced.cpp
 +++ b/Tactical/Interface Enhanced.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Tactical/Interface Enhanced.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -16273,11 +16316,32 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Interface Enhanced.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <math.h>
  	#include <stdio.h>
  	#include "sgp.h"
  	#include "vobject.h"
-@@ -6989,8 +7000,8 @@
+@@ -1484,7 +1505,9 @@
+ 			}
+ 
+ 			///////////////// BURST/AUTOFIRE DATA - ICONS
+-			for (cnt = 19; cnt < 23; cnt++)
++			// Row 22 is the old-system autofire penalty; NCTH has 22 rows.
++			const INT32 weaponTooltipCount = UsingNewCTHSystem() ? 22 : 23;
++			for (cnt = 19; cnt < weaponTooltipCount; cnt++)
+ 			{
+ 				MSYS_DefineRegion( &gUDBFasthelpRegions[ iRegionsCreated ],
+ 					(INT16)(gItemDescGenRegions[cnt][0].sLeft),
+@@ -6989,8 +7012,8 @@
  				// Flugente: if we use buckshot, display damage a bullet does times number of bullets
  				if ( Item[gpItemDescObject->usItem].usItemClass == IC_GUN && AmmoTypes[( *gpItemDescObject )[0]->data.gun.ubGunAmmoType].numberOfBullets > 1 )
  				{
@@ -16288,7 +16352,7 @@
  
  					// Print base value
  					DrawPropertyValueInColour_X( damage, AmmoTypes[( *gpItemDescObject )[0]->data.gun.ubGunAmmoType].numberOfBullets, ubNumLine, 1, fComparisonMode, FALSE, TRUE );
-@@ -8356,19 +8367,19 @@
+@@ -8356,19 +8379,19 @@
  				// pistols and revolvers
  				if( Weapon[ gpItemDescObject->usItem ].ubWeaponType == GUN_PISTOL || Weapon[ gpItemDescObject->usItem ].ubWeaponType == GUN_M_PISTOL )
  					iFinalReloadAPCost = (INT16)( (FLOAT)iFinalReloadAPCost 
@@ -16312,7 +16376,7 @@
  			}
  
  			// Get base Reload Cost
-@@ -8401,19 +8412,19 @@
+@@ -8401,19 +8424,19 @@
  					// pistols and revolvers
  					if( Weapon[ gpComparedItemDescObject->usItem ].ubWeaponType == GUN_PISTOL || Weapon[ gpComparedItemDescObject->usItem ].ubWeaponType == GUN_M_PISTOL )
  						iComparedFinalReloadAPCost = (INT16)( (FLOAT)iComparedFinalReloadAPCost 
@@ -16336,7 +16400,7 @@
  				}
  
  				// Get base Reload Cost
-@@ -8450,19 +8461,19 @@
+@@ -8450,19 +8473,19 @@
  				// pistols and revolvers
  				if( Weapon[ gpComparedItemDescObject->usItem ].ubWeaponType == GUN_PISTOL || Weapon[ gpComparedItemDescObject->usItem ].ubWeaponType == GUN_M_PISTOL )
  					iFinalReloadAPCost = (INT16)( (FLOAT)iFinalReloadAPCost 
@@ -16360,7 +16424,7 @@
  			}
  
  				// Get base Reload Cost
-@@ -8795,7 +8806,7 @@
+@@ -8795,7 +8818,7 @@
  				if(gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier)
  				{
  					iFinalBurstValue = GetBurstToHitBonus(gpItemDescObject) * gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier;
@@ -16369,7 +16433,7 @@
  				}
  				else
  				{
-@@ -8825,7 +8836,7 @@
+@@ -8825,7 +8848,7 @@
  					if(gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier)
  					{
  						iComparedFinalBurstValue = GetBurstToHitBonus(gpComparedItemDescObject) * gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier;
@@ -16378,7 +16442,7 @@
  					}
  					else
  					{
-@@ -8853,7 +8864,7 @@
+@@ -8853,7 +8876,7 @@
  				if(gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier)
  				{
  					iFinalBurstValue = GetBurstToHitBonus(gpComparedItemDescObject) * gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier;
@@ -16387,7 +16451,7 @@
  				}
  				else
  				{
-@@ -9001,7 +9012,7 @@
+@@ -9001,7 +9024,7 @@
  			if(gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier)
  			{
  				iFinalAutoValue = GetAutoToHitBonus(gpItemDescObject) * gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier;
@@ -16396,7 +16460,7 @@
  			}
  			else
  			{
-@@ -9032,7 +9043,7 @@
+@@ -9032,7 +9055,7 @@
  				if(gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier)
  				{
  					iComparedFinalAutoValue = GetAutoToHitBonus(gpComparedItemDescObject) * gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier;
@@ -16405,7 +16469,7 @@
  				}
  				else
  				{
-@@ -9067,7 +9078,7 @@
+@@ -9067,7 +9090,7 @@
  			if(gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier)
  			{
  				iFinalAutoValue = GetAutoToHitBonus(gpComparedItemDescObject) * gGameExternalOptions.ubFlatAFTHBtoPrecentMultiplier;
@@ -16414,7 +16478,7 @@
  			}
  			else
  			{
-@@ -14229,8 +14240,8 @@
+@@ -14229,8 +14252,8 @@
  			sTop = gItemDescAdvRegions[cnt - sFirstLine][1].sTop;
  			sHeight = gItemDescAdvRegions[cnt - sFirstLine][1].sBottom - sTop;
  
@@ -16425,7 +16489,7 @@
  			
  			SetFontForeground( 5 );
  			sLeft = gItemDescAdvRegions[cnt - sFirstLine][1].sLeft;
-@@ -14325,26 +14336,26 @@
+@@ -14325,26 +14348,26 @@
  			{
  				if (cnt >= sFirstLine && cnt < sLastLine)
  				{
@@ -16458,7 +16522,7 @@
  							iComparedModifier[1] = 0;
 --- a/Tactical/Interface Items.cpp
 +++ b/Tactical/Interface Items.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Tactical/Interface Items.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -16479,10 +16543,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Interface Items.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "mapscreen.h"
  	#include <stdio.h>
  	#include "sgp.h"
-@@ -28,6 +48,7 @@
+@@ -28,6 +58,7 @@
  	#include "message.h"
  	#include "Text.h"
  	#include "Interface Items.h"
@@ -16490,7 +16564,7 @@
  	#include "Cursor Control.h"
  	#include "Interface Cursors.h"
  	#include "Interface Utils.h"
-@@ -784,8 +805,8 @@
+@@ -784,8 +815,8 @@
  	if ( gGameExternalOptions.fWeaponOverheating )
  	{
  		FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16501,7 +16575,7 @@
  	}
  
  	//CHRISL: TODO - This needs to be updated for NCTH
-@@ -929,8 +950,8 @@
+@@ -929,8 +960,8 @@
  	if ( gGameExternalOptions.fWeaponOverheating )
  	{
  		FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16512,7 +16586,7 @@
  	}
  
  	//CHRISL: TODO - This needs to be updated for NCTH
-@@ -1834,7 +1855,7 @@
+@@ -1834,7 +1865,7 @@
  
  //THE_BOB: mag-making popups
  static POPUP * sPocketPopup = NULL;
@@ -16521,7 +16595,7 @@
  
  void popupCallbackAmmo(UINT16 item, UINT16 pocket, SOLDIERTYPE* pSoldier ){
  
-@@ -1974,7 +1995,7 @@
+@@ -1974,7 +2005,7 @@
  				INT16 pocketType = pocketTypeInSlot( pSoldier, pocket );
  
  				if( pocketType != -1 ){
@@ -16530,7 +16604,7 @@
  				} else {
  					numObjectsToPlace = 1;
  				}
-@@ -2127,7 +2148,7 @@
+@@ -2127,7 +2158,7 @@
  		}
  
  		if( pocketType != -1 ){
@@ -16539,7 +16613,7 @@
  		} else {
  			numObjectsToPlace = 1;
  		}
-@@ -2320,7 +2341,7 @@
+@@ -2320,7 +2351,7 @@
  
  									UINT8 maxPerPocket = LBEPocketType[pocketTypeInSlot(pSoldier, sPocket)].ItemCapacityPerSize[ Item[loop].ItemSize ];
  										
@@ -16548,7 +16622,7 @@
  								}
  								else if( CanItemFitInPosition(pSoldier, &pInventoryPoolList[i].object, sPocket, FALSE) )
  								{
-@@ -3692,7 +3713,7 @@
+@@ -3692,7 +3723,7 @@
  // Flugente: Function to get the number of the item condition string
  UINT8 GetTemperatureString( FLOAT overheatpercentage, UINT32* apRed, UINT32* apGreen, UINT32* abBlue )
  {
@@ -16557,7 +16631,7 @@
  	*apGreen = 0;
  	*abBlue  = 0;
  
-@@ -3973,8 +3994,8 @@
+@@ -3973,8 +4004,8 @@
  				{
  					FLOAT condition = (*pObject)[0]->data.bTemperature / OVERHEATING_MAX_TEMPERATURE;
  
@@ -16568,7 +16642,7 @@
  					UINT32 blue  = 0;
  										
  					UINT16 colour = Get16BPPColor( FROMRGB( red, green, blue ) );
-@@ -4382,7 +4403,11 @@
+@@ -4382,7 +4413,11 @@
  				}
  			}
  
@@ -16581,7 +16655,191 @@
  
  			VarFindFontCenterCoordinates( sX, sY, sWidth, sHeight , ITEM_FONT, &sFontX, &sFontY, pStr );
  			sFontY = sY + 1;
-@@ -5912,7 +5937,7 @@
+@@ -5637,56 +5672,60 @@
+ }
+ 
+ //CHRISL: This function is designed to recreate the attachment tooltips
++static void ClearAttachmentPopupState()
++{
++	POPUP* retired[MAX_ATTACHMENTS] = {};
++	std::vector<PopupAttachmentInfo*> retiredInfos;
++	retiredInfos.swap(gPopupAttachmentInfos);
++	giActiveAttachmentPopup = -1;
++	gItemDescAttachmentPopupsInitialized = FALSE;
++	// Detach every global handle before hide callbacks can observe teardown.
++	for (UINT32 i = 0; i < MAX_ATTACHMENTS; ++i)
++	{
++		retired[i] = gItemDescAttachmentPopups[i];
++		gItemDescAttachmentPopups[i] = NULL;
++		if (gItemDescAttachmentRegions[i].IDNumber != 0)
++			MSYS_RemoveRegion(&gItemDescAttachmentRegions[i]);
++	}
++	for (UINT32 i = 0; i < MAX_ATTACHMENTS; ++i) delete retired[i];
++	// Option callbacks borrow metadata until their owning popups retire.
++	for (auto* info : retiredInfos) delete info;
++}
++
+ void UpdateAttachmentTooltips(OBJECTTYPE *pObject, UINT8 ubStatusIndex)
+ {
++	ClearAttachmentPopupState();
++	if (!pObject || !pObject->exists() || ubStatusIndex >= pObject->ubNumberOfObjects ||
++		ubStatusIndex >= pObject->objectStack.size())
++		return;
+ 	UINT32		slotCount = 0;
+ 	//WarmSteel - Copied most of this from bobby rays attachment listing. No need to reinvent the wheel.
+ 	BOOLEAN		fAttachmentsFound = FALSE;
+ 	// Contains entire string of attachment names
+-	CHAR16		attachStr[2500];
+-	// Contains current attachment string
+-	CHAR16		attachStr2[200];
++	std::wstring attachStr;
+ 	// Contains temporary attachment list before added to string constant from text.h
+-	CHAR16		attachStr3[2500];
++	std::wstring attachStr3;
++	const std::size_t tooltipLimit = 2499;
+ 	UINT16		usAttachment;
+ 	std::vector<UINT16>	attachList, parseList;
+-	std::vector<UINT16>	usAttachmentSlotIndexVector = GetItemSlots(pObject);
+-	UINT64		point = GetAvailableAttachmentPoint(pObject, 0); //Madd: Common Attachment Framework
++	std::vector<UINT16>	usAttachmentSlotIndexVector = GetItemSlots(pObject, ubStatusIndex);
++	UINT64		point = GetAvailableAttachmentPoint(pObject, ubStatusIndex); //Madd: Common Attachment Framework
+ 
+ 	//dnl ch76 081113
+ 	std::vector<UINT16> attachedList;
+-	UINT8 size = (*pObject)[ubStatusIndex]->attachments.size( );
+-	for ( UINT8 x = 0; x < size; ++x )// attached item list rather create here then inside loop to gain performance
+-	{
+-		OBJECTTYPE* pAttachment2 = (*pObject)[ubStatusIndex]->GetAttachmentAtIndex(x);
+-		if(pAttachment2->exists())
+-			attachedList.push_back(pAttachment2->usItem);
++	for (const auto& attachment : (*pObject)[ubStatusIndex]->attachments)
++	{
++		if (attachment.exists())
++			attachedList.push_back(attachment.usItem);
+ 	}
+ 
+ 	//start by deleting the currently defined regions if they exist
+ 	//BOB : also, clean up the popup boxes (in case they're still around)
+ 	//		and init them to NULL in case they contain garbage
+-	for (INT32 cnt = 0; cnt < MAX_ATTACHMENTS; ++cnt )
+-	{
+-		if( gItemDescAttachmentRegions[cnt].IDNumber != 0 )
+-			MSYS_RemoveRegion( &gItemDescAttachmentRegions[cnt]);
+-
+-		if( gItemDescAttachmentPopupsInitialized && gItemDescAttachmentPopups[cnt] != NULL )
+-		{
+-			delete(gItemDescAttachmentPopups[cnt]);			
+-		}
+-		gItemDescAttachmentPopups[cnt] = NULL;		
+-	}
+ 	gItemDescAttachmentPopupsInitialized = TRUE;
+ 
+-	for (auto iter = gPopupAttachmentInfos.begin(); iter != gPopupAttachmentInfos.end(); iter++) 
+-	{
+-		delete (*iter);
+-	}
+-	gPopupAttachmentInfos.clear();
+-
+ 	//now, create new regions
+-	for (slotCount = 0; ; ++slotCount )
++	for (slotCount = 0; slotCount < MAX_ATTACHMENTS; ++slotCount )
+ 	{
+ 		//stopping conditions, not inside the for loop because it is different depending on the attachment system.
+ 		if (UsingNewAttachmentSystem()==true)	
+@@ -5699,9 +5738,8 @@
+ 		}
+ 
+ 		//Empty those Strings
+-		swprintf( attachStr, L"" );
+-		swprintf( attachStr2, L"" );
+-		swprintf( attachStr3, L"" );
++		attachStr.clear();
++		attachStr3.clear();
+ 
+ 		fAttachmentsFound = FALSE;
+ 
+@@ -5725,7 +5763,7 @@
+ 
+ 			// CHRISL: Instead of looking at object 0, let's look at the object we actually right clicked on using ubStatusIndex
+ 			OBJECTTYPE* pAttachment = (*pObject)[ubStatusIndex]->GetAttachmentAtIndex(slotCount);
+-			if (pAttachment->exists()) 
++			if (pAttachment && pAttachment->exists()) 
+ 			{
+ 				SetRegionFastHelpText( &(gItemDescAttachmentRegions[ slotCount ]), ItemNames[ pAttachment->usItem ] );
+ 			} 
+@@ -5851,17 +5889,16 @@
+ 					}
+ 				}
+ 				BOOLEAN showAttachmentPopups = FALSE;
+-				SOLDIERTYPE* pSoldier = gCharactersList[bSelectedInfoChar].usSolID;
+-
+-				if(	guiCurrentItemDescriptionScreen == MAP_SCREEN 
+-					&&	fShowMapInventoryPool 
+-					&&	( (pSoldier->sSectorX == sSelMapX )
+-					&&	( pSoldier->sSectorY == sSelMapY )
+-					&&	( pSoldier->bSectorZ == iCurrentMapSectorZ ) )
+-					&&	CanPlayerUseSectorInventory( pSoldier )
+-					&&	attachList.size()>0 )	// silversurfer: no need to show popups if we have nothing to display
+-				{
+-					showAttachmentPopups = TRUE;
++				if (guiCurrentItemDescriptionScreen == MAP_SCREEN && fShowMapInventoryPool &&
++					!attachList.empty() && bSelectedInfoChar >= 0 &&
++					bSelectedInfoChar < CODE_MAXIMUM_NUMBER_OF_PLAYER_SLOTS &&
++					gCharactersList[bSelectedInfoChar].fValid &&
++					gCharactersList[bSelectedInfoChar].usSolID < TOTAL_SOLDIERS)
++				{
++					SOLDIERTYPE* pSoldier = gCharactersList[bSelectedInfoChar].usSolID;
++					showAttachmentPopups = pSoldier && pSoldier->sSectorX == sSelMapX &&
++						pSoldier->sSectorY == sSelMapY && pSoldier->bSectorZ == iCurrentMapSectorZ &&
++						CanPlayerUseSectorInventory(pSoldier);
+ 				}
+ 
+ 				// create quick attachment popup boxes here
+@@ -5887,38 +5924,46 @@
+ 																		 thisPopupsPositionType );
+ 
+ 					// the show callback should redraw the description box (in case we had any helptext and close other attachment popups)
+-					gItemDescAttachmentPopups[slotCount]->setCallback( POPUP_CALLBACK_SHOW, new popupCallbackFunction<void,UINT32>( &hideOtherAttachmentPopups, usAttachmentSlotIndexVector.size() ) );
++					gItemDescAttachmentPopups[slotCount]->setCallback( POPUP_CALLBACK_SHOW, new popupCallbackFunction<void,UINT32>( &hideOtherAttachmentPopups, __min(usAttachmentSlotIndexVector.size(), std::size_t(MAX_ATTACHMENTS)) ) );
+ 					// the hide callback tells the program we're no longer displaying an attachment callback
+ 					gItemDescAttachmentPopups[slotCount]->setCallback( POPUP_CALLBACK_HIDE, new popupCallbackFunction<void,void>( &hideAttachmentPopup ) );
+ 				}
+-				for(UINT16 loop = 0; loop < attachList.size(); loop++){
++				attachStr = std::wstring(Message[STR_ATTACHMENTS]) + L":\n ";
++				// Reserve the complete heading, ellipsis, and terminator before adding names.
++				if (attachStr.size() > tooltipLimit - 4) attachStr.resize(tooltipLimit - 4);
++				BOOLEAN tooltipTruncated = FALSE;
++				for(std::size_t loop = 0; loop < attachList.size(); loop++){
+ 					usAttachment = attachList[loop];
+ 					// If the attachment is not hidden
+ 					if (usAttachment > 0 && !ItemIsHiddenAddon(usAttachment) && !ItemIsHiddenAttachment(usAttachment))
+ 					{
+-						if (wcslen( attachStr3 ) + wcslen(Item[usAttachment].szItemName) > 3600)
++						fAttachmentsFound = TRUE;
++						if (!tooltipTruncated)
+ 						{
+-							// End list early to avoid overflow
+-							wcscat( attachStr3, L"\n..." );
+-							break;
+-						}
+-						else
+-						{// Add the attachment's name to the list.
+-							fAttachmentsFound = TRUE;
+-							swprintf( attachStr2, L"\n%s", Item[ usAttachment ].szItemName );
+-							wcscat( attachStr3, attachStr2);
++							if (attachStr.size() + attachStr3.size() + 1 +
++								wcslen(Item[usAttachment].szItemName) + 4 > tooltipLimit)
++							{
++								attachStr3 += L"\n...";
++								tooltipTruncated = TRUE;
++							}
++							else
++							{
++								attachStr3 += L'\n';
++								attachStr3 += Item[usAttachment].szItemName;
++							}
+ 						}
+ 
  						if (showAttachmentPopups)
  						{	// add the current attachment to the popup assigned to this attachment slot
  							POPUP_OPTION * o = new POPUP_OPTION(	std::wstring( Item[ usAttachment ].szItemName ), 
@@ -16590,7 +16848,65 @@
  							
  							gPopupAttachmentInfos.push_back(new PopupAttachmentInfo(usAttachment, pObject, ubStatusIndex, slotCount, o, gItemDescAttachmentPopups[slotCount]));
  
-@@ -6143,7 +6168,7 @@
+ 							// set an availiability callback to gray out any compatible attachments not found in this sector
+ 							o->setAvail(new popupCallbackFunction<bool, PopupAttachmentInfo*>(&popupCallbackItemInSector, (gPopupAttachmentInfos.back())));
+ 						
++							BOOLEAN inserted = FALSE;
+ 							if (loop == 11 && attachList.size() > 11){ // if there's too much stuff to list, we create a subpopup for the rest
+ 								gItemDescAttachmentPopups[slotCount]->addSubMenuOption( std::wstring(L"More...") );
+ 								POPUP_SUB_POPUP_OPTION * tmp = gItemDescAttachmentPopups[slotCount]->getSubPopupOption(0);
+@@ -5938,15 +5983,23 @@
+ 
+ 								// hide the other box too
+ 								// note that we're working with the sub popup options's sub-popup here, not the option itself
+-								tmp->subPopup->setCallback( POPUP_CALLBACK_HIDE, new popupCallbackFunction<void,UINT32>( &hideOtherAttachmentPopups, usAttachmentSlotIndexVector.size() ) );
++								tmp->subPopup->setCallback( POPUP_CALLBACK_HIDE, new popupCallbackFunction<void,UINT32>( &hideOtherAttachmentPopups, __min(usAttachmentSlotIndexVector.size(), std::size_t(MAX_ATTACHMENTS)) ) );
+ 
+ 								// finally add the option
+-								tmp->subPopup->addOption(*o);
++								inserted = tmp->subPopup->addOption(*o);
+ 
+ 							} else if (loop > 11){	// add surplus options to the subpopup
+-								gItemDescAttachmentPopups[slotCount]->getSubPopupOption(0)->subPopup->addOption(*o);
++								inserted = gItemDescAttachmentPopups[slotCount]->getSubPopupOption(0)->subPopup->addOption(*o);
+ 							} else {	// options 0-11 go into the main popup
+-								gItemDescAttachmentPopups[slotCount]->addOption(*o);
++								inserted = gItemDescAttachmentPopups[slotCount]->addOption(*o);
++							}
++							if (!inserted)
++							{
++								// Capacity rejection leaves ownership with the caller.
++								PopupAttachmentInfo* info = gPopupAttachmentInfos.back();
++								gPopupAttachmentInfos.pop_back();
++								delete o;
++								delete info;
+ 							}
+ 						}
+ 					}
+@@ -5954,17 +6007,13 @@
+ 
+ 				if (fAttachmentsFound)
+ 				{
+-					// Add extra empty line and attachment list title
+-					swprintf( attachStr, L"%s:\n ", Message[ STR_ATTACHMENTS ] );
+-					// Print the attachments
+-					wcscat( attachStr, attachStr3 );
++					attachStr += attachStr3;
+ 				} else if(usLoopSlotID != 0) {
+-					swprintf( attachStr2, L"\n%s", AttachmentSlots[usLoopSlotID].szSlotName );
+-					wcscat( attachStr, attachStr2);
++					attachStr = std::wstring(L"\n") + AttachmentSlots[usLoopSlotID].szSlotName;
+ 				} else {
+-					wcscat( attachStr, Message[ STR_ATTACHMENTS ] );
+-				}
+-				SetRegionFastHelpText( &(gItemDescAttachmentRegions[ slotCount ]), attachStr );
++					attachStr = Message[STR_ATTACHMENTS];
++				}
++				SetRegionFastHelpText( &(gItemDescAttachmentRegions[ slotCount ]), attachStr.data() );
+ 			} else {
+ 				SetRegionFastHelpText( &(gItemDescAttachmentRegions[ slotCount ]), Message[ STR_ATTACHMENTS ] );
+ 			}
+@@ -6143,7 +6192,7 @@
  			RenderBulletIcon(gpItemDescObject, ubStatusIndex);
  
  			// Set mouse
@@ -16599,7 +16915,7 @@
  			{
  				guiExternVo = GetInterfaceGraphicForItem( &(Item[ gpItemPointer->usItem ]) );
  				gusExternVoSubIndex = g_bUsePngItemImages ? 0 : Item[ gpItemPointer->usItem ].ubGraphicNum;
-@@ -6344,7 +6369,7 @@
+@@ -6344,7 +6393,7 @@
  
  				DoAttachment((UINT8)ubStatusIndex, uiItemPos);
  
@@ -16608,7 +16924,7 @@
  					if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
  					{
  						// Set mouse
-@@ -7277,7 +7302,11 @@
+@@ -7277,7 +7326,11 @@
  
  						// print value
  						SetFontForeground( 5 );
@@ -16620,7 +16936,7 @@
  						FindFontRightCoordinates( gItemDescTextRegions[regionindex].sLeft, gItemDescTextRegions[regionindex].sTop, gItemDescTextRegions[regionindex].sRight - gItemDescTextRegions[regionindex].sLeft ,gItemDescTextRegions[regionindex].sBottom - gItemDescTextRegions[regionindex].sTop ,pStr, BLOCKFONT2, &usX, &usY);
  						mprintf( usX, usY, pStr );
  					}
-@@ -7326,7 +7355,7 @@
+@@ -7326,7 +7379,7 @@
  							FLOAT condition = (*gpItemDescObject)[0]->data.bTemperature / OVERHEATING_MAX_TEMPERATURE;
  
  							UINT32 red   = (UINT32) ( 127 );
@@ -16629,7 +16945,7 @@
  							UINT32 blue  = 0;
  
  							UINT8 FoodStringNum = 6;
-@@ -8404,13 +8433,17 @@
+@@ -8404,13 +8457,17 @@
  //	if( guiTacticalInterfaceFlags & INTERFACE_MAPSCREEN  )
  	if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
  	{
@@ -16648,7 +16964,7 @@
  		if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
  		{
  			UnloadButtonImage( giMapInvDescTabButtonImage );
-@@ -8418,25 +8451,21 @@
+@@ -8418,25 +8475,21 @@
  		else
  		{
  			UnloadButtonImage( giInvDescTabButtonImage );
@@ -16681,10 +16997,52 @@
  	}
  
  	// HEADROCK HAM 5: Remove Transform Item Region
-@@ -8495,12 +8524,12 @@
- 	}
- 	else
- 	{
+@@ -8456,51 +8509,15 @@
+ 	MSYS_RemoveRegion( &gInvDesc);
+ 
+ 
+-	if( gpItemDescObject->usItem != MONEY )
+-	{
+-		if (UsingNewAttachmentSystem()==true)
+-		{
+-			// WANNE: Bugfix: Fixed CTD when closing sector inventory in strategy screen with open item description
+-			if (gpItemDescObject[0].objectStack.size() == 0)
+-			{
+-				for ( cnt = 0; cnt < MAX_ATTACHMENTS; cnt++)
+-				{
+-					MSYS_RemoveRegion( &gItemDescAttachmentRegions[cnt]);
+-				}
+-			}
+-			else
+-			{
+-				for ( cnt = 0; cnt < (INT32)(*gpItemDescObject)[0]->attachments.size(); cnt++ )
+-				{
+-					MSYS_RemoveRegion( &gItemDescAttachmentRegions[cnt]);
+-
+-					//BOB : also, clean up the popup boxes
+-					if( gItemDescAttachmentPopupsInitialized && gItemDescAttachmentPopups[cnt] != NULL ){
+-						delete(gItemDescAttachmentPopups[cnt]);
+-						gItemDescAttachmentPopups[cnt] = NULL;
+-					}
+-				}
+-
+-				giActiveAttachmentPopup = -1;
+-			}
+-		}
+-		else
+-		{
+-			// WANNE: Bugfix: Attachment regions were not removed when playing without NAS and when closing the description box
+-			for (cnt = 0; cnt < OLD_MAX_ATTACHMENTS_101; cnt++)
+-			{
+-				MSYS_RemoveRegion( &gItemDescAttachmentRegions[cnt]);
+-			}
+-		}
+-	}
+-	else
+-	{
++	ClearAttachmentPopupState();
++	if( gpItemDescObject->usItem == MONEY )
++	{
 +		for ( cnt = 0; cnt < OLD_MAX_ATTACHMENTS_101; cnt++ )
 +		{
 +			RemoveButton( guiMoneyButtonBtn[cnt] );
@@ -16698,7 +17056,7 @@
  	}
  
  	// HEADROCK HAM 5: Instead of checking the item, check for the regions!!
-@@ -8520,8 +8549,9 @@
+@@ -8520,8 +8537,9 @@
  	if (giItemDescAmmoButton > -1)
  	{
  		// Remove button
@@ -16709,7 +17067,7 @@
  	}
  //	if(guiTacticalInterfaceFlags & INTERFACE_MAPSCREEN )
  	if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
-@@ -9866,7 +9896,7 @@
+@@ -9866,7 +9884,7 @@
  	//Restrict mouse cursor to panel
  	aRect.iLeft = sInvX + sOffSetX;
  	aRect.iTop = sInvY + sOffSetY;
@@ -16718,7 +17076,7 @@
  	aRect.iBottom = aRect.iTop + (INT32)(ceil((float)cnt/(float)sItemWidth)+1) * usPopupHeight;
  	//aRect.iTop = sInvY;
  	//aRect.iLeft = sInvX;
-@@ -10531,7 +10561,9 @@
+@@ -10531,7 +10549,9 @@
  
  	uiItemPos = MSYS_GetRegionUserData( pRegion, 0 );
  	iItemCap = MSYS_GetRegionUserData( pRegion, 1 );
@@ -16729,7 +17087,7 @@
  
  	// TO ALLOW ME TO DELETE REGIONS IN CALLBACKS!
  	if ( gfItemPopupRegionCallbackEndFix )
-@@ -12122,7 +12154,11 @@
+@@ -12122,7 +12142,11 @@
  }
  
  
@@ -16741,7 +17099,7 @@
  {
  	CHAR16	pStr[ 500 ];
  	UINT16	usItem = pObject->usItem;
-@@ -12137,7 +12173,7 @@
+@@ -12137,7 +12161,7 @@
  		if ( pSoldier->flags.uiStatusFlags & SOLDIER_DEAD )
  		{
  			swprintf( pStr, L"" );
@@ -16750,7 +17108,7 @@
  			return;
  		}
  	}
-@@ -12263,8 +12299,8 @@
+@@ -12263,8 +12287,8 @@
  				if ( gGameExternalOptions.fWeaponOverheating )
  				{
  					FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16761,7 +17119,7 @@
  				}
  				
  				INT8 accuracy = (UsingNewCTHSystem()==true?Weapon[ usItem ].nAccuracy:Weapon[ usItem ].bAccuracy);
-@@ -12395,8 +12431,8 @@
+@@ -12395,8 +12419,8 @@
  				if ( gGameExternalOptions.fWeaponOverheating )
  				{
  					FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16772,7 +17130,7 @@
  				}
  
  				//Info for weapons
-@@ -12804,7 +12840,7 @@
+@@ -12804,7 +12828,7 @@
  	}
  
  	// Copy over...
@@ -16781,7 +17139,7 @@
  }
  
  
-@@ -13528,7 +13564,7 @@
+@@ -13528,7 +13552,7 @@
  					// Generate a new option for the menu
  					POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void, OBJECTTYPE*>( &TransformationMenuPopup_Arm, gpItemDescObject ) );
  					// Set the function that tests whether it's valid at the moment.
@@ -16790,7 +17148,7 @@
  					// Add the option to the menu.
  					gItemDescTransformPopup->addOption( *pOption );
  					// Set this flag so we know we have at least one Transformation available.
-@@ -13554,7 +13590,7 @@
+@@ -13554,7 +13578,7 @@
  					// Generate a new option for the menu
  					POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void, OBJECTTYPE*>( &TransformationMenuPopup_Arm, gpItemDescObject ) );
  					// Set the function that tests whether it's valid at the moment.
@@ -16799,7 +17157,7 @@
  					// Add the option to the menu.
  					gItemDescTransformPopup->addOption( *pOption );
  					// Set this flag so we know we have at least one Transformation available.
-@@ -13591,7 +13627,7 @@
+@@ -13591,7 +13615,7 @@
  
  					// Add option
  					POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void,void>( &TransformationMenuPopup_DelayedGrenadeExplosion ));
@@ -16808,7 +17166,7 @@
  					gItemDescTransformPopup->addOption( *pOption );
  					fFoundTransformations = true;
  				}
-@@ -13619,7 +13655,7 @@
+@@ -13619,7 +13643,7 @@
  						// Generate a new option for the menu
  						POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void,TransformInfoStruct*>( &TransformationMenuPopup_Transform, &Transform[x] ) );
  						// Set the function that tests whether it's valid at the moment.
@@ -16817,7 +17175,7 @@
  						// Add the option to the menu.
  						gItemDescTransformPopup->addOption( *pOption );
  						// Set this flag so we know we have at least one Transformation available.
-@@ -13632,7 +13668,7 @@
+@@ -13632,7 +13656,7 @@
  		if (!fFoundTransformations)
  		{
  			POPUP_OPTION * pOption = new POPUP_OPTION( std::wstring( gzTransformationMessage[ 0 ] ), new popupCallbackFunction<void,TransformInfoStruct*>( &TransformationMenuPopup_Transform, NULL ) );
@@ -16826,7 +17184,7 @@
  			gItemDescTransformPopup->addOption( *pOption );
  		}
  
-@@ -13831,7 +13867,7 @@
+@@ -13831,7 +13855,7 @@
  
  					// in realtime mode, remember the second when this event happened. Once suspicion is checked, we are either uncovered or, if enough time has passed, no longer suspicious
  					// in turnbase mode, remember our current APs. If a new turn has started or enough APs have been used, remove the flag
@@ -16835,7 +17193,7 @@
  					gpItemDescSoldier->usSkillCooldown[SOLDIER_COOLDOWN_COVERTOPS_TEMPORARYOVERT_APS] = appenalty;
  				}
  			}
-@@ -14012,7 +14048,7 @@
+@@ -14012,7 +14036,7 @@
  			if ( gGameOptions.fNewTraitSystem && HAS_SKILL_TRAIT( gpItemDescSoldier, DEMOLITIONS_NT ))
  			{
  				// increase trap level for Demolitions trait
@@ -20572,7 +20930,7 @@
  									if (Random(100) < Item[pSoldier->inv[HANDPOS].usItem].usDamageChance)
 --- a/Tactical/Soldier Control.cpp
 +++ b/Tactical/Soldier Control.cpp
-@@ -1,3 +1,13 @@
+@@ -1,4 +1,25 @@
 +/*
 + * P710 native snapshot update: Tactical/Soldier Control.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -20583,10 +20941,58 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Soldier Control.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include "Soldier Functions.h"
++#include "../ModularizedTacticalAI/include/Plan.h"
  #include <wchar.h>
  #include <stdio.h>
-@@ -2441,7 +2451,11 @@
+ #include <string.h>
+@@ -1064,13 +1085,19 @@
+ 	return *this;
+ }
+ 
++static void ClearSoldierAIPlan( SOLDIERTYPE& soldier )
++{
++	AI::tactical::Plan* retired = soldier.ai_masterplan_;
++	soldier.ai_masterplan_ = 0;
++	delete retired;
++}
++
+ SOLDIERTYPE::~SOLDIERTYPE( )
+ {
+-	if ( ai_masterplan_ )
+-		delete ai_masterplan_;
+-}
+-
+-SOLDIERTYPE::SOLDIERTYPE( ) {
++	ClearSoldierAIPlan( *this );
++}
++
++SOLDIERTYPE::SOLDIERTYPE( ) : ai_masterplan_( 0 ) {
+ 	initialize( );
+ }
+ 
+@@ -1108,9 +1135,9 @@
+ //  Note that the constructor does this automatically.
+ void SOLDIERTYPE::initialize( )
+ {
++	ClearSoldierAIPlan( *this );
+ 	memset( this, 0, SIZEOF_SOLDIERTYPE_POD );
+ 	inv.clear( );
+-	ai_masterplan_ = 0;
+ 	this->iVehicleId = (-1);
+ 
+ 	memset( &aiData, 0, sizeof(STRUCT_AIData) );
+@@ -2441,7 +2468,11 @@
  
  	if ( this->ubBodyType == QUEENMONSTER )
  	{
@@ -20598,7 +21004,16 @@
  	}
  
  
-@@ -4334,7 +4348,7 @@
+@@ -2558,6 +2589,8 @@
+ 
+ 	if ( this != NULL )
+ 	{
++		// Slots can be reused before the SOLDIERTYPE destructor runs.
++		ClearSoldierAIPlan( *this );
+ 		//if(this->pBackGround!=NULL)
+ 		//MemFree(this->pBackGround);
+ 
+@@ -4334,7 +4367,7 @@
  
  			// in realtime mode, remember the second when this event happened. Once suspicion is checked, we are either uncovered or, if enough time has passed, no longer suspicious
  			// in turnbase mode, remember our current APs. If a new turn has started or enough APs have been used, remove the flag
@@ -20607,7 +21022,7 @@
  			this->usSkillCooldown[SOLDIER_COOLDOWN_COVERTOPS_TEMPORARYOVERT_APS] = appenalty;
  		}
  	}
-@@ -5732,7 +5746,7 @@
+@@ -5732,7 +5765,7 @@
  
  		INT16 fireresistance = ArmourVersusFirePercent( this );
  
@@ -20616,7 +21031,7 @@
  	}
  
  	// marke take out gunfire if ammotype is explosive
-@@ -5875,7 +5889,7 @@
+@@ -5875,7 +5908,7 @@
  			// bodybuilding reduces this to half
  			if ( HAS_SKILL_TRAIT( this, BODYBUILDING_NT ) )
  			{
@@ -20625,7 +21040,7 @@
  			}
  		}
  		else
-@@ -5901,7 +5915,7 @@
+@@ -5901,7 +5934,7 @@
  		{
  			sBreathLoss = 0;
  			sDamage /= 4;
@@ -20634,7 +21049,7 @@
  		}
  #endif
  		ubReason = TAKE_DAMAGE_HANDTOHAND;
-@@ -6016,7 +6030,7 @@
+@@ -6016,7 +6049,7 @@
  
  
  	// Flugente: moved the damage calculation into a separate function
@@ -20643,7 +21058,7 @@
  
  	// OK, If we are a vehicle.... damage vehicle...( people inside... )
  	if ( this->flags.uiStatusFlags & SOLDIER_VEHICLE )
-@@ -7517,7 +7531,7 @@
+@@ -7517,7 +7550,7 @@
  			}
  			// martial artists can turn faster
  			if ( HAS_SKILL_TRAIT( pSoldier, MARTIAL_ARTS_NT ) && gGameOptions.fNewTraitSystem )
@@ -20652,7 +21067,7 @@
  
  			// SANDRO: get BP cost for weapon manipulating
  			if ( gGameExternalOptions.ubEnergyCostForWeaponWeight )
-@@ -8609,7 +8623,7 @@
+@@ -8609,7 +8642,7 @@
  		if ( usPaletteAnimSurface != INVALID_ANIMATION_SURFACE )
  		{
  			// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -20661,7 +21076,7 @@
  
  			// Substitute based on head, etc
  			SetPaletteReplacement( this->p8BPPPalette, this->HeadPal );
-@@ -8621,7 +8635,7 @@
+@@ -8621,7 +8654,7 @@
  	else if ( bBodyTypePalette == 0 )
  	{
  		// Use palette from hvobject
@@ -20670,7 +21085,7 @@
  	}
  	else
  	{
-@@ -8629,12 +8643,12 @@
+@@ -8629,12 +8662,12 @@
  		if ( CreateSGPPaletteFromCOLFile( Temp8BPPPalette, zColFilename ) )
  		{
  			// Copy into palette
@@ -20685,7 +21100,7 @@
  		}
  	}
  
-@@ -8998,7 +9012,7 @@
+@@ -8998,7 +9031,7 @@
  		{
  			if ( HAS_SKILL_TRAIT( pSoldier, ATHLETICS_NT ) )
  			{
@@ -20694,7 +21109,7 @@
  			}
  		}
  
-@@ -10189,7 +10203,7 @@
+@@ -10189,7 +10222,7 @@
  		this->stats.bLife -= sLifeDeduct;
  
  		// make sure it doesn't rise too much
@@ -20703,7 +21118,7 @@
  	}
  
  	/////////////////////////////////////////////////////////////////////////////////////////////////
-@@ -10327,7 +10341,7 @@
+@@ -10327,7 +10360,7 @@
  			if ( sLifeDeduct < 0 )
  			{
  				INT8 oldBleeding = this->bBleeding;
@@ -20712,7 +21127,7 @@
  			}
  			else
  			{
-@@ -10441,7 +10455,7 @@
+@@ -10441,7 +10474,7 @@
  		INT8	bVisible = -1;
  
  		sTestOne = EffectiveStrength( this, FALSE );
@@ -20721,7 +21136,7 @@
  		
  		if (this->ubAttackerID != NOBODY && this->ubAttackerID->ubBodyType == BLOODCAT)
  		{
-@@ -10694,7 +10708,7 @@
+@@ -10694,7 +10727,7 @@
  
  // Flugente: store how many sounds we've found for each npc type
  #define BATTLESOUND_NPC_TYPES		3
@@ -20730,7 +21145,7 @@
  UINT32 numBattleSounds_Npc[BATTLESOUND_NPC_TYPES][BATTLESOUND_NPC_SOUNDSETS][NUM_MERC_BATTLE_SOUNDS];
  bool BattleSoundSearchDone_Npc[BATTLESOUND_NPC_TYPES][BATTLESOUND_NPC_SOUNDSETS][NUM_MERC_BATTLE_SOUNDS];
  
-@@ -10969,7 +10983,7 @@
+@@ -10969,7 +11002,7 @@
  		while ( !QuoteExp[pSoldier->ubProfile].BattleSoundSearchDone[ubSoundID] )
  		{
  			// at least one sound exists (if not, we use a fallback solution anyway)
@@ -20739,7 +21154,7 @@
  
  			UINT16 numsounds = QuoteExp[pSoldier->ubProfile].numBattleSounds[ubSoundID];
  
-@@ -11030,6 +11044,8 @@
+@@ -11030,6 +11063,8 @@
  		}
  		else if ( pSoldier->ubBodyType == HATKIDCIV || pSoldier->ubBodyType == KIDCIV )
  			entrynum = 1;
@@ -20748,7 +21163,7 @@
  
  		// Flugente: check if perhaps a sound with a higher number is present, if so, increase number of found sounds
  		// if not, mark that this search is finished (no need to constantly check for sounds)
-@@ -11041,7 +11057,7 @@
+@@ -11041,7 +11076,7 @@
  		while ( !BattleSoundSearchDone_Npc[entrynum][pSoldier->ubBattleSoundID][ubSoundID] )
  		{
  			// at least one sound exists (if not, we use a fallback solution anyway)
@@ -20757,7 +21172,7 @@
  
  			UINT32 numsounds = numBattleSounds_Npc[entrynum][pSoldier->ubBattleSoundID][ubSoundID];
  
-@@ -11695,7 +11711,7 @@
+@@ -11695,7 +11730,7 @@
  		return FALSE;
  
  	// We'll never turn more then 180 degrees (4) so reset uiTurnAmount if needed
@@ -20766,7 +21181,7 @@
  
  	// Loop up the array
  	for ( UINT8 i = 1; i <= 4; i++ )
-@@ -13481,10 +13497,10 @@
+@@ -13481,10 +13516,10 @@
  		if ( NumberOfDamagedStats( pVictim ) > 0 )
  		{
  			usReturnDamagedStatRate = ((gSkillTraitValues.usDORepairStatsRateBasic + gSkillTraitValues.usDORepairStatsRateOnTop * NUM_SKILL_TRAITS( this, DOCTOR_NT )));
@@ -20779,7 +21194,7 @@
  		}
  
  		// Important note! : HealableInjury is always stores the total HPs the victim is missing, not the amount which we will heal,
-@@ -13504,7 +13520,7 @@
+@@ -13504,7 +13539,7 @@
  			// keep the rest of the points to bandaging if neccessary
  			//if (pVictim->bBleeding > 0)
  			//{
@@ -20788,7 +21203,7 @@
  			//	ubPtsLeft += (ubPtsLeft/2); // we use medical bag so add the bonus for that.
  			//}
  			//else
-@@ -13558,7 +13574,7 @@
+@@ -13558,7 +13593,7 @@
  			else
  			{
  				pVictim->bBleeding = 0;
@@ -20797,7 +21212,7 @@
  			}
  
  			// display healing done
-@@ -13624,7 +13640,7 @@
+@@ -13624,7 +13659,7 @@
  
  	//CHRISL: If by some chance ubPtsLeft ends up being higher then uiActual, we'll end up with a huge value since uiActual is an unsigned variable.
  	// if there are any ptsLeft now, then we didn't actually get to use them
@@ -20806,7 +21221,7 @@
  
  	// usedAPs equals (actionPts) * (%of possible points actually used)
  	uiUsedAPs = (uiActual * uiAvailAPs) / uiPossible;
-@@ -14964,8 +14980,8 @@
+@@ -14964,8 +14999,8 @@
  		resistance -= 1000;
  
  	// resistance is between -100% and 95%
@@ -20817,7 +21232,7 @@
  
  	return(resistance);
  }
-@@ -15056,7 +15072,7 @@
+@@ -15056,7 +15091,7 @@
  				for ( INT16 i = 0; i < pObj->ubNumberOfObjects; ++i )				// ... there might be multiple items here (item stack), so for each one ...
  				{
  					INT16 status = (*pObj)[0]->data.objectStatus;
@@ -20826,7 +21241,7 @@
  
  					// also damage every attachment
  					attachmentList::iterator iterend = (*pObj)[i]->attachments.end( );
-@@ -15065,10 +15081,10 @@
+@@ -15065,10 +15100,10 @@
  						if ( iter->exists( ) )
  						{
  							INT16 status = (*iter)[0]->data.objectStatus;
@@ -20839,7 +21254,7 @@
  						}
  					}
  				}
-@@ -16328,7 +16344,7 @@
+@@ -16328,7 +16363,7 @@
  			}
  
  			// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -20848,7 +21263,7 @@
  
  			SetPaletteReplacement( this->p8BPPPalette, this->HeadPal );
  			SetPaletteReplacement( this->p8BPPPalette, this->VestPal );
-@@ -16343,7 +16359,7 @@
+@@ -16343,7 +16378,7 @@
  		// if the player is an annoying little perv, tell them so, girls!
  		// Flugente: additional dialogue
  		AdditionalTacticalCharacterDialogue_CallsLua(this, ADE_SEXUALHARASSMENT );
@@ -20857,7 +21272,7 @@
  	}
  }
  
-@@ -16405,7 +16421,7 @@
+@@ -16405,7 +16440,7 @@
  
  	value = (value * this->stats.bLife / this->stats.bLifeMax);
  
@@ -20866,7 +21281,7 @@
  
  	// adjust for type of soldier
  	if ( this->ubSoldierClass == SOLDIER_CLASS_ELITE || this->ubSoldierClass == SOLDIER_CLASS_ELITE_MILITIA || this->ubSoldierClass == SOLDIER_CLASS_ROBOT )
-@@ -16442,8 +16458,8 @@
+@@ -16442,8 +16477,8 @@
  			ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, szPrisonerTextStr[STR_PRISONER_X_FREES_Y], this->GetName( ), pSoldier->GetName( ) );
  
  			// alert both soldiers
@@ -20877,7 +21292,7 @@
  
  			return TRUE;
  		}
-@@ -16697,7 +16713,7 @@
+@@ -16697,7 +16732,7 @@
  					this->ChangeSoldierState( CUTTING_FENCE, 0, 0 );
  
  				// as setting the new animation costs APBPConstants[AP_USEWIRECUTTERS] APs every time, account for that
@@ -20886,7 +21301,7 @@
  			}
  		}
  		break;
-@@ -17358,14 +17374,14 @@
+@@ -17358,14 +17393,14 @@
  
  		if ( Item[pObj->usItem].usFlashLightRange )
  		{
@@ -20903,7 +21318,7 @@
  		}
  	}
  
-@@ -17625,7 +17641,7 @@
+@@ -17625,7 +17660,7 @@
  		}
  	}
  
@@ -20912,7 +21327,7 @@
  }
  
  INT16 SOLDIERTYPE::GetMeleeDamageBonus( )
-@@ -17720,7 +17736,7 @@
+@@ -17720,7 +17755,7 @@
  
  	bonus += this->GetBackgroundValue( BG_RESI_FEAR );
  
@@ -20921,7 +21336,7 @@
  }
  
  UINT8	SOLDIERTYPE::GetMoraleThreshold( )
-@@ -17729,7 +17745,7 @@
+@@ -17729,7 +17764,7 @@
  	UINT8 moraledamage = 0;
  
  	moraledamage = (moraledamage * (100 - GetFearResistanceBonus( ))) / 100;
@@ -20930,7 +21345,7 @@
  }
  
  FLOAT	SOLDIERTYPE::GetMoraleModifier( )
-@@ -17821,9 +17837,9 @@
+@@ -17821,9 +17856,9 @@
  		if ( counter == SOLDIER_COUNTER_ROLE_OBSERVED )
  			continue;
  		else if ( counter == SOLDIER_COUNTER_SPOTTER && usSkillCounter[counter] > 0 )
@@ -20942,7 +21357,7 @@
  	}
  
  	if ( this->usSkillCooldown[SOLDIER_COOLDOWN_CRYO] )
-@@ -17949,7 +17965,7 @@
+@@ -17949,7 +17984,7 @@
  			// we might already be on assignment, so be careful here
  			INT8 sectorz = this->bSectorZ;
  			if ( SPY_LOCATION( this->bAssignment ) )
@@ -20951,7 +21366,7 @@
  
  			// if we are disguised as a civilian, but there is a curfew here, don't allow that
  			if ( ( this->usSoldierFlagMask & SOLDIER_COVERT_CIV ) )
-@@ -18749,9 +18765,9 @@
+@@ -18749,9 +18784,9 @@
  			return FALSE;
  		}
  
@@ -20963,7 +21378,7 @@
  
  		// send a signal shell at first. This marks the area that the shells will come in
  		ArtilleryStrike(usSignalShellIndex, this->ubID + 2, sStartingGridNo, sTargetGridNo);
-@@ -19353,8 +19369,8 @@
+@@ -19353,8 +19388,8 @@
  			pSoldier->sDamage -= pSoldier->stats.bLife - oldlife;
  
  			// alert both soldiers
@@ -20974,7 +21389,7 @@
  
  			return TRUE;
  		}
-@@ -19401,7 +19417,7 @@
+@@ -19401,7 +19436,7 @@
  		this->sDamage -= this->stats.bLife - oldlife;
  
  		// alert ourself
@@ -20983,7 +21398,7 @@
  
  		return TRUE;
  	}
-@@ -19434,14 +19450,14 @@
+@@ -19434,14 +19469,14 @@
  	// we are getting infected. Raise our disease points, but not over the level of an infection
  	if ( this->sDiseasePoints[aDisease] <= Disease[aDisease].sInfectionPtsFull )
  	{
@@ -21000,7 +21415,7 @@
  			{
  				if ( !DoesMercHaveDisability( this, i ) )
  					disabilitieswedonthaveset.push_back(i);
-@@ -19477,7 +19493,7 @@
+@@ -19477,7 +19512,7 @@
  
  	if ( aDisease < NUM_DISEASES )
  	{
@@ -21009,7 +21424,7 @@
  
  		// if the disease 'breaks out', make it known
  		if ( this->sDiseasePoints[aDisease] > Disease[aDisease].sInfectionPtsOutbreak )
-@@ -19914,11 +19930,11 @@
+@@ -19914,11 +19949,11 @@
  			{	
  				if ( HasItemFlag( item.usItem, DISEASEPROTECTION_1 ) )
  				{
@@ -21023,7 +21438,7 @@
  				}
  			}
  		}
-@@ -19928,7 +19944,7 @@
+@@ -19928,7 +19963,7 @@
  	val += (bestfacegear + bestprotectivegear) / 2;
  
  	// not higher than 100%
@@ -21032,7 +21447,7 @@
  }
  
  INT16	SOLDIERTYPE::GetDiseaseResistance( )
-@@ -19941,8 +19957,8 @@
+@@ -19941,8 +19976,8 @@
  
  	val += this->GetBackgroundValue( BG_RESI_DISEASE );
  
@@ -21043,7 +21458,7 @@
  
  	return(val);
  }
-@@ -20285,7 +20301,7 @@
+@@ -20285,7 +20320,7 @@
  
  	// chance is lowered if we are in deep water
  	if ( TERRAIN_IS_DEEP_WATER( this->bOverTerrainType ) )
@@ -21052,7 +21467,7 @@
  
  	return (UINT8)(val);
  }
-@@ -20891,7 +20907,7 @@
+@@ -20891,7 +20926,7 @@
  
  	// personal value in [0; 100]
  	int personalvalue = (FLOAT)(val * modifier) / 10.0f;
@@ -21061,7 +21476,7 @@
  	
  	// if we do this disguised as a soldier, risk will be much higer, as we are under much more scrutiny. This makes up for the increased gain in soldier disguise
  	// less risk if we are asleep, just hiding or forced to hide
-@@ -20901,10 +20917,10 @@
+@@ -20901,10 +20936,10 @@
  		
  	// we now take the sector coolness as a measurement of how important the sector is, and thus how intel we gain
  	// correct outliers - value in[0; 100]
@@ -21074,7 +21489,7 @@
  
  	// A most awesome merc in Meduna palace, disguised as a soldier, would have a value of 1.05 * 4. 63 * 4 = 10.649 at this point.
  	// This would be the place where we modify our intel gain rate.
-@@ -20954,7 +20970,7 @@
+@@ -20954,7 +20989,7 @@
  
  	// we now take the sector coolness as a measurement of how important the sector is, and thus how intel we gain
  	// correct outliers
@@ -21083,7 +21498,7 @@
  
  	// in order not to make the differences to great, alter these values - will now be in [0.6; 4.63]
  	FLOAT sectorvalue = log( (FLOAT)ubLocationModifier );
-@@ -21007,7 +21023,7 @@
+@@ -21007,7 +21042,7 @@
  				portionsize = 100;
  
  			// how much of this item do we use up
@@ -21092,7 +21507,7 @@
  			if ( !usable )
  				continue;
  
-@@ -21235,8 +21251,8 @@
+@@ -21235,8 +21270,8 @@
  	}
  
  	// the best friendly/direct/recruit approach factor can alter the value up to 10%
@@ -21103,7 +21518,7 @@
  
  	UINT32 totalvalue = val * persmodifier * bestequipmentmodifier * approachmodifier / gGameExternalOptions.fAdministrationPointsPerPercent;
  	
-@@ -21299,7 +21315,7 @@
+@@ -21299,7 +21334,7 @@
  
  	ReducePointsForFatigue( this, &totalvalue );
  
@@ -21112,7 +21527,7 @@
  
  	return totalvalue;
  }
-@@ -21333,7 +21349,7 @@
+@@ -21333,7 +21368,7 @@
  
  	ReducePointsForFatigue( this, &totalvalue );
  
@@ -21121,7 +21536,7 @@
  
  	return totalvalue;
  }
-@@ -21429,7 +21445,7 @@
+@@ -21429,7 +21464,7 @@
  	ReducePointsForFatigue( this, &recruitrating );
  
  	// determine resistance of soldier to our subversion
@@ -21130,7 +21545,7 @@
  
  	// enemy resistance is dependent on their level, class and the sector rating
  	INT32 enemyresistancerating = ubLocationModifier + 8 * EffectiveExpLevel( pSoldier, FALSE );
-@@ -21506,7 +21522,7 @@
+@@ -21506,7 +21541,7 @@
  	if ( enemyresistancerating > recruitrating )
  		return 0;
  
@@ -21139,7 +21554,7 @@
  }
  
  void		SOLDIERTYPE::AttemptToCreateTurncoat( SoldierID usID )
-@@ -21672,7 +21688,7 @@
+@@ -21672,7 +21707,7 @@
  				// may drop blood whether or not any bleeding takes place this turn
  				if ( pSoldier->bTilesMoved < 1 )
  				{
@@ -21148,7 +21563,7 @@
  					if ( iBlood > MAXBLOODQUANTITY )
  					{
  						iBlood = MAXBLOODQUANTITY;
-@@ -21685,7 +21701,7 @@
+@@ -21685,7 +21720,7 @@
  
  				// Flugente: bleeders, well, bleed
  				if ( bleeder )
@@ -21157,7 +21572,7 @@
  
  				// Are we in a different mode?
  				if ( !(gTacticalStatus.uiFlags & TURNBASED) || !(gTacticalStatus.uiFlags & INCOMBAT) )
-@@ -21736,7 +21752,7 @@
+@@ -21736,7 +21771,7 @@
  								{
  									// bleeding while "dying" costs a PERMANENT point of life each time!
  									pSoldier->stats.bLifeMax--;
@@ -21166,7 +21581,7 @@
  									
  									if ( pSoldier->iHealableInjury >= 100 ) // added check for insta-healable injury - SANDRO
  										pSoldier->iHealableInjury -= 100;
-@@ -22640,7 +22656,7 @@
+@@ -22640,7 +22675,7 @@
  				ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, szCovertTextStr[STR_COVERT_UNCOVERED], pSoldier->GetName(), this->GetName()  );
  
  				// alert the soldier
@@ -21175,7 +21590,7 @@
  
  				ProcessImplicationsOfPCAttack( this, &pSoldier, REASON_NORMAL_ATTACK );
  			}
-@@ -22702,7 +22718,7 @@
+@@ -22702,7 +22737,7 @@
  						}
  
  						// alert the soldier
@@ -21184,7 +21599,7 @@
  
  						ProcessImplicationsOfPCAttack( this, &pSoldier, REASON_NORMAL_ATTACK );
  					}
-@@ -24355,7 +24371,7 @@
+@@ -24355,7 +24390,7 @@
  		//	bMaxMajorTraits++;
  		//}
  
@@ -21193,7 +21608,7 @@
  		{
  			if ( pSoldier->stats.ubSkillTraits[bCnt] == uiSkillTraitNumber )
  				return(TRUE);
-@@ -24364,7 +24380,7 @@
+@@ -24364,7 +24399,7 @@
  				++bNumMajorTraitsCounted;
  
  			// if we exceeded the allowed number of major traits, ignore the rest of them
@@ -21202,7 +21617,7 @@
  				break;
  		}
  	}
-@@ -24400,7 +24416,7 @@
+@@ -24400,7 +24435,7 @@
  		//	bMaxMajorTraits++;
  		//}
  
@@ -21211,7 +21626,7 @@
  		{
  			if ( pSoldier->stats.ubSkillTraits[bCnt] == uiSkillTraitNumber )
  				++bNumberOfTraits;
-@@ -24409,15 +24425,15 @@
+@@ -24409,15 +24444,15 @@
  				++bNumMajorTraitsCounted;
  
  			// if we exceeded the allowed number of major traits, ignore the rest of them
@@ -21230,7 +21645,7 @@
  	}
  	else
  	{
-@@ -24431,7 +24447,7 @@
+@@ -24431,7 +24466,7 @@
  		if ( uiSkillTraitNumber == ELECTRONICS_OT ||
  			 uiSkillTraitNumber == AMBIDEXT_OT ||
  			 uiSkillTraitNumber == CAMOUFLAGED_OT )
@@ -21239,7 +21654,7 @@
  
  		return (bNumberOfTraits);
  	}
-@@ -24465,7 +24481,7 @@
+@@ -24465,7 +24500,7 @@
  				if ( fWithHigherLevel )
  				{
  					if ( pSquadLeader->stats.bExpLevel > (pSoldier->stats.bExpLevel + (ubNumberSL*gSkillTraitValues.ubSLEffectiveLevelInRadius)) )
@@ -21248,7 +21663,7 @@
  				}
  				else
  				{
-@@ -24502,7 +24518,7 @@
+@@ -24502,7 +24537,7 @@
  					if ( fWithHigherLevel )
  					{
  						if ( pSquadLeader->stats.bExpLevel > (pSoldier->stats.bExpLevel + (ubNumberSL*gSkillTraitValues.ubSLEffectiveLevelInRadius)) )
@@ -21257,7 +21672,7 @@
  					}
  					else
  					{
-@@ -24517,7 +24533,7 @@
+@@ -24517,7 +24552,7 @@
  	}
  
  	// 3 bonuses are a max by default
@@ -21266,7 +21681,7 @@
  }
  
  UINT16 NumberOfDamagedStats( SOLDIERTYPE * pSoldier )
-@@ -24574,7 +24590,7 @@
+@@ -24574,7 +24609,7 @@
  			{
  				// if the amount we can return is bigger than what we need, keep the rest, for other stats
  				usStatIncreasement = pSoldier->ubCriticalStatDamage[cnt];
@@ -21275,7 +21690,7 @@
  				pSoldier->ubCriticalStatDamage[cnt] = 0;
  			}
  			else
-@@ -24582,7 +24598,7 @@
+@@ -24582,7 +24617,7 @@
  				// if not having full amount, heal what we can
  				usStatIncreasement = ubAmountRegained;
  				ubAmountRegained = 0;
@@ -21284,7 +21699,7 @@
  			}
  			// so we can start regaining the stats
  			if ( usStatIncreasement > 0 )
-@@ -24675,7 +24691,7 @@
+@@ -24675,7 +24710,7 @@
  			{
  				// if the amount we can return is bigger than what we need, keep the rest, for other stats
  				usStatIncreasement = pSoldier->usStarveDamageHealth;
@@ -21293,7 +21708,7 @@
  				pSoldier->usStarveDamageHealth = 0;
  			}
  			else
-@@ -24683,7 +24699,7 @@
+@@ -24683,7 +24718,7 @@
  				// if not having full amount, heal what we can
  				usStatIncreasement = ubAmountRegained;
  				ubAmountRegained = 0;
@@ -21302,7 +21717,7 @@
  			}
  
  			// so we can start regaining the stats
-@@ -24724,7 +24740,7 @@
+@@ -24724,7 +24759,7 @@
  			{
  				// if the amount we can return is bigger than what we need, keep the rest, for other stats
  				usStatIncreasement = pSoldier->usStarveDamageStrength;
@@ -21311,7 +21726,7 @@
  				pSoldier->usStarveDamageStrength = 0;
  			}
  			else
-@@ -24732,7 +24748,7 @@
+@@ -24732,7 +24767,7 @@
  				// if not having full amount, heal what we can
  				usStatIncreasement = ubAmountRegained;
  				ubAmountRegained = 0;
@@ -21320,7 +21735,7 @@
  			}
  
  			// so we can start regaining the stats
-@@ -25345,10 +25361,10 @@
+@@ -25345,10 +25380,10 @@
  				// spotter items are used to determine effectiveness. cap each hand item to a maximum of 100 pts (to keep players from using guns with tons of attachments that have been declared 'spotter items')
  				UINT16 itembonus = 0;
  				if ( pSoldier->inv[HANDPOS].exists( ) )
@@ -21333,7 +21748,7 @@
  
  				// base spotter effectivity depends on 40% items, 30% experience, 20% marksmanship an 10% leadership 
  				// the nominal value is between 0 and 1000 (though the actual value can be raised higher, due to effective stat and level boni)
-@@ -25397,10 +25413,10 @@
+@@ -25397,10 +25432,10 @@
  				}
  
  				// relation between sniper and spotter is important - they need to trust each other (-50 to 50)
@@ -21346,7 +21761,7 @@
  				
  				// a good relation boosts value tremendously - a bad relation makes spotting useless
  				// the spotter background also alters effectiveness
-@@ -25408,7 +25424,7 @@
+@@ -25408,7 +25443,7 @@
  				value = (value * effectivity ) / 100;
  
  				// longer spotting gives a linear bonus - up to 100% -> value between 0 and 4000, nominal 2000
@@ -21355,7 +21770,7 @@
  				
  				// reasonable values: 0 to gGameExternalOptions.usSpotterMaxCTHBoost
  				value = (value * gGameExternalOptions.usSpotterMaxCTHBoost) / 2000;
-@@ -25420,7 +25436,7 @@
+@@ -25420,7 +25455,7 @@
  	}
  
  	// limit value
@@ -21364,7 +21779,7 @@
  
  	return bestvalue;
  }
-@@ -25697,10 +25713,10 @@
+@@ -25697,10 +25732,10 @@
  		if ( NumberOfDamagedStats( pVictim ) > 0 )
  		{
  			usReturnDamagedStatRate = ((gSkillTraitValues.usDORepairStatsRateBasic + gSkillTraitValues.usDORepairStatsRateOnTop * NUM_SKILL_TRAITS( pSoldier, DOCTOR_NT )));
@@ -21377,7 +21792,7 @@
  		}
  
  		// Important note! : HealableInjury is always stores the total HPs the victim is missing, not the amount which we will heal,
-@@ -25717,7 +25733,7 @@
+@@ -25717,7 +25752,7 @@
  			// keep the rest of the points to bandaging if neccessary
  			if ( pVictim->bBleeding > 0 )
  			{
@@ -21386,7 +21801,7 @@
  				bPtsLeft += (bPtsLeft / 2); // we use medical bag so add the bonus for that.
  			}
  			else
-@@ -25761,7 +25777,7 @@
+@@ -25761,7 +25796,7 @@
  			else
  			{
  				pVictim->bBleeding = 0;
@@ -21395,7 +21810,7 @@
  			}
  
  			// display healing done
-@@ -25817,7 +25833,7 @@
+@@ -25817,7 +25852,7 @@
  
  	//CHRISL: If by some chance ubPtsLeft ends up being higher then uiActual, we'll end up with a huge value since uiActual is an unsigned variable.
  	// if there are any ptsLeft now, then we didn't actually get to use them
@@ -21404,7 +21819,7 @@
  
  	// usedAPs equals (actionPts) * (%of possible points actually used)
  	uiUsedAPs = (uiActual * uiAvailAPs) / uiPossible;
-@@ -25953,7 +25969,7 @@
+@@ -25953,7 +25988,7 @@
  		portionsize = 100;
  
  	// how much of this item do we use up
@@ -21413,7 +21828,7 @@
  	if (!statusused || (statusused == 1 && ItemIsCanteen(pObj->usItem)))
  		return FALSE;
  
-@@ -25968,34 +25984,34 @@
+@@ -25968,34 +26003,34 @@
  		
  		if ( HasItemFlag( pObj->usItem, CAMO_REMOVAL ) && gGameExternalOptions.fCamoRemoving )
  		{
@@ -21454,7 +21869,7 @@
  		}
  
  		if ( Item[pObj->usItem].foodtype )
-@@ -26005,7 +26021,7 @@
+@@ -26005,7 +26040,7 @@
  			if ( Food[Item[pObj->usItem].foodtype].bDrinkPoints > Food[Item[pObj->usItem].foodtype].bFoodPoints )
  				apcost_type = AP_DRINK;
  
@@ -21463,7 +21878,7 @@
  		}
  	
  		if ( !fForce && !EnoughPoints( pSoldier, apcost, 0, TRUE ) )
-@@ -26027,7 +26043,7 @@
+@@ -26027,7 +26062,7 @@
  		{
  			// merc gets slightly pissed by the player even suggesting this
  			TacticalCharacterDialogue( pSoldier, QUOTE_REFUSE_TO_SMOKE );
@@ -21472,7 +21887,7 @@
  
  			return FALSE;
  		}
-@@ -26144,7 +26160,7 @@
+@@ -26144,7 +26179,7 @@
  	if (gGameExternalOptions.ubMaxSuppressionShock == 0)
  		return 0;
  
@@ -21481,7 +21896,7 @@
  }
  
  BOOLEAN SOLDIERTYPE::TakenLargeHit(void)
-@@ -26209,7 +26225,7 @@
+@@ -26209,7 +26244,7 @@
  
  void	SOLDIERTYPE::RetreatCounterStart(UINT16 usValue)
  {
@@ -21536,7 +21951,7 @@
  	INT16		GetMeleeDamageBonus();
 --- a/Tactical/Soldier Create.cpp
 +++ b/Tactical/Soldier Create.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Tactical/Soldier Create.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -21557,10 +21972,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Soldier Create.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "sgp.h"
  	#include "Soldier Create.h"
  	#include "Overhead.h"
-@@ -852,12 +872,12 @@
+@@ -852,12 +882,12 @@
  
  					UINT16 diseasemaxbreathreduction = Disease[0].usMaxBreath * magnitude;
  
@@ -21576,7 +22001,7 @@
  				}
  			}
  		}
-@@ -1776,7 +1796,7 @@
+@@ -1776,7 +1806,7 @@
  			if ( gGameExternalOptions.fIndividualMilitia_ManageHealth )
  			{
  				// make sure militia has at least OKLIFE
@@ -21585,7 +22010,7 @@
  			}
  		}
  		else
-@@ -2584,19 +2604,19 @@
+@@ -2584,19 +2614,19 @@
  
  	DebugMsg(TOPIC_JA2,DBG_LEVEL_3,String("CreateDetailedPlacementGivenBasicPlacementInfo: set exp. level"));
  
@@ -21613,7 +22038,7 @@
  
  	//Set the minimum base attribute
  	bBaseAttribute = 45 + ( 4 * ubStatsLevel );
-@@ -2975,8 +2995,8 @@
+@@ -2975,8 +3005,8 @@
  	// Rel level 0: Lvl 1-2, 1: Lvl 2-4, 2: Lvl 4-6, 3: Lvl 6-8, 4: Lvl 8-10
  	s->stats.bExpLevel = (INT8)(2 * bRelativeAttributeLevel + Random(3));
  
@@ -21624,7 +22049,25 @@
  
  	//Set the minimum base attribute
  	bBaseAttribute = 45 + ( 4 * s->stats.bExpLevel );
-@@ -3574,7 +3594,7 @@
+@@ -3056,6 +3086,8 @@
+ 				pSoldier = new SOLDIERTYPE(*MercPtrs[i]); //(SOLDIERTYPE*)MemAlloc( SIZEOF_SOLDIERTYPE );
+ 				if( !pSoldier )
+ 					return NULL;
++				// The snapshot does not own the source soldier's address-bound plan.
++				pSoldier->ai_masterplan_ = 0;
+ 
+ 				//Assign a bogus ID, then return it
+ 				pSoldier->ubID = NUM_PROFILES;
+@@ -3364,6 +3396,8 @@
+ 				pSoldier = new SOLDIERTYPE(*MercPtrs[i]); //(SOLDIERTYPE*)MemAlloc( SIZEOF_SOLDIERTYPE );
+ 				if( !pSoldier )
+ 					return NULL;
++				// The snapshot does not own the source soldier's address-bound plan.
++				pSoldier->ai_masterplan_ = 0;
+ 
+ 				// the militia in autoresolve will drop their gear after combat. For this reason, there is no need for MercPtrs[i] to also drop it
+ 				MercPtrs[i]->usSoldierFlagMask |= SOLDIER_EQUIPMENT_DROPPED;
+@@ -3574,7 +3608,7 @@
  				SetClothes( pSoldier, aVest, aPants, aHair, aSkin );
  
  				// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -21633,7 +22076,7 @@
  
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -3702,7 +3722,7 @@
+@@ -3702,7 +3736,7 @@
  				SetClothes( pSoldier, Random( NUMSHIRTS ), Random( NUMPANTS ) );
  
  				// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -21642,7 +22085,7 @@
  
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -3898,7 +3918,7 @@
+@@ -3898,7 +3932,7 @@
  				SET_PALETTEREP_ID( pSoldier->PantsPal, "BLACKPANTS" );
  
  				// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -21651,7 +22094,7 @@
  
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -3954,7 +3974,7 @@
+@@ -3954,7 +3988,7 @@
  	if ( pSoldier )
  	{
  		// a downed pilot might be wounded
@@ -21660,7 +22103,7 @@
  		pSoldier->bBleeding = pSoldier->stats.bLifeMax - pSoldier->stats.bLife;
  
  		AddSoldierToSector( pSoldier->ubID );
-@@ -3971,7 +3991,7 @@
+@@ -3971,7 +4005,7 @@
  			SET_PALETTEREP_ID( pSoldier->PantsPal, gUniformColors[UNIFORM_ENEMY_ADMIN].pants );
  
  			// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -21669,7 +22112,7 @@
  
  			SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  			SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -4774,8 +4794,8 @@
+@@ -4774,8 +4808,8 @@
  			{
  				pSoldier->stats.ubSkillTraits[0] = SQUADLEADER_NT;
  				// raise level and leadership for this guy
@@ -21680,7 +22123,7 @@
  				ATraitAssigned = TRUE;
  
  				bNumSquadleadersInArmy++;
-@@ -4806,8 +4826,8 @@
+@@ -4806,8 +4840,8 @@
  			{
  				pSoldier->stats.ubSkillTraits[0] = SQUADLEADER_NT;
  				// raise level and leadership for this guy
@@ -21691,7 +22134,7 @@
  				ATraitAssigned = TRUE;
  
  				bNumSquadleadersInArmy++;
-@@ -4816,8 +4836,8 @@
+@@ -4816,8 +4850,8 @@
  			{
  				pSoldier->stats.ubSkillTraits[1] = SQUADLEADER_NT;
  				// raise level and leadership for this guy
@@ -21702,7 +22145,7 @@
  				BTraitAssigned = TRUE;
  
  				bNumSquadleadersInArmy++;
-@@ -5868,7 +5888,7 @@
+@@ -5868,7 +5902,7 @@
  					}
  
  					// make sure we ar reasonably skilled
@@ -21711,7 +22154,7 @@
  				}
  				else if ( !BTraitAssigned )
  				{
-@@ -5876,7 +5896,7 @@
+@@ -5876,7 +5910,7 @@
  					BTraitAssigned = TRUE;
  
  					// make sure we ar reasonably skilled
@@ -22218,7 +22661,7 @@
  			handleInterrupt = FALSE;
 --- a/Tactical/Turn Based Input.cpp
 +++ b/Tactical/Turn Based Input.cpp
-@@ -1,3 +1,18 @@
+@@ -1,3 +1,29 @@
 +/*
 + * P710 native snapshot update: Tactical/Turn Based Input.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -22229,15 +22672,26 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Turn Based Input.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <cerrno>
 +#include <climits>
 +#include <cwchar>
 +#include <memory>
++#include "../ModularizedTacticalAI/include/Plan.h"
 +#include "native_point.h"
  #include <stdio.h>
  #include "stdlib.h"
  #include "DEBUG.H"
-@@ -1659,11 +1674,35 @@
+@@ -1659,11 +1685,35 @@
  		}
  }
  
@@ -22273,7 +22727,7 @@
  	}
  	memset(gszMsgBoxInputString, 0, sizeof(gszMsgBoxInputString));
  }
-@@ -1672,8 +1711,14 @@
+@@ -1672,8 +1722,14 @@
  {
  	if (ubResult == MSG_BOX_RETURN_OK && wcscmp(gszMsgBoxInputString,L"") > 0)
  	{
@@ -22288,7 +22742,7 @@
  
  	}
  	memset(gszMsgBoxInputString,0,sizeof(gszMsgBoxInputString));
-@@ -1683,8 +1728,17 @@
+@@ -1683,8 +1739,17 @@
  {
  	if ( ubResult == MSG_BOX_RETURN_OK && wcscmp(gszMsgBoxInputString, L"") > 0 )
  	{
@@ -22306,7 +22760,7 @@
  	}
  	memset(gszMsgBoxInputString, 0, sizeof(gszMsgBoxInputString));
  }
-@@ -1696,7 +1750,7 @@
+@@ -1696,7 +1761,7 @@
  {
  	InputAtom					InputEvent;
  	BOOLEAN						fKeyTaken = FALSE;
@@ -22315,7 +22769,7 @@
  	//SOLDIERTYPE				*pSoldier;
  	static BOOLEAN	fShifted = FALSE;
  	static BOOLEAN	fShifted2 = FALSE;
-@@ -1705,8 +1759,14 @@
+@@ -1705,8 +1770,14 @@
  	
  	CHAR16	zString[128]; 
  
@@ -22330,7 +22784,7 @@
  
  	GetMouseMapPos( &usMapPos );
  
-@@ -3601,8 +3661,13 @@
+@@ -3601,8 +3672,13 @@
  
  											CHAR16 whcarthing[100];
  
@@ -22344,7 +22798,7 @@
  
  											swprintf( zOutputString, L"Tileset %d: Tilesetname: %s tileindex: %d", giCurrentTilesetID, whcarthing, pStruct->pDBStructureRef->pDBStructure->usStructureNumber );
  											ScreenMsg( FONT_MCOLOR_LTGREEN, MSG_INTERFACE, zOutputString );
-@@ -4079,7 +4144,11 @@
+@@ -4079,7 +4155,11 @@
  				{
  					if ( INFORMATION_CHEAT_LEVEL( ) )
  					{
@@ -22356,7 +22810,7 @@
  					}
  				}
  				else
-@@ -6979,7 +7048,7 @@
+@@ -6979,7 +7059,7 @@
  						LBENODE * lbePtr = gWorldItems[uiLoop].object.GetLBEPointer(x);
  
  						for (auto lbeInvIter = lbePtr->inv.begin(); lbeInvIter != lbePtr->inv.end(); lbeInvIter++) {
@@ -22365,6 +22819,45 @@
  							
  							if (LBEStack->usItem != 0 && LBEStack->exists()) {
  								AddItemToPool(gWorldItems[uiLoop].sGridNo, LBEStack, 1, gWorldItems[uiLoop].ubLevel, WORLD_ITEM_REACHABLE, -1);
+@@ -7221,6 +7301,20 @@
+ 	}
+ }
+ 
++static void SwapMercPortraitRecords( SOLDIERTYPE& source, SOLDIERTYPE& target )
++{
++	// Plans bind to soldier addresses. Retire them before copying the records.
++	AI::tactical::Plan* sourcePlan = source.ai_masterplan_;
++	AI::tactical::Plan* targetPlan = target.ai_masterplan_;
++	source.ai_masterplan_ = 0;
++	target.ai_masterplan_ = 0;
++	delete sourcePlan;
++	if (targetPlan != sourcePlan) delete targetPlan;
++	SOLDIERTYPE temporary = source;
++	source = target;
++	target = temporary;
++}
++
+ //silversurfer: this allows swapping of merc portraits in tactical screen using CTRL+LEFTARROW / CTRL+RIGHTARROW
+ void SwapMercPortraits ( SOLDIERTYPE *pSoldier, INT8 bDirection )
+ {
+@@ -7239,7 +7333,6 @@
+ 	UINT8 ubGroupID = pSoldier->ubGroupID;
+ 	INT8 bOldPosition = GetTeamSlotFromPlayerID ( ubSourceMerc );
+ 	INT8 bNewPosition = bOldPosition + bDirection;
+-	SOLDIERTYPE TempMenptr = Menptr[ ubSourceMerc ];
+ 
+ 	// anv: vehicle passengers are swapped differently
+ 	if( pSoldier->flags.uiStatusFlags & ( SOLDIER_DRIVER | SOLDIER_PASSENGER ) )
+@@ -7277,8 +7370,7 @@
+ 		FACETYPE TempFace = gFacesData[ iSourceFace ];
+ 
+ 		// swap the data
+-		Menptr[ ubSourceMerc ] = Menptr[ ubTargetMerc ];
+-		Menptr[ ubTargetMerc ] = TempMenptr; 
++		SwapMercPortraitRecords( Menptr[ ubSourceMerc ], Menptr[ ubTargetMerc ] );
+ 		// also swap face data, otherwise face gear, opp count etc won't update
+ 		gFacesData[ iSourceFace ] = gFacesData[ iTargetFace ];
+ 		gFacesData[ iTargetFace ] = TempFace;
 --- a/Tactical/UI Cursors.cpp
 +++ b/Tactical/UI Cursors.cpp
 @@ -1,3 +1,13 @@
@@ -29001,6 +29494,70 @@
 +// Parse returns 0 for empty/null/overlong input or more than four valid keys.
 +// Native polling is confined to the focused owned window; unsupported codes are up.
 +#endif
+--- a/Utils/MercTextBox.cpp
++++ b/Utils/MercTextBox.cpp
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: Utils/MercTextBox.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ 	#include "MercTextBox.h"
+ 	#include "WCheck.h"
+ 	#include "renderworld.h"
+@@ -169,6 +179,10 @@
+ 
+ 	// the background
+ 	vs_desc.fCreateFlags = VSURFACE_CREATE_FROMFILE | VSURFACE_SYSTEM_MEM_USAGE;
++#if !defined(_WIN32)
++	// The popup compositor below converts indexed background pixels to RGB565.
++	vs_desc.fCreateFlags |= VSURFACE_NATIVE_INDEXED8;
++#endif
+ 	strcpy(vs_desc.ImageFile,	zMercBackgroundPopupFilenames [ ubBackgroundIndex ]);
+ 	CHECKF(AddVideoSurface(&vs_desc, &gPopUpTextBox->uiMercTextPopUpBackground));
+ 
+@@ -234,9 +248,9 @@
+ 	
+ 	//check to see if we are wanting to blit a transparent background
+ 	if ( gPopUpTextBox->uiFlags & MERC_POPUP_PREPARE_FLAGS_TRANS_BACK )
+-		BltVideoSurface( uiBuffer, gPopUpTextBox->uiSourceBufferIndex, 0, sDestX, sDestY, VS_BLT_FAST | VS_BLT_USECOLORKEY, NULL );
++		fReturnValue = BltVideoSurface( uiBuffer, gPopUpTextBox->uiSourceBufferIndex, 0, sDestX, sDestY, VS_BLT_FAST | VS_BLT_USECOLORKEY, NULL );
+ 	else
+-		BltVideoSurface( uiBuffer, gPopUpTextBox->uiSourceBufferIndex, 0, sDestX, sDestY, VS_BLT_FAST, NULL );
++		fReturnValue = BltVideoSurface( uiBuffer, gPopUpTextBox->uiSourceBufferIndex, 0, sDestX, sDestY, VS_BLT_FAST, NULL );
+ 	
+ 	// blt, and grab return value
+ //	fReturnValue = Blt16BPPTo16BPP(pDestBuf, uiDestPitchBYTES, pSrcBuf, uiSrcPitchBYTES, sDestX, sDestY, 0, 0, gPopUpTextBox->sWidth, gPopUpTextBox->sHeight);
+@@ -316,7 +330,6 @@
+ 	UINT8	*pSrcBuf;
+ 	UINT8		ubFontColor, ubFontShadowColor;
+ 	UINT16	usColorVal;
+-	UINT16	usLoopEnd;
+ 	INT16		sDispTextXPos;
+ 	MercPopUpBox *pPopUpTextBox = NULL;
+ 
+@@ -455,11 +468,11 @@
+ 		pDestBuf = (UINT16*)LockVideoSurface( pPopUpTextBox->uiSourceBufferIndex, &uiDestPitchBYTES);
+ 
+ 		usColorVal = Get16BPPColor( FROMRGB( 255, 255, 0 ) );
+-		usLoopEnd	= ( usWidth * usHeight );
+-
+-		for ( i = 0; i <usLoopEnd; ++i )
+-		{
+-			pDestBuf[ i ] = usColorVal;
++		for (UINT16 row = 0; row < usHeight; ++row)
++		{
++			UINT16* line = (UINT16*)((UINT8*)pDestBuf + row * uiDestPitchBYTES);
++			for (UINT16 column = 0; column < usWidth; ++column)
++				line[column] = usColorVal;
+ 		}
+ 
+ 		UnLockVideoSurface(pPopUpTextBox->uiSourceBufferIndex);
 --- a/Utils/Music Control.cpp
 +++ b/Utils/Music Control.cpp
 @@ -1,3 +1,13 @@
@@ -31110,7 +31667,7 @@
  			try { 
 --- a/Utils/popup_class.cpp
 +++ b/Utils/popup_class.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Utils/popup_class.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -31121,11 +31678,61 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Utils/popup_class.cpp
++ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include "DEBUG.H"
  	#include "Map Screen Interface.h"
  	#include "PopUpBox.h"
  	#include "Interface Control.h"
-@@ -341,7 +352,7 @@
+@@ -169,21 +190,30 @@
+ 
+ BOOLEAN POPUP_OPTION::setAction( popupCallback *fun )
+ {
++	if (this->action == fun) return TRUE;
++	popupCallback * previous = this->action;
+ 	this->action = fun;
++	delete previous;
+ 
+ 	return TRUE;
+ }
+ 
+ BOOLEAN POPUP_OPTION::setAvail( popupCallback *fun )
+ {
++	if (this->avail == fun) return TRUE;
++	popupCallback * previous = this->avail;
+ 	this->avail = fun;
++	delete previous;
+ 
+ 	return TRUE;
+ }
+ 
+ BOOLEAN POPUP_OPTION::setHover( popupCallback *fun )
+ {
++	if (this->hover == fun) return TRUE;
++	popupCallback * previous = this->hover;
+ 	this->hover = fun;
++	delete previous;
+ 
+ 	return TRUE;
+ }
+@@ -257,7 +287,7 @@
+ // destructor
+ POPUP_SUB_POPUP_OPTION::~POPUP_SUB_POPUP_OPTION(void)
+ {
+-
++	this->destroySubPopup();
+ }
+ 
+ void POPUP_SUB_POPUP_OPTION::showPopup()
+@@ -341,7 +371,7 @@
  
  void POPUP_SUB_POPUP_OPTION::initSubPopup()
  {
@@ -31134,7 +31741,18 @@
  	this->subPopup->setCallback(POPUP_CALLBACK_SHOW,new popupCallbackFunction<void,POPUP_SUB_POPUP_OPTION*>( &shadeOpenSubPopup, this ));
  	this->subPopup->setCallback(POPUP_CALLBACK_HIDE,new popupCallbackFunction<void,POPUP_SUB_POPUP_OPTION*>( &unShadeOpenSubPopup, this ));
  
-@@ -380,7 +391,7 @@
+@@ -362,7 +392,9 @@
+ 
+ void POPUP_SUB_POPUP_OPTION::destroySubPopup()
+ {
+-	this->subPopup->~POPUP();
++	POPUP * retiring = this->subPopup;
++	this->subPopup = NULL;
++	delete retiring;
+ }
+ 
+   //////////////////////////////////////////////////////////////////
+@@ -380,7 +412,7 @@
  }
  
  
@@ -31143,7 +31761,79 @@
  {
  	strcpy((char*) this->name, (char*) name);
  	this->optionCount = 0;
-@@ -617,7 +628,7 @@
+@@ -404,13 +436,12 @@
+ 
+ 	for (UINT16 i = 0; i<this->options.size(); i++)
+ 	{
+-		this->options[i]->~POPUP_OPTION();
++		delete this->options[i];
+ 	}
+ 
+ 	for (UINT16 i = 0; i<this->subPopupOptions.size(); i++)
+ 	{
+-		this->subPopupOptions[i]->subPopup->hide();
+-		this->subPopupOptions[i]->~POPUP_SUB_POPUP_OPTION();
++		delete this->subPopupOptions[i];
+ 	}
+ 
+ 	#ifdef JA2TESTVERSION
+@@ -421,13 +452,13 @@
+ 
+ 	this->removeFromIndex();
+ 
+-	if (this->initCallback) this->initCallback->~popupCallback();
+-	if (this->ShowCallback) this->ShowCallback->~popupCallback();
+-	if (this->HideCallback) this->HideCallback->~popupCallback();
++	delete this->initCallback;
++	delete this->ShowCallback;
++	delete this->HideCallback;
+ 
+ 	if (this->EndCallback) {
+ 		this->EndCallback->call();
+-		this->EndCallback->~popupCallback();
++		delete this->EndCallback;
+ 	}
+ }
+ 
+@@ -435,28 +466,29 @@
+ 
+ BOOLEAN POPUP::setCallback(UINT8 type, popupCallback * callback){
+ 	if(callback == NULL) return FALSE;
++	popupCallback ** target = NULL;
+ 
+ 	switch(type){
+ 		case POPUP_CALLBACK_INIT: 
+-			if (this->initCallback) this->initCallback->~popupCallback();
+-			this->initCallback = callback;
++			target = &this->initCallback;
+ 			break;
+ 		case POPUP_CALLBACK_END:  
+-			if (this->EndCallback) this->EndCallback->~popupCallback();
+-			this->EndCallback = callback;
++			target = &this->EndCallback;
+ 			break;
+ 		case POPUP_CALLBACK_SHOW: 
+-			if (this->ShowCallback) this->ShowCallback->~popupCallback();
+-			this->ShowCallback = callback;
++			target = &this->ShowCallback;
+ 			break;
+ 		case POPUP_CALLBACK_HIDE: 
+-			if (this->HideCallback) this->HideCallback->~popupCallback();
+-			this->HideCallback = callback;
++			target = &this->HideCallback;
+ 			break;
+ 
+ 		default: return false;
+ 	}
+ 
++	if (*target == callback) return true;
++	popupCallback * previous = *target;
++	*target = callback;
++	delete previous;
+ 	return true;
+ }
+ 		
+@@ -617,7 +649,7 @@
  		return NULL;
  }
  
@@ -31152,7 +31842,41 @@
  {
  	if (this->subPopupOptionCount < POPUP_MAX_SUB_POPUPS)
  	{
-@@ -1497,7 +1508,11 @@
+@@ -817,7 +849,10 @@
+ 	&&		optIndex < optionCount
+ 	&&		optIndex >= 0)
+ 	{	
++		const UINT32 popupId = this->id;
+ 		BOOLEAN callbackStatus = this->options[optIndex]->run();
++		// An action can close and delete its owning popup.
++		if (findPopupInIndex(popupId) != this) return callbackStatus;
+ 		
+ 		if(!this->hideAfterRun)
+ 		{
+@@ -1449,19 +1484,11 @@
+ 			&&	iValue >= 0
+ 			&&	this->options[iValue] != NULL)
+ 			{
++				const UINT32 popupId = this->id;
+ 				this->options[iValue]->run();	// run the option's callback
+ 
+-				// sanity check #2
+-				// if this popup was fine in check #1 but is broken now, chances are 
+-				// we got deleted (or just plain broken) by the callback. 
+-				if (!this || this->id > POPUP::nextid){
+-					#ifdef JA2TESTVERSION
+-						 __debugbreak();
+-					#else
+-						Assert(false);
+-					#endif
+-				}
+-
++				// Check registration before reading members after the action.
++				if (findPopupInIndex(popupId) != this) return;
+ 
+ 				this->RebuildBox();				// rebuild the box so that the changes can take effect
+ 
+@@ -1497,7 +1524,11 @@
  	INT32 iValue = 0;
  
  	if (!this || this->boxId < 0){
@@ -31164,7 +31888,7 @@
  	}
  	
  	iTotal = MSYS_GetRegionUserData( pRegion, 2 );	// set this to the total value of all mouse regions
-@@ -1646,11 +1661,11 @@
+@@ -1646,11 +1677,11 @@
  	}
  
  	// Flugente: fix obvious errors
@@ -31181,6 +31905,23 @@
  
  	// set all the other positions to match this one
  	this->Position = pPoint;
+@@ -1782,11 +1813,11 @@
+ 	}
+ 	*/
+ 
+-	PopupIndex * pi = new PopupIndex;
+-	pi->regionId = rID;
+-	pi->classId = cID;
+-
+-	gPopupRegionIndex.push_back(*pi); // FIXME: memory leak
++	PopupIndex pi;
++	pi.regionId = rID;
++	pi.classId = cID;
++
++	gPopupRegionIndex.push_back(pi);
+ 	gPopupRegionIndexCounter++;
+ 
+ 	return TRUE;
 --- a/Utils/popup_class.h
 +++ b/Utils/popup_class.h
 @@ -1,3 +1,13 @@

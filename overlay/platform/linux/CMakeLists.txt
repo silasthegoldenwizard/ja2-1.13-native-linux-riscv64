@@ -22,6 +22,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-16.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -218,6 +226,39 @@ add_executable(p710_native_translation_table_tests
 target_link_libraries(p710_native_translation_table_tests PRIVATE p710_engine_contract)
 add_test(NAME text.original_translation_tables
   COMMAND p710_native_translation_table_tests)
+add_executable(p710_native_weapon_tooltip_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_weapon_tooltip_tests.cpp")
+target_link_libraries(p710_native_weapon_tooltip_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME ui.original_weapon_tooltip_regions COMMAND p710_native_weapon_tooltip_tests)
+foreach(_p710_popup_test popup_lifetime attachment_tooltip contract_renewal merc_popup ai_plan_lifetime ai_plan_copy)
+  add_executable(p710_native_${_p710_popup_test}_tests
+    "${P710_ENGINE_ROOT}/tests/native-core/native_${_p710_popup_test}_tests.cpp")
+  target_link_libraries(p710_native_${_p710_popup_test}_tests PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+endforeach()
+add_test(NAME ui.original_popup_lifetimes COMMAND p710_native_popup_lifetime_tests)
+add_test(NAME ui.original_attachment_tooltips COMMAND p710_native_attachment_tooltip_tests)
+add_test(NAME ui.original_contract_renewal_dismissal COMMAND p710_native_contract_renewal_tests)
+add_test(NAME ai.original_plan_lifetimes COMMAND p710_native_ai_plan_lifetime_tests)
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/merc_portrait_plan_swap.inc"
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_merc_portrait_plan_swap.py"
+    "${P710_ENGINE_ROOT}/Tactical/Turn Based Input.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/merc_portrait_plan_swap.inc"
+  DEPENDS "${P710_ENGINE_ROOT}/Tactical/Turn Based Input.cpp"
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_merc_portrait_plan_swap.py")
+target_sources(p710_native_ai_plan_copy_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/merc_portrait_plan_swap.inc")
+target_include_directories(p710_native_ai_plan_copy_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+add_test(NAME ai.original_plan_copy_ownership COMMAND p710_native_ai_plan_copy_tests)
+add_test(NAME ui.generate_merc_popup_fixtures
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/generate_merc_popup_fixtures.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/merc-popup-fixtures")
+set_tests_properties(ui.generate_merc_popup_fixtures PROPERTIES FIXTURES_SETUP merc_popup_inputs)
+add_test(NAME ui.original_merc_popup_rendering
+  COMMAND p710_native_merc_popup_tests "${CMAKE_CURRENT_BINARY_DIR}/merc-popup-fixtures")
+set_tests_properties(ui.original_merc_popup_rendering PROPERTIES FIXTURES_REQUIRED merc_popup_inputs)
 add_test(NAME ui.original_screen_toggle_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_screen_toggle_guards.py"

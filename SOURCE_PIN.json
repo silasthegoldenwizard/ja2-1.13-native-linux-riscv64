@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "checkpoint": "native-panel-buttons-20261116",
+  "checkpoint": "native-inventory-batch-20261116",
   "preparation_date": "2026-11-16",
   "status": "Accepted engineering checkpoint exported for exact Owner acceptance and formal Review.",
   "upstream_repository": "https://github.com/1dot13/source",
@@ -37,10 +37,10 @@
     "references_in_engine_build_and_callers": true,
     "status": "Full engine builds need the separately published RakNet source companion from v0.1.0-alpha.1. Companion content is outside this PR."
   },
-  "known_issue": "Raven portrait causality and the earlier unlogged fast-forward closure remain unconfirmed. Broad campaign, device and RISC-V coverage remain incomplete.",
-  "verification": "Original development suites pass 96 native and 98 strict sanitizer tests. Exact-export checks are separate; no full exported-game build or gameplay result is claimed.",
+  "known_issue": "Physical upper-monitor acceptance and the exact cropped scope artifact remain open. Broad campaign, device and RISC-V coverage remain incomplete.",
+  "verification": "Original development suites pass 104 native and 106 strict sanitizer tests. Exact-export checks are separate; no full exported-game build or gameplay result is claimed.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms.",
-  "previous_public_commit": "f212a17568f7092fe1cb9410f9eb00656f677a10",
-  "source_snapshot_sha256": "5bc6c4c5f869678c0fde5ae604c1b491cee36f61df3a5070c49d3ad7645ef7d0",
-  "accepted_checkpoint_sha256": "b2ac04289145af26204bda1988f57f474d6928d90138446b7af07e3a93e71cb7"
+  "previous_public_commit": "83812cd069ce85bd0408b70e0fc1be4fef6cd172",
+  "source_snapshot_sha256": "cb4c1282531c2257302a1d5d9101e637c3f097447be1ad3ccc229c4f9f27c097",
+  "accepted_checkpoint_sha256": "af55975b34107e1839d51dad18f7441cac38458957e3593ee340b5a7e5033bf1"
 }

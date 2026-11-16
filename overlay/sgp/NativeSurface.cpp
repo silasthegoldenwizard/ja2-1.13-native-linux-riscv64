@@ -20,6 +20,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: sgp/NativeSurface.cpp
+ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "native_surface.h"
 #include "clip_state.h"
 #include "himage.h"
@@ -94,7 +104,9 @@ BOOLEAN fill(NativeSurface* s, Rect r, UINT16 color, bool clipped)
 }
 BOOLEAN blit(NativeSurface* d, NativeSurface* s, UINT16 index, INT32 x, INT32 y, UINT32 flags, blt_vs_fx* fx)
 {
-    constexpr UINT32 allowed = VS_BLT_COLORFILL | VS_BLT_COLORFILLRECT | VS_BLT_USECOLORKEY | VS_BLT_SRCSUBRECT | VS_BLT_CLIPPED;
+    // FAST selects the original DirectDraw path, not a different pixel result.
+    // Native software copies use the same bounded kernel for either path.
+    constexpr UINT32 allowed = VS_BLT_COLORFILL | VS_BLT_COLORFILLRECT | VS_BLT_USECOLORKEY | VS_BLT_SRCSUBRECT | VS_BLT_CLIPPED | VS_BLT_FAST;
     if (!d || d->locked || index || (flags & ~allowed)) return FALSE;
     const UINT32 fills = flags & (VS_BLT_COLORFILL | VS_BLT_COLORFILLRECT);
     if (fills)
@@ -517,7 +529,7 @@ BOOLEAN BltVideoSurfaceToVideoSurface(HVSURFACE d, HVSURFACE s, UINT16 i, INT32 
 BOOLEAN BltVSurfaceUsingDD(HVSURFACE destination, HVSURFACE source, UINT32 flags,
                           INT32 x, INT32 y, SGPRect* sourceRect)
 {
-    if (flags & ~UINT32(VS_BLT_USECOLORKEY)) return FALSE;
+    if (flags & ~UINT32(VS_BLT_USECOLORKEY | VS_BLT_FAST)) return FALSE;
     blt_vs_fx effects{};
     if (sourceRect) { effects.SrcRect=*sourceRect; flags|=VS_BLT_SRCSUBRECT; }
     return BltVideoSurfaceToVideoSurface(destination,source,0,x,y,
