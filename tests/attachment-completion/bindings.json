@@ -1,7 +1,7 @@
 {
   "test_sha256": "fa6dd03bf2669db4101d46a5547da746f437569b54d9ccea35006a4416461777",
   "review_sha256": "964c37f680ceaab9cd77cff55de2f13d037efc7ab90da63feeb81b01bf3baeb0",
-  "header_sha256": "c26f8506745e9b0fac2098659ef5661cb0cce8b1b78c474f4d81dd43babd27bb",
+  "header_sha256": "714728504d3758f47993eded783b654adddc3fe21517d4861319fcf5e72000d1",
   "normalized_sources": {
     "Tactical/Interface Items.cpp": "ebc7e65d6ff86f2e1d79a9af966af769e52ba882d887ce5aeb6d326395c99b85",
     "Tactical/Item Types.cpp": "a90e0ff2508b60c0a9a614d365868eab8b2a25c1825d5545df4bfcad835a0bd7"

@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/door_swap_lifetime.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native development checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Synthetic services around the exact extracted original swap function.
 // Field widths match the selected declarations; layout/full engine ABI is not modeled.
 #include <cstdint>
@@ -54,6 +64,7 @@ struct Context {
     INT32 grid = 0;
     INT8 delta = 1, level = 0;
     bool door = true, refresh = true, withShadow = true, deleted = false, added = false;
+    bool failAdd = false;
     int conversions = 0, switchCalls = 0;
     std::vector<std::string> events;
 };
@@ -96,6 +107,7 @@ STRUCTURE* InternalAddStructureToWorld(INT32 grid, INT8 level, DB_STRUCTURE_REF*
     require(s.deleted && !s.old && !s.added, "add follows retirement");
     require(grid == s.grid && level == s.level, "add receives saved grid and cube-derived level");
     require(partner == &s.refs[1+s.delta] && node == &s.node, "add receives selected partner and retained node");
+    if (s.failAdd) return nullptr;
     s.added = true; s.replacement->sGridNo = grid; s.replacement->pDBStructureRef = partner;
     s.node.pStructureData = s.replacement.get();
     return s.replacement.get();
@@ -122,10 +134,11 @@ void ActivateSwitchInGridNo(INT32, INT32) { ++state().switchCalls; }
 
 #include "door_swap_function.inc"
 
-void scenario(bool door, bool refresh, bool shadow, bool store, INT8 delta) {
+void scenario(bool door, bool refresh, bool shadow, bool store, INT8 delta, bool failAdd = false) {
     Context s; current = &s;
     s.grid = 323 + cases*161; s.door = door; s.refresh = refresh;
     s.withShadow = shadow; s.delta = delta; s.level = static_cast<INT8>(cases%3);
+    s.failAdd = failAdd;
     for (int i = 0; i < 3; ++i) s.refs[i].pDBStructure = &s.db[i];
     s.db[1].bPartnerDelta = delta;
     s.old = std::make_unique<STRUCTURE>();
@@ -139,6 +152,20 @@ void scenario(bool door, bool refresh, bool shadow, bool store, INT8 delta) {
     s.replacement->fFlags = STRUCTURE_SWITCH; // Existing disabled switch path must stay disabled.
     s.node.usIndex = 100; s.node.pStructureData = s.old.get(); s.shadow.usIndex = 200;
     STRUCTURE* result = InternalSwapStructureForPartner(-77, s.old.get(), TRUE, store);
+    if (failAdd) {
+        require(result == nullptr && s.deleted && !s.old && !s.added,
+                "failed replacement returns null after retiring old storage");
+        require(s.node.pStructureData == nullptr, "failed replacement leaves no dangling binding");
+        require(s.node.usIndex == 100 && s.shadow.usIndex == 200,
+                "failed replacement preserves graphic indexes");
+        require(s.switchCalls == 0, "failed replacement does not activate switches");
+        std::vector<std::string> expected{"base", "node", "shadow"};
+        if (door) { expected.emplace_back("xy"); expected.emplace_back("pre"); }
+        expected.emplace_back("delete"); expected.emplace_back("add");
+        require(s.events == expected, "failed replacement stops before redraw or map storage");
+        ++cases; current = nullptr;
+        return;
+    }
     require(result == s.replacement.get(), "return replacement object");
     require(reinterpret_cast<std::uintptr_t>(result) != oldAddress, "no old-address reuse masks stale read");
     require(s.deleted && !s.old && s.added, "successful real deletion and replacement");
@@ -170,6 +197,11 @@ int main() {
                     for (INT8 delta : {INT8{1}, INT8{-1}})
                         scenario(kind != 2, kind == 0, shadow, store, delta);
         require(cases == 24, "all successful swap combinations ran");
+        for (int kind = 0; kind < 3; ++kind)
+            for (bool store : {false, true})
+                for (INT8 delta : {INT8{1}, INT8{-1}})
+                    scenario(kind != 2, kind == 0, true, store, delta, true);
+        require(cases == 36, "all successful and failed swap combinations ran");
         std::cout << "PASS " << assertions << " door swap checks; " << cases << " scenarios\n";
         return 0;
     } catch (const std::exception& error) {

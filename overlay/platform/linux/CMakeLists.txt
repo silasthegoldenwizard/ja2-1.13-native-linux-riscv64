@@ -6,6 +6,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted native development checkpoint dated 2026-11-16.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-16.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -192,6 +200,24 @@ endforeach()
 add_test(NAME saves.original_email_utf16_subject COMMAND p710_native_email_save_tests)
 add_test(NAME saves.original_soldier_native_layout COMMAND p710_native_soldier_save_tests)
 add_test(NAME saves.original_map_message_utf16 COMMAND p710_native_map_message_save_tests)
+add_executable(p710_native_map_placement_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_map_placement_tests.cpp")
+target_link_libraries(p710_native_map_placement_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME maps.original_static_placement_wire COMMAND p710_native_map_placement_tests)
+add_executable(p710_native_translation_table_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_translation_table_tests.cpp")
+target_link_libraries(p710_native_translation_table_tests PRIVATE p710_engine_contract)
+add_test(NAME text.original_translation_tables
+  COMMAND p710_native_translation_table_tests)
+add_test(NAME ui.original_screen_toggle_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_screen_toggle_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_creation_id_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_ui_creation_guards.py"
+    "${P710_ENGINE_ROOT}")
 add_executable(p710_native_recoil_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_recoil_tests.cpp")
 target_link_libraries(p710_native_recoil_tests PRIVATE
@@ -207,11 +233,101 @@ add_executable(p710_native_dynamic_dialogue_tests
 target_link_libraries(p710_native_dynamic_dialogue_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME dialogue.original_dynamic_box_lifetime COMMAND p710_native_dynamic_dialogue_tests)
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dynamic_dialogue_display.inc"
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_dynamic_dialogue_display.py"
+    "${P710_ENGINE_ROOT}/Laptop/DynamicDialogueWidget.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/dynamic_dialogue_display.inc"
+  DEPENDS "${P710_ENGINE_ROOT}/Laptop/DynamicDialogueWidget.cpp"
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_dynamic_dialogue_display.py")
+add_executable(p710_native_dynamic_dialogue_display_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/dynamic_dialogue_display_palette.cpp"
+  "${CMAKE_CURRENT_BINARY_DIR}/dynamic_dialogue_display.inc")
+target_include_directories(p710_native_dynamic_dialogue_display_tests PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_dynamic_dialogue_display_tests PRIVATE
+    -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_dynamic_dialogue_display_tests PRIVATE -fsanitize=address,undefined)
+endif()
+add_test(NAME dialogue.original_dynamic_box_display_palette COMMAND p710_native_dynamic_dialogue_display_tests)
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/face_palette_lifetime.inc"
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_face_palette_lifetime.py"
+    "${P710_ENGINE_ROOT}/Tactical/Faces.cpp"
+    "${P710_ENGINE_ROOT}/Tactical/Interface.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/face_palette_lifetime.inc"
+  DEPENDS "${P710_ENGINE_ROOT}/Tactical/Faces.cpp"
+    "${P710_ENGINE_ROOT}/Tactical/Interface.cpp"
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_face_palette_lifetime.py")
+add_executable(p710_native_face_palette_lifetime_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/face_palette_lifetime.cpp"
+  "${CMAKE_CURRENT_BINARY_DIR}/face_palette_lifetime.inc")
+target_include_directories(p710_native_face_palette_lifetime_tests PRIVATE
+  "${CMAKE_CURRENT_BINARY_DIR}")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_face_palette_lifetime_tests PRIVATE
+    -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_face_palette_lifetime_tests PRIVATE
+    -fsanitize=address,undefined)
+endif()
+add_test(NAME ui.original_face_palette_lifetime
+  COMMAND p710_native_face_palette_lifetime_tests)
+set(P710_ATTACHMENT_CURSOR_INCLUDES
+  "${CMAKE_CURRENT_BINARY_DIR}/attachment_object_methods.inc"
+  "${CMAKE_CURRENT_BINARY_DIR}/attachment_do_attachment.inc"
+  "${CMAKE_CURRENT_BINARY_DIR}/attachment_completion.inc")
+add_custom_command(OUTPUT ${P710_ATTACHMENT_CURSOR_INCLUDES}
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_attachment_cursor_completion.py"
+    "${P710_ENGINE_ROOT}/Tactical/Interface Items.cpp"
+    "${P710_ENGINE_ROOT}/Tactical/Item Types.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+  DEPENDS "${P710_ENGINE_ROOT}/Tactical/Interface Items.cpp"
+    "${P710_ENGINE_ROOT}/Tactical/Item Types.cpp"
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_attachment_cursor_completion.py"
+  VERBATIM)
+add_executable(p710_native_attachment_cursor_completion_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/attachment_cursor_completion_tests.cpp"
+  ${P710_ATTACHMENT_CURSOR_INCLUDES})
+find_package(SDL3 3.4.20 EXACT REQUIRED CONFIG)
+target_link_libraries(p710_native_attachment_cursor_completion_tests PRIVATE SDL3::Headers)
+target_compile_definitions(p710_native_attachment_cursor_completion_tests PRIVATE
+  P710_NATIVE_HOST CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP
+  ENABLE_BRIEFINGROOM ROBOT_ALWAYS_READY FORCE_ASSERTS_ON BMP_RANDOM CALLBACKTIMER
+  DISABLE_MP_INTERRUPTS_IN_COOP INTERRUPT_MP_DEADLOCK_FIX
+  ENABLE_MP_FRIENDLY_PLAYERS_SHARE_SAME_FOV "__int64=long long")
+target_compile_options(p710_native_attachment_cursor_completion_tests PRIVATE
+  -ivfsoverlay "${CMAKE_CURRENT_BINARY_DIR}/include-overlay.json"
+  -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wno-writable-strings
+  -Wno-gnu-anonymous-struct -Wno-nested-anon-types -Wno-mismatched-tags
+  -Wno-comment -Wno-undefined-bool-conversion -Wno-invalid-offsetof
+  -ferror-limit=30)
+target_include_directories(p710_native_attachment_cursor_completion_tests PRIVATE
+  "${CMAKE_CURRENT_BINARY_DIR}")
+foreach(dir Ja2 ext/VFS/include ext/libsmacker ext/lua-5.1.5/src Utils TileEngine
+    TacticalAI ModularizedTacticalAI/include Tactical Strategic sgp Ja2/Res lua
+    Laptop Multiplayer Editor i18n/include)
+  target_include_directories(p710_native_attachment_cursor_completion_tests PRIVATE
+    "${P710_ENGINE_ROOT}/${dir}")
+endforeach()
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_attachment_cursor_completion_tests PRIVATE
+    -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_attachment_cursor_completion_tests PRIVATE
+    -fsanitize=address,undefined -fno-sanitize-recover=all)
+endif()
+add_test(NAME inventory.original_attachment_cursor_completion
+  COMMAND p710_native_attachment_cursor_completion_tests)
 add_executable(p710_native_battle_sound_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_battle_sound_tests.cpp")
 target_link_libraries(p710_native_battle_sound_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME audio.original_npc_battle_sound_cache COMMAND p710_native_battle_sound_tests)
+add_executable(p710_native_same_building_bounds_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_same_building_bounds_tests.cpp")
+target_link_libraries(p710_native_same_building_bounds_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME ai.original_same_building_bounds COMMAND p710_native_same_building_bounds_tests)
 add_executable(p710_native_sector_inventory_sort_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_sector_inventory_sort_tests.cpp")
 target_link_libraries(p710_native_sector_inventory_sort_tests PRIVATE
@@ -232,6 +348,26 @@ if(P710_SANITIZERS)
   target_link_options(p710_native_door_swap_tests PRIVATE -fsanitize=address,undefined)
 endif()
 add_test(NAME world.original_door_swap_lifetime COMMAND p710_native_door_swap_tests)
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tactical_placement_logic.inc"
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_tactical_placement.py"
+    "${P710_ENGINE_ROOT}/TileEngine/Tactical Placement GUI.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/tactical_placement_logic.inc"
+  DEPENDS "${P710_ENGINE_ROOT}/TileEngine/Tactical Placement GUI.cpp"
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_tactical_placement.py")
+add_executable(p710_native_tactical_placement_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_tactical_placement_tests.cpp"
+  "${CMAKE_CURRENT_BINARY_DIR}/tactical_placement_logic.inc")
+target_include_directories(p710_native_tactical_placement_tests PRIVATE
+  "${CMAKE_CURRENT_BINARY_DIR}")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_tactical_placement_tests PRIVATE
+    -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_tactical_placement_tests PRIVATE
+    -fsanitize=address,undefined)
+endif()
+add_test(NAME tactical.original_edge_direction_sync
+  COMMAND p710_native_tactical_placement_tests)
 add_test(NAME profiles.original_windows101_wire COMMAND p710_native_profile101_tests)
 add_executable(p710_native_vobject_bridge_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_vobject_bridge_tests.cpp")
