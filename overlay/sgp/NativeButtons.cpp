@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: sgp/NativeButtons.cpp
+ * Native Linux source/build/test adaptations captured in the accepted magazine and UI cleanup checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Native adaptation, 2026-11-12/13: bounded original quick/checkbox behavior.
 // Reference: 1dot13/source at3394695a387a14c78e92b158cfdcf50e4068c96b,
 // sgp/Button System.cpp/.h. Keeps original field order, flags, anchor and null
@@ -22,6 +32,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <cstdio>
 #include <cwchar>
 #include <memory>
 #include <limits>
@@ -43,6 +54,7 @@ struct Slot {
 };
 std::array<Slot, MAX_BUTTONS> slots{};
 std::array<bool, MAX_BUTTON_PICS> owned{};
+std::array<bool, MAX_BUTTON_PICS> pendingUnload{};
 struct GenericSkin {
     // Same order as quick-image states, then optional tiled background.
     std::array<HVOBJECT,6> images{};
@@ -121,8 +133,18 @@ bool referenced(UINT32 image) {
     return false;
 }
 void unload(INT32 image) {
-    if (image < 0 || !imageValid(static_cast<UINT32>(image)) || referenced(static_cast<UINT32>(image))) return;
+    if (image < 0 || !imageValid(static_cast<UINT32>(image))) return;
     const auto index = static_cast<std::size_t>(image);
+    if (referenced(static_cast<UINT32>(image))) {
+        // Deletion is deferred inside mouse callbacks. Honor the caller's
+        // matching unload after dispatch, once every referring button retires.
+        // Keep the original rejection when a live button still uses the image.
+        for (GUI_BUTTON* b:ButtonList)
+            if (b && !(b->uiFlags & (BUTTON_HOT_SPOT|BUTTON_GENERIC|BUTTON_DELETION_PENDING)) &&
+                b->ImageNum==static_cast<UINT32>(image)) return;
+        pendingUnload[index]=true;
+        return;
+    }
     if (owned[index]) {
         // Like the original duplicate-image contract, ownership belongs to the
         // shared object, not its first state selection. Keep one owner until
@@ -140,6 +162,7 @@ void unload(INT32 image) {
     }
     ButtonPictures[index] = {};
     owned[index] = false;
+    pendingUnload[index] = false;
 }
 void collect() {
     if (callbackDepth || sgp::NativeMouseDispatchActive()) return;
@@ -154,6 +177,8 @@ void collect() {
         slots[id] = {};
         if (autoImage && image < MAX_BUTTON_PICS) unload(static_cast<INT32>(image));
     }
+    for (INT32 image=0;image<static_cast<INT32>(ButtonPictures.size());++image)
+        if (pendingUnload[static_cast<std::size_t>(image)]) unload(image);
     if (shutdownPending && std::none_of(ButtonList.begin(), ButtonList.end(), [](GUI_BUTTON* b) { return b != nullptr; })) {
         for (INT32 i = 0; i < static_cast<INT32>(ButtonPictures.size()); ++i) unload(i);
         for (auto& skin:genericSkins) releaseSkin(skin);
@@ -168,6 +193,7 @@ void collect() {
             ButtonPictures.clear();
             ButtonList.clear();
             owned.fill(false);
+            pendingUnload.fill(false);
             shutdownPending = false;
         }
     }
@@ -643,9 +669,18 @@ void UnloadButtonImage(INT32 image) { collect(); unload(image); }
 INT32 QuickCreateButton(UINT32 image, INT16 x, INT16 y, INT32 type, INT16 priority, GUI_CALLBACK move, GUI_CALLBACK click) {
     const UINT32 flags = static_cast<UINT32>(type);
     constexpr UINT32 allowed = BUTTON_TYPE_MASK | BUTTON_NEWTOGGLE;
-    if ((flags & ~allowed) || !imageValid(image)) return -1;
-    return install(image, x, y, ButtonPictures[image].MaxWidth, ButtonPictures[image].MaxHeight,
+    if ((flags & ~allowed) || !imageValid(image)) {
+        std::fprintf(stderr, "Native quick button rejected: image=%u x=%d y=%d flags=%u priority=%d images=%zu\n",
+            image, x, y, flags, priority, static_cast<std::size_t>(std::count_if(ButtonPictures.begin(), ButtonPictures.end(),
+                [](const BUTTON_PICS& p) { return p.vobj != nullptr; })));
+        return -1;
+    }
+    const INT32 id = install(image, x, y, ButtonPictures[image].MaxWidth, ButtonPictures[image].MaxHeight,
                    flags, priority, move, click);
+    if (id < 0) std::fprintf(stderr, "Native quick button allocation failed: image=%u x=%d y=%d width=%u height=%u priority=%d buttons=%zu\n",
+        image, x, y, ButtonPictures[image].MaxWidth, ButtonPictures[image].MaxHeight, priority,
+        static_cast<std::size_t>(std::count_if(ButtonList.begin(), ButtonList.end(), [](GUI_BUTTON* b) { return b != nullptr; })));
+    return id;
 }
 INT32 CreateHotSpot(INT16 x, INT16 y, INT16 width, INT16 height, INT16 priority, GUI_CALLBACK move, GUI_CALLBACK click) {
     if (width < 0 || height < 0) return -1;

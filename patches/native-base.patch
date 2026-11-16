@@ -16458,7 +16458,7 @@
  							iComparedModifier[1] = 0;
 --- a/Tactical/Interface Items.cpp
 +++ b/Tactical/Interface Items.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Interface Items.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -16469,10 +16469,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Interface Items.cpp
++ * Native Linux source/build/test adaptations captured in the accepted magazine and UI cleanup checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "mapscreen.h"
  	#include <stdio.h>
  	#include "sgp.h"
-@@ -28,6 +38,7 @@
+@@ -28,6 +48,7 @@
  	#include "message.h"
  	#include "Text.h"
  	#include "Interface Items.h"
@@ -16480,7 +16490,7 @@
  	#include "Cursor Control.h"
  	#include "Interface Cursors.h"
  	#include "Interface Utils.h"
-@@ -784,8 +795,8 @@
+@@ -784,8 +805,8 @@
  	if ( gGameExternalOptions.fWeaponOverheating )
  	{
  		FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16491,7 +16501,7 @@
  	}
  
  	//CHRISL: TODO - This needs to be updated for NCTH
-@@ -929,8 +940,8 @@
+@@ -929,8 +950,8 @@
  	if ( gGameExternalOptions.fWeaponOverheating )
  	{
  		FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16502,7 +16512,7 @@
  	}
  
  	//CHRISL: TODO - This needs to be updated for NCTH
-@@ -1834,7 +1845,7 @@
+@@ -1834,7 +1855,7 @@
  
  //THE_BOB: mag-making popups
  static POPUP * sPocketPopup = NULL;
@@ -16511,7 +16521,7 @@
  
  void popupCallbackAmmo(UINT16 item, UINT16 pocket, SOLDIERTYPE* pSoldier ){
  
-@@ -1974,7 +1985,7 @@
+@@ -1974,7 +1995,7 @@
  				INT16 pocketType = pocketTypeInSlot( pSoldier, pocket );
  
  				if( pocketType != -1 ){
@@ -16520,7 +16530,7 @@
  				} else {
  					numObjectsToPlace = 1;
  				}
-@@ -2127,7 +2138,7 @@
+@@ -2127,7 +2148,7 @@
  		}
  
  		if( pocketType != -1 ){
@@ -16529,7 +16539,7 @@
  		} else {
  			numObjectsToPlace = 1;
  		}
-@@ -2320,7 +2331,7 @@
+@@ -2320,7 +2341,7 @@
  
  									UINT8 maxPerPocket = LBEPocketType[pocketTypeInSlot(pSoldier, sPocket)].ItemCapacityPerSize[ Item[loop].ItemSize ];
  										
@@ -16538,7 +16548,7 @@
  								}
  								else if( CanItemFitInPosition(pSoldier, &pInventoryPoolList[i].object, sPocket, FALSE) )
  								{
-@@ -3692,7 +3703,7 @@
+@@ -3692,7 +3713,7 @@
  // Flugente: Function to get the number of the item condition string
  UINT8 GetTemperatureString( FLOAT overheatpercentage, UINT32* apRed, UINT32* apGreen, UINT32* abBlue )
  {
@@ -16547,7 +16557,7 @@
  	*apGreen = 0;
  	*abBlue  = 0;
  
-@@ -3973,8 +3984,8 @@
+@@ -3973,8 +3994,8 @@
  				{
  					FLOAT condition = (*pObject)[0]->data.bTemperature / OVERHEATING_MAX_TEMPERATURE;
  
@@ -16558,7 +16568,7 @@
  					UINT32 blue  = 0;
  										
  					UINT16 colour = Get16BPPColor( FROMRGB( red, green, blue ) );
-@@ -4382,7 +4393,11 @@
+@@ -4382,7 +4403,11 @@
  				}
  			}
  
@@ -16571,7 +16581,7 @@
  
  			VarFindFontCenterCoordinates( sX, sY, sWidth, sHeight , ITEM_FONT, &sFontX, &sFontY, pStr );
  			sFontY = sY + 1;
-@@ -5912,7 +5927,7 @@
+@@ -5912,7 +5937,7 @@
  						if (showAttachmentPopups)
  						{	// add the current attachment to the popup assigned to this attachment slot
  							POPUP_OPTION * o = new POPUP_OPTION(	std::wstring( Item[ usAttachment ].szItemName ), 
@@ -16580,7 +16590,16 @@
  							
  							gPopupAttachmentInfos.push_back(new PopupAttachmentInfo(usAttachment, pObject, ubStatusIndex, slotCount, o, gItemDescAttachmentPopups[slotCount]));
  
-@@ -6344,7 +6359,7 @@
+@@ -6143,7 +6168,7 @@
+ 			RenderBulletIcon(gpItemDescObject, ubStatusIndex);
+ 
+ 			// Set mouse
+-			if(gpItemPointer->exists() == true)
++			if(gpItemPointer != NULL && gpItemPointer->exists() == true)
+ 			{
+ 				guiExternVo = GetInterfaceGraphicForItem( &(Item[ gpItemPointer->usItem ]) );
+ 				gusExternVoSubIndex = g_bUsePngItemImages ? 0 : Item[ gpItemPointer->usItem ].ubGraphicNum;
+@@ -6344,7 +6369,7 @@
  
  				DoAttachment((UINT8)ubStatusIndex, uiItemPos);
  
@@ -16589,7 +16608,7 @@
  					if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
  					{
  						// Set mouse
-@@ -7277,7 +7292,11 @@
+@@ -7277,7 +7302,11 @@
  
  						// print value
  						SetFontForeground( 5 );
@@ -16601,7 +16620,7 @@
  						FindFontRightCoordinates( gItemDescTextRegions[regionindex].sLeft, gItemDescTextRegions[regionindex].sTop, gItemDescTextRegions[regionindex].sRight - gItemDescTextRegions[regionindex].sLeft ,gItemDescTextRegions[regionindex].sBottom - gItemDescTextRegions[regionindex].sTop ,pStr, BLOCKFONT2, &usX, &usY);
  						mprintf( usX, usY, pStr );
  					}
-@@ -7326,7 +7345,7 @@
+@@ -7326,7 +7355,7 @@
  							FLOAT condition = (*gpItemDescObject)[0]->data.bTemperature / OVERHEATING_MAX_TEMPERATURE;
  
  							UINT32 red   = (UINT32) ( 127 );
@@ -16610,7 +16629,87 @@
  							UINT32 blue  = 0;
  
  							UINT8 FoodStringNum = 6;
-@@ -9866,7 +9885,7 @@
+@@ -8404,13 +8433,17 @@
+ //	if( guiTacticalInterfaceFlags & INTERFACE_MAPSCREEN  )
+ 	if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
+ 	{
++		RemoveButton( giMapInvDescButton );
+ 		UnloadButtonImage( giMapInvDescButtonImage );
+-		RemoveButton( giMapInvDescButton );
+ 	}
+ 
+ 	// HEADROCK HAM 4: Remove TAB buttons for UDB
+ 	if (UsingEDBSystem() > 0)
+ 	{
++		for (cnt = 0; cnt < 3; cnt++)
++		{
++			RemoveButton( giInvDescTabButton[cnt] );
++		}
+ 		if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
+ 		{
+ 			UnloadButtonImage( giMapInvDescTabButtonImage );
+@@ -8418,25 +8451,21 @@
+ 		else
+ 		{
+ 			UnloadButtonImage( giInvDescTabButtonImage );
+-		}
+-		for (cnt = 0; cnt < 3; cnt++)
+-		{
+-			RemoveButton( giInvDescTabButton[cnt] );
+ 		}
+ 	}
+ 
+ 	// HEADROCK HAM 4: Remove ADVANCED buttons for UDB
+ 	if (UsingEDBSystem() > 0)
+ 	{
++		for (cnt = 0; cnt < 2; cnt++)
++		{
++			if ( giInvDescAdvButton[cnt] != -1 )
++			{
++				RemoveButton( giInvDescAdvButton[cnt] );
++			}
++		}
+ 		UnloadButtonImage( giInvDescAdvButtonUpImage );
+ 		UnloadButtonImage( giInvDescAdvButtonDownImage );
+-		for (cnt = 0; cnt < 2; cnt++)
+-		{
+-			if ( giInvDescAdvButton[cnt] != -1 )
+-			{
+-				RemoveButton( giInvDescAdvButton[cnt] );
+-			}
+-		}
+ 	}
+ 
+ 	// HEADROCK HAM 5: Remove Transform Item Region
+@@ -8495,12 +8524,12 @@
+ 	}
+ 	else
+ 	{
++		for ( cnt = 0; cnt < OLD_MAX_ATTACHMENTS_101; cnt++ )
++		{
++			RemoveButton( guiMoneyButtonBtn[cnt] );
++		}
+ 		UnloadButtonImage( guiMoneyButtonImage );
+ 		UnloadButtonImage( guiMoneyDoneButtonImage );
+-		for ( cnt = 0; cnt < OLD_MAX_ATTACHMENTS_101; cnt++ )
+-		{
+-			RemoveButton( guiMoneyButtonBtn[cnt] );
+-		}
+ 	}
+ 
+ 	// HEADROCK HAM 5: Instead of checking the item, check for the regions!!
+@@ -8520,8 +8549,9 @@
+ 	if (giItemDescAmmoButton > -1)
+ 	{
+ 		// Remove button
++		RemoveButton( giItemDescAmmoButton );
+ 		UnloadButtonImage( giItemDescAmmoButtonImages );
+-		RemoveButton( giItemDescAmmoButton );
++		giItemDescAmmoButton = -1;
+ 	}
+ //	if(guiTacticalInterfaceFlags & INTERFACE_MAPSCREEN )
+ 	if( guiCurrentItemDescriptionScreen == MAP_SCREEN )
+@@ -9866,7 +9896,7 @@
  	//Restrict mouse cursor to panel
  	aRect.iLeft = sInvX + sOffSetX;
  	aRect.iTop = sInvY + sOffSetY;
@@ -16619,7 +16718,7 @@
  	aRect.iBottom = aRect.iTop + (INT32)(ceil((float)cnt/(float)sItemWidth)+1) * usPopupHeight;
  	//aRect.iTop = sInvY;
  	//aRect.iLeft = sInvX;
-@@ -10531,7 +10550,9 @@
+@@ -10531,7 +10561,9 @@
  
  	uiItemPos = MSYS_GetRegionUserData( pRegion, 0 );
  	iItemCap = MSYS_GetRegionUserData( pRegion, 1 );
@@ -16630,7 +16729,7 @@
  
  	// TO ALLOW ME TO DELETE REGIONS IN CALLBACKS!
  	if ( gfItemPopupRegionCallbackEndFix )
-@@ -12122,7 +12143,11 @@
+@@ -12122,7 +12154,11 @@
  }
  
  
@@ -16642,7 +16741,7 @@
  {
  	CHAR16	pStr[ 500 ];
  	UINT16	usItem = pObject->usItem;
-@@ -12137,7 +12162,7 @@
+@@ -12137,7 +12173,7 @@
  		if ( pSoldier->flags.uiStatusFlags & SOLDIER_DEAD )
  		{
  			swprintf( pStr, L"" );
@@ -16651,7 +16750,7 @@
  			return;
  		}
  	}
-@@ -12263,8 +12288,8 @@
+@@ -12263,8 +12299,8 @@
  				if ( gGameExternalOptions.fWeaponOverheating )
  				{
  					FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16662,7 +16761,7 @@
  				}
  				
  				INT8 accuracy = (UsingNewCTHSystem()==true?Weapon[ usItem ].nAccuracy:Weapon[ usItem ].bAccuracy);
-@@ -12395,8 +12420,8 @@
+@@ -12395,8 +12431,8 @@
  				if ( gGameExternalOptions.fWeaponOverheating )
  				{
  					FLOAT overheatdamagepercentage = GetGunOverheatDamagePercentage( pObject );
@@ -16673,7 +16772,7 @@
  				}
  
  				//Info for weapons
-@@ -12804,7 +12829,7 @@
+@@ -12804,7 +12840,7 @@
  	}
  
  	// Copy over...
@@ -16682,7 +16781,7 @@
  }
  
  
-@@ -13528,7 +13553,7 @@
+@@ -13528,7 +13564,7 @@
  					// Generate a new option for the menu
  					POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void, OBJECTTYPE*>( &TransformationMenuPopup_Arm, gpItemDescObject ) );
  					// Set the function that tests whether it's valid at the moment.
@@ -16691,7 +16790,7 @@
  					// Add the option to the menu.
  					gItemDescTransformPopup->addOption( *pOption );
  					// Set this flag so we know we have at least one Transformation available.
-@@ -13554,7 +13579,7 @@
+@@ -13554,7 +13590,7 @@
  					// Generate a new option for the menu
  					POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void, OBJECTTYPE*>( &TransformationMenuPopup_Arm, gpItemDescObject ) );
  					// Set the function that tests whether it's valid at the moment.
@@ -16700,7 +16799,7 @@
  					// Add the option to the menu.
  					gItemDescTransformPopup->addOption( *pOption );
  					// Set this flag so we know we have at least one Transformation available.
-@@ -13591,7 +13616,7 @@
+@@ -13591,7 +13627,7 @@
  
  					// Add option
  					POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void,void>( &TransformationMenuPopup_DelayedGrenadeExplosion ));
@@ -16709,7 +16808,7 @@
  					gItemDescTransformPopup->addOption( *pOption );
  					fFoundTransformations = true;
  				}
-@@ -13619,7 +13644,7 @@
+@@ -13619,7 +13655,7 @@
  						// Generate a new option for the menu
  						POPUP_OPTION *pOption = new POPUP_OPTION(std::wstring( MenuRowText ), new popupCallbackFunction<void,TransformInfoStruct*>( &TransformationMenuPopup_Transform, &Transform[x] ) );
  						// Set the function that tests whether it's valid at the moment.
@@ -16718,7 +16817,7 @@
  						// Add the option to the menu.
  						gItemDescTransformPopup->addOption( *pOption );
  						// Set this flag so we know we have at least one Transformation available.
-@@ -13632,7 +13657,7 @@
+@@ -13632,7 +13668,7 @@
  		if (!fFoundTransformations)
  		{
  			POPUP_OPTION * pOption = new POPUP_OPTION( std::wstring( gzTransformationMessage[ 0 ] ), new popupCallbackFunction<void,TransformInfoStruct*>( &TransformationMenuPopup_Transform, NULL ) );
@@ -16727,7 +16826,7 @@
  			gItemDescTransformPopup->addOption( *pOption );
  		}
  
-@@ -13831,7 +13856,7 @@
+@@ -13831,7 +13867,7 @@
  
  					// in realtime mode, remember the second when this event happened. Once suspicion is checked, we are either uncovered or, if enough time has passed, no longer suspicious
  					// in turnbase mode, remember our current APs. If a new turn has started or enough APs have been used, remove the flag
@@ -16736,7 +16835,7 @@
  					gpItemDescSoldier->usSkillCooldown[SOLDIER_COOLDOWN_COVERTOPS_TEMPORARYOVERT_APS] = appenalty;
  				}
  			}
-@@ -14012,7 +14037,7 @@
+@@ -14012,7 +14048,7 @@
  			if ( gGameOptions.fNewTraitSystem && HAS_SKILL_TRAIT( gpItemDescSoldier, DEMOLITIONS_NT ))
  			{
  				// increase trap level for Demolitions trait
@@ -16781,7 +16880,7 @@
  
 --- a/Tactical/Interface Panels.cpp
 +++ b/Tactical/Interface Panels.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Interface Panels.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -16792,10 +16891,96 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Interface Panels.cpp
++ * Native Linux source/build/test adaptations captured in the accepted magazine and UI cleanup checkpoint dated 2026-11-16.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-16.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include <stdio.h>
  	#include "sgp.h"
  	#include "himage.h"
-@@ -2846,7 +2856,7 @@
+@@ -2152,6 +2172,8 @@
+ 	//CHAR8 ubString3[48]; //legion
+ 
+ 	// CHRISL: Reset backpack buttons as well
++	memset( iSMPanelImages, -1, sizeof( iSMPanelImages ) );
++	memset( iBurstButtonImages, -1, sizeof( iBurstButtonImages ) );
+ 	giSMStealthImages = giSMZipperImages = giSMDropPackImages = -1;
+ 	giSMStealthButton = giSMZipperButton = giSMDropPackButton = -1;
+ 	gfUIStanceDifferent = TRUE;
+@@ -2380,35 +2402,47 @@
+ 		if ( iSMPanelButtons[ cnt ] != -1 )
+ 		{
+ 			RemoveButton( iSMPanelButtons[ cnt ] );
+-		}
+-	}
+-
++			iSMPanelButtons[ cnt ] = -1;
++		}
++	}
++
++	if ( giSMStealthButton != -1 )
++	{
++		RemoveButton( giSMStealthButton );
++		giSMStealthButton = -1;
++	}
++
++	// Teardown must also work after a screen change or a keyring popup.
++	// RenderBackpackButtons skips those contexts, leaving live image references.
++	if ( giSMZipperButton != -1 ) RemoveButton( giSMZipperButton );
++	if ( giSMDropPackButton != -1 ) RemoveButton( giSMDropPackButton );
++	giSMZipperButton = giSMDropPackButton = -1;
++
++	if ( giSMStealthImages != -1 )
++	{
++		UnloadButtonImage( giSMStealthImages );
++		giSMStealthImages = -1;
++	}
++	if ( giSMZipperImages != -1 ) UnloadButtonImage( giSMZipperImages );
++	if ( giSMDropPackImages != -1 ) UnloadButtonImage( giSMDropPackImages );
++	giSMZipperImages = giSMDropPackImages = -1;
++
++	// Release base images only after their dynamic controls and aliases retire.
+ 	for ( cnt = 0; cnt < NUM_SM_BUTTON_IMAGES; cnt++ )
+ 	{
+-		if(iSMPanelImages[ cnt ] != -1)
++		if ( iSMPanelImages[ cnt ] != -1 )
+ 		{
+ 			UnloadButtonImage( iSMPanelImages[ cnt ] );
+-		}
+-	}
+-
+-	if ( giSMStealthButton != -1 )
+-	{
+-		RemoveButton( giSMStealthButton );
+-	}
+-
+-	RenderBackpackButtons(DEACTIVATE_BUTTON);	/* CHRISL: Needed for new inventory backpack buttons */
+-
+-	if ( giSMStealthImages != -1 )
+-	{
+-		UnloadButtonImage( giSMStealthImages );
+-	}
+-	RenderBackpackButtons(UNLOAD_BUTTON);	/* CHRISL: Needed for new inventory backpack buttons */
++			iSMPanelImages[ cnt ] = -1;
++		}
++	}
+ 	
+ 	for (int i = 0; i < NUM_WEAPON_MODES; ++i)
+ 	{
+ 		if ( iBurstButtonImages[i] != -1)
+ 		{
+ 			UnloadButtonImage(iBurstButtonImages[i]);
++			iBurstButtonImages[i] = -1;
+ 		}
+ 	}
+ }
+@@ -2846,7 +2880,7 @@
  			ApplyEquipmentBonuses(gpSMCurrentMerc);
  
  			// Display cammo value!
@@ -16804,7 +16989,7 @@
  			FindFontRightCoordinates(SM_CAMMO_X, SM_CAMMO_Y ,SM_PERCENT_WIDTH ,SM_PERCENT_HEIGHT ,sString, BLOCKFONT2, &usX, &usY);
  			mprintf( usX, usY , sString );
  			
-@@ -7192,7 +7202,7 @@
+@@ -7192,7 +7226,7 @@
  
  			if ( pNewSoldier->bAssignment != iCurrentSquad )
  			{
