@@ -20,6 +20,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_render_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "Font.h"
 #include "vsurface.h"
 #include "clip_state.h"
@@ -122,9 +132,10 @@ void surfacesTest()
     check(BltVideoSurface(id,tile,0,1,1,VS_BLT_USECOLORKEY,nullptr),"key copy");
     expect(id,{{9,9,9,9,9},{9,3,9,3,9},{9,3,9,3,9},{9,9,9,9,9}});
     for (auto xy : std::vector<std::pair<int,int>>{{-2,0},{4,0},{0,-1},{0,3},{INT_MIN,INT_MAX},{INT_MAX,INT_MIN}})
+    for (UINT32 flags : {UINT32(0),UINT32(VS_BLT_FAST)})
     {
         clear(id,5,4,9); Grid g(4,std::vector<int>(5,9)); place(g,xy.first,xy.second,{{3,0,3},{3,0,3}});
-        check(BltVideoSurface(id,tile,0,xy.first,xy.second,0,nullptr),"edge copy"); expect(id,g);
+        check(BltVideoSurface(id,tile,0,xy.first,xy.second,flags,nullptr),"normal/FAST edge copy"); expect(id,g);
     }
     clear(id,5,4,9); blt_vs_fx fx{}; fx.SrcRect={1,0,3,2};
     // Original HandleTopMessages initializes only SrcRect. Other effects
@@ -138,8 +149,10 @@ void surfacesTest()
     clip={2,1,3,2}; SetClippingRect(&clip); clear(id,5,4,8);
     check(BltVideoSurface(id,tile,0,1,1,VS_BLT_CLIPPED,nullptr),"global blit clip");
     expect(id,{{9,9,9,9,9},{9,3,0,9,9},{9,3,0,9,9},{9,9,9,9,9}});
+    check(BltVideoSurface(id,tile,0,1,1,VS_BLT_FAST|VS_BLT_CLIPPED,nullptr),"FAST preserves global blit clipping");
+    expect(id,{{9,9,9,9,9},{9,3,0,9,9},{9,3,0,9,9},{9,9,9,9,9}});
     SetClippingRect(&all); before=read(id);
-    for (UINT32 flag : {VS_BLT_FAST,VS_BLT_USEDESTCOLORKEY,VS_BLT_SRCREGION,VS_BLT_DESTREGION,VS_BLT_MIRROR_Y,0x80000000u})
+    for (UINT32 flag : {VS_BLT_USEDESTCOLORKEY,VS_BLT_SRCREGION,VS_BLT_DESTREGION,VS_BLT_MIRROR_Y,0x80000000u})
     { check(!BltVideoSurface(id,tile,0,0,0,flag,nullptr),"unsupported flag"); check(read(id)==before,"flag atomic"); }
     fx.SrcRect={2,0,1,1}; check(!BltVideoSurface(id,tile,0,0,0,VS_BLT_SRCSUBRECT,&fx),"bad subrect");
     check(!BltVideoSurface(id,tile,0,0,0,VS_BLT_SRCSUBRECT,nullptr),"missing fx");

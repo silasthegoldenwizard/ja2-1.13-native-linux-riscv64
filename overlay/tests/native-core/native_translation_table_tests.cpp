@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_translation_table_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted virtual inventory and lifetime checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Translation-table shape, null-entry, and format-argument regression checks.
 // This translation unit includes the original tables once and adds no game data.
 #include <algorithm>
@@ -33,6 +43,22 @@
                   "English table binding shape differs: " #NAME);
 #include "../../i18n/text.def"
 #undef X
+
+// The weapon general tab has 22 NCTH rows and 23 old-system rows.
+// NCTH explanation 22 is a separate repair-policy variant, not a data row.
+#define P710_WEAPON_TOOLTIP_EXTENTS(LANG) \
+    static_assert(std::size(LANG::szUDBGenWeaponsStatsTooltipText) == 22); \
+    static_assert(std::size(LANG::szUDBGenWeaponsStatsExplanationsTooltipText) >= 23); \
+    static_assert(std::size(LANG::gzWeaponStatsFasthelpTactical) >= 23);
+P710_WEAPON_TOOLTIP_EXTENTS(lang_en)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_de)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_ru)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_nl)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_pl)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_fr)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_it)
+P710_WEAPON_TOOLTIP_EXTENTS(lang_zh)
+#undef P710_WEAPON_TOOLTIP_EXTENTS
 
 #define P710_ENGLISH_TABLE_MATCHES_ENUM(NAME, COUNT)                         \
     static_assert(std::size(lang_en::NAME) == COUNT,                         \

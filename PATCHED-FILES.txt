@@ -90,6 +90,7 @@ Strategic/Map Screen Interface Map Inventory.cpp
 Strategic/Map Screen Interface Map.cpp
 Strategic/Map Screen Interface Map.h
 Strategic/Map Screen Interface.cpp
+Strategic/Merc Contract.cpp
 Strategic/MilitiaIndividual.cpp
 Strategic/MilitiaSquads.cpp
 Strategic/MiniEvents.cpp
@@ -264,6 +265,7 @@ Utils/INIReader.cpp
 Utils/INIReader.h
 Utils/KeyMap.cpp
 Utils/KeyMap.h
+Utils/MercTextBox.cpp
 Utils/Music Control.cpp
 Utils/Music Control.h
 Utils/PopUpBox.cpp
