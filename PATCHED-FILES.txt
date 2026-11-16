@@ -38,6 +38,7 @@ Laptop/CampaignHistory_Summary.cpp
 Laptop/DropDown.cpp
 Laptop/DropDown.h
 Laptop/DynamicDialogueWidget.cpp
+Laptop/DynamicDialogueWidget.h
 Laptop/FacilityProduction.cpp
 Laptop/IMP Attribute Selection.cpp
 Laptop/IMP Background.cpp
@@ -131,6 +132,7 @@ Tactical/DisplayCover.cpp
 Tactical/Drugs And Alcohol.cpp
 Tactical/DynamicDialogue.cpp
 Tactical/Enemy Soldier Save.cpp
+Tactical/Faces.cpp
 Tactical/Food.cpp
 Tactical/GAP.H
 Tactical/GAP.cpp
@@ -147,13 +149,16 @@ Tactical/Interface.cpp
 Tactical/Interface.h
 Tactical/Inventory Choosing.cpp
 Tactical/Item Types.cpp
+Tactical/Item Types.h
 Tactical/Items.cpp
 Tactical/Keys.cpp
 Tactical/LOS.cpp
+Tactical/LOS.h
 Tactical/LogicalBodyTypes/AbstractXMLLoader.cpp
 Tactical/LogicalBodyTypes/AbstractXMLLoader.h
 Tactical/LogicalBodyTypes/EnumeratorDB.cpp
 Tactical/LogicalBodyTypes/FilterDB.cpp
+Tactical/LogicalBodyTypes/PaletteDB.cpp
 Tactical/LogicalBodyTypes/PaletteTable.cpp
 Tactical/LogicalBodyTypes/Singleton.h
 Tactical/LogicalBodyTypes/SurfaceCache.h
@@ -177,6 +182,7 @@ Tactical/Soldier Create.cpp
 Tactical/Soldier Create.h
 Tactical/Soldier Find.cpp
 Tactical/Soldier Init List.cpp
+Tactical/Soldier Init List.h
 Tactical/Soldier Profile.cpp
 Tactical/SoldierTooltips.cpp
 Tactical/Spread Burst.cpp
@@ -228,6 +234,7 @@ TacticalAI/NPC.cpp
 TacticalAI/NPC.h
 TacticalAI/QuestDebug.cpp
 TileEngine/Ambient Control.cpp
+TileEngine/Buildings.cpp
 TileEngine/Explosion Control.cpp
 TileEngine/Explosion Control.h
 TileEngine/Interactive Tiles.cpp
@@ -309,6 +316,7 @@ lua/lua_state.h
 lua/lua_table.h
 lua/lua_tactical.cpp
 lua/lwstring.cpp
+sgp/BufferMan.cpp
 sgp/Button System.h
 sgp/CMakeLists.txt
 sgp/Cursor Control.cpp

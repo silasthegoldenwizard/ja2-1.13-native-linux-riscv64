@@ -8,9 +8,20 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_recoil_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native development checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Actual NCTH counter-force calculation, with authored finite state only.
 #include "Soldier Control.h"
 #include "GameSettings.h"
+#include "LOS.h"
 #include "random.h"
 #include <cmath>
 #include <cstdlib>
@@ -79,6 +90,22 @@ int main() {
     gGameCTHConstants.RECOIL_COUNTER_INCREMENT = 20;
     gGameCTHConstants.RECOIL_COUNTER_ACCURACY_MIN_ERROR = 0.2f;
     check(*shooter, 30.0f, 1.0f, -2.0f, 2, -4.0f);
+
+    // NCTH area fire can have no soldier at the target grid and no computed
+    // sight range.  Keep the normal visibility penalties and all conversions
+    // finite instead of dividing by zero and casting infinity to UINT32.
+    expect(AdjustCounterForceAccuracyForSight(80, 100, 100, 1) == 80,
+           "ordinary counter-force sight scaling is preserved");
+    expect(AdjustCounterForceAccuracyForSight(80, 100, 100, 2) == 40,
+           "team-only sight keeps the original half-accuracy penalty");
+    expect(AdjustCounterForceAccuracyForSight(80, 100, 100, 4) == 20,
+           "unseen target keeps the original quarter-accuracy penalty");
+    expect(AdjustCounterForceAccuracyForSight(80, 100, 0, 4) == 20,
+           "targetless area fire uses physical range before visibility penalty");
+    expect(AdjustCounterForceAccuracyForSight(80, 0, 0, 4) == 0,
+           "zero-range targetless fire remains finite");
+    expect(AdjustCounterForceAccuracyForSight(UINT32_MAX, UINT32_MAX, 1, 1) == 100,
+           "large authored values clamp before unsigned conversion");
     is_networked = false; is_client = false;
     std::cout << checks << " original NCTH counter-force assertions passed\n";
 }

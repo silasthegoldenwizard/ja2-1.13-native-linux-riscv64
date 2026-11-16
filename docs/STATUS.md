@@ -1,42 +1,34 @@
-# Release status
+# Source update status
 
-Updated: November 15, 2026.
-Scope: published source preview [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1), commit [0bd14100a9ac](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/commit/0bd14100a9ac0692f767170947cc3cefcf82067c).
-This page describes that release; subsequent local development has separate acceptance records.
+Updated: November 16, 2026.
 
-## Current release result
+The November 16 source update contains accepted native Linux development changes after the attachment guard.
+The current release remains [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1).
+This update does not replace its assets.
 
-- The source includes the attachment pointer guard.
-  The maintainer accepted the exact export, and the user confirmed the camo-helmet sequence in the corrected sanitizer game.
-- The guarded development source passed 85 native and 87 strict sanitizer tests, with no failures or skips.
-  A separate completion regression passed 24 cases per mode and reproduced the original failure before the fix.
-  Its attachment outcomes and UI effects use test doubles.
-- The refreshed source archive passed reconstruction and focused source/archive review.
-  That exact packaged source was not separately rebuilt or run.
-- The release requires both the engine overlay and the RakNet source companion.
-  It keeps bfVFS active; replacement-provider work is outside this release.
+## Development result
 
-## Known limits at publication
+- Face-gear palette ownership now permits a tested sanitizer game exit without the earlier shutdown leak.
+- Recon, map decoding, schedules, placement, translation, SameBuilding, and targetless recoil checks have bounded repairs or regressions.
+- Original development suites passed 94 native and 96 strict ASan, UBSan, and leak tests.
+- A9 victory used six normal kills and two cheat-assisted kills.
+  Two sector transfers conserved counts. The opposite build reloaded the saved victory and inventory state.
 
-A separate intentional shutdown exposed a LeakSanitizer finding: 21,267,928 retained bytes in 41,620 allocations, with exit code 134.
-The attachment action completed with empty runtime stderr.
-Clean normal-exit, restart, and reload acceptance for that checkpoint remains open.
+[Current evidence and limits](UPDATE-20261116.md) separates original-source results from exact exported-package checks.
+The engine retains bfVFS. Unintegrated replacement candidates are excluded.
 
-Broad campaign reliability, complete sound/device coverage, and native RISC-V execution remain unverified.
-The release contains source only and establishes no executable-distribution acceptance.
+## Remaining limits
 
-## Evidence dates and validation cutoffs
+Minor AP redraw, surrender-text, load-flicker, and temporary top-strip reports remain open.
+The current in-session reload passed twice. No post-load source patch is included.
+Broader campaign reliability, complete sound/device coverage, and native RISC-V execution remain unverified.
+This repository supplies source. It establishes no executable-distribution acceptance.
 
-All records below were prepared on November 15, 2026.
-Their validation cutoffs differ by stage.
+## Historical records
 
-| Record | Cutoff and meaning |
-| --- | --- |
-| [SOURCE_PIN.json](../SOURCE_PIN.json) and [TEST-EVIDENCE.json](TEST-EVIDENCE.json) | Historical inventory-transfer checkpoint, before the attachment guard and later package validation. Preparation, pending-transfer, and held-RakNet statements belong to that checkpoint. |
-| [RECONSTRUCTION-MANIFEST.json](../RECONSTRUCTION-MANIFEST.json) | Attachment-fix source freeze. It identifies the exact reconstructed files and one-file guard revision. Pending acceptance fields record the state at that freeze. |
-| [BUILD-RESULTS.json](BUILD-RESULTS.json) | Frozen engineering summary. It separates the earlier package build, guarded development builds, and focused completion regression. It claims no new build of the refreshed package. |
-| [Release notes](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1) | Published acceptance cutoff. The post-freeze section records maintainer acceptance, the user's camo-helmet result, and the separate shutdown leak. |
+[SOURCE_PIN.json](../SOURCE_PIN.json) and [RECONSTRUCTION-MANIFEST.json](../RECONSTRUCTION-MANIFEST.json) identify the current candidate.
+[TEST-EVIDENCE.json](TEST-EVIDENCE.json) retains the earlier inventory checkpoint.
+[BUILD-RESULTS.json](BUILD-RESULTS.json) retains the earlier package-build and attachment evidence.
+Those historical tests do not describe a new build of the current export.
+The existing [CI guide](CI.md) defines the required public checks.
 
-Historical records retain their original bytes and hashes.
-Later acceptance supplements their recorded state without changing the tests they describe.
-Use this page and the release notes for the published acceptance summary.
