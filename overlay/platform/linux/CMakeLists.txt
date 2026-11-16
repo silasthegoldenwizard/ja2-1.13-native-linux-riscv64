@@ -14,6 +14,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted magazine and UI cleanup checkpoint dated 2026-11-16.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-16.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -218,6 +226,18 @@ add_test(NAME ui.original_creation_id_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_ui_creation_guards.py"
     "${P710_ENGINE_ROOT}")
+add_executable(p710_native_sm_panel_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_sm_panel_tests.cpp")
+target_link_libraries(p710_native_sm_panel_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME ui.original_sm_panel_lifecycle COMMAND p710_native_sm_panel_tests
+  "${CMAKE_BINARY_DIR}/foundation/artifacts/buttons")
+set_tests_properties(ui.original_sm_panel_lifecycle PROPERTIES FIXTURES_REQUIRED button_inputs)
+add_executable(p710_native_item_ammo_callback_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_item_ammo_callback_tests.cpp")
+target_link_libraries(p710_native_item_ammo_callback_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME inventory.original_ammo_cursor_completion COMMAND p710_native_item_ammo_callback_tests)
 add_executable(p710_native_recoil_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_recoil_tests.cpp")
 target_link_libraries(p710_native_recoil_tests PRIVATE

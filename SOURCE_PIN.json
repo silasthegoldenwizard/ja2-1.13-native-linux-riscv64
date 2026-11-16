@@ -1,8 +1,8 @@
 {
   "schema": 2,
-  "checkpoint": "native-a9-victory-transfer-20261116",
+  "checkpoint": "native-panel-buttons-20261116",
   "preparation_date": "2026-11-16",
-  "status": "Source update candidate. Exact package review and Owner acceptance are separate.",
+  "status": "Accepted engineering checkpoint exported for exact Owner acceptance and formal Review.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "previous_private_commit": "5c2ede3cb4245a842eca922be9abae4192fa8e20",
@@ -37,9 +37,10 @@
     "references_in_engine_build_and_callers": true,
     "status": "Full engine builds need the separately published RakNet source companion from v0.1.0-alpha.1. Companion content is outside this PR."
   },
-  "known_issue": "Minor UI redraw and load-flicker reports remain open. Broader campaign, sound/device and RISC-V coverage remain incomplete.",
-  "verification": "Original development source passed 94 native and 96 strict sanitizer tests. This does not assert tests of this exact package.",
+  "known_issue": "Raven portrait causality and the earlier unlogged fast-forward closure remain unconfirmed. Broad campaign, device and RISC-V coverage remain incomplete.",
+  "verification": "Original development suites pass 96 native and 98 strict sanitizer tests. Exact-export checks are separate; no full exported-game build or gameplay result is claimed.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms.",
-  "previous_public_commit": "f7b72ff3cf15688048318269b50a11b447733827",
-  "source_snapshot_sha256": "ee833f09860a3b513d3f010cd67a235305cf83ac29f0abc4912aa903f87087b5"
+  "previous_public_commit": "f212a17568f7092fe1cb9410f9eb00656f677a10",
+  "source_snapshot_sha256": "5bc6c4c5f869678c0fde5ae604c1b491cee36f61df3a5070c49d3ad7645ef7d0",
+  "accepted_checkpoint_sha256": "b2ac04289145af26204bda1988f57f474d6928d90138446b7af07e3a93e71cb7"
 }

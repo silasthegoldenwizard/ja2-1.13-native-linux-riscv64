@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_mouse_button_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted magazine and UI cleanup checkpoint dated 2026-11-16.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-16.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Native change, 2026-11-12: synthetic original-contract UI manager tests.
 #include "Button System.h"
 #include "input.h"
@@ -19,6 +29,7 @@
 #include <vfs/Core/vfs_profile.h>
 #include <vfs/Core/Location/vfs_directory_tree.h>
 #include <vfs/Tools/vfs_log.h>
+#include <algorithm>
 #include <cstring>
 #include <filesystem>
 #include <iostream>
@@ -171,6 +182,28 @@ void mutation() {
         auto reused=make(0,nullptr,click,20); check(reused==0,"released pending slots become reusable after outer event");
     }
 }
+INT32 retiringOwner=-1,retiringAlias=-1;
+void retireImages(GUI_BUTTON* b,INT32 reason) {
+    if (!(reason & MSYS_CALLBACK_REASON_LBUTTON_UP)) return;
+    RemoveButton(b->IDNum);
+    UnloadButtonImage(retiringAlias);
+    UnloadButtonImage(retiringOwner);
+}
+void callbackImageRetirement() {
+    fresh();
+    for (int cycle=0;cycle<MAX_BUTTON_PICS+1;++cycle) {
+        retiringOwner=LoadButtonImage("buttons.sti",4,0,1,2,3);
+        retiringAlias=UseLoadedButtonImage(retiringOwner,-1,0,-1,2,-1);
+        check(retiringOwner>=0 && retiringAlias>=0,"callback image resources remain available");
+        const auto id=QuickCreateButton(static_cast<UINT32>(retiringAlias),2,3,0,31,nullptr,retireImages);
+        check(id>=0,"callback retirement button");
+        send(LEFT_BUTTON_DOWN,4,5); send(LEFT_BUTTON_UP,4,5);
+        check(!GetButtonPtr(id),"callback retirement finishes button deletion");
+        check(std::none_of(ButtonPictures.begin(),ButtonPictures.end(),
+                          [](const BUTTON_PICS& p){return p.vobj!=nullptr;}),
+              "callback retirement releases both original and alias images after dispatch");
+    }
+}
 std::vector<BYTE> pixels(UINT32 id) {
     UINT16 w=0,h=0; UINT8 bits=0; check(GetVideoSurfaceDescription(id,&w,&h,&bits),"surface description");
     UINT32 pitch=0; auto* p=LockVideoSurface(id,&pitch); check(p!=nullptr,"surface lock");
@@ -224,7 +257,7 @@ int main(int argc,char** argv) {
         auto profile=std::make_unique<vfs::CVirtualProfile>("ui",vfs::Path(root.u8string()),false); profile->addLocation(dir.get()); auto* location=dir.release(); auto* mounted=profile.get();
         getVFS()->getProfileStack()->pushProfile(profile.release()); check(getVFS()->addLocation(location,mounted),"mount synthetic fixtures");
         check(InitializeVideoObjectManager() && InitializeVideoSurfaceManager(),"resource managers");
-        regions(); rawLifetime(); gainConfigurationRegression(); buttons(); mutation(); imagesAndDraw(); focus(); cleanup();
+        regions(); rawLifetime(); gainConfigurationRegression(); buttons(); mutation(); callbackImageRetirement(); imagesAndDraw(); focus(); cleanup();
         std::cout<<"PASS: "<<checks<<" UI contract assertions; synthetic owned-window SDL injection, no human-input claim\n"; return 0;
     } catch(const std::exception& e) { cleanup(); std::cerr<<"FAIL after "<<checks<<" assertions: "<<e.what()<<'\n'; return 1; }
 }

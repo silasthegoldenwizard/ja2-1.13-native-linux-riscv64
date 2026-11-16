@@ -8,6 +8,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: tests/native-core/generate_button_fixtures.py
+# Native Linux source/build/test adaptations captured in the accepted magazine and UI cleanup checkpoint dated 2026-11-16.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-16.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 import argparse
 from pathlib import Path
 from generate_image_fixtures import collection
@@ -48,7 +56,17 @@ def main():
     # Font retains its existing rendering-fixture palette intentionally.
     write('font.sti', collection(GLYPHS))
     write('bad_buttons.sti', data[:63])
-    print('Wrote three synthetic UI fixtures (buttons, font, short header)')
+    # Production inventory-panel selections need up to frame 26.
+    interface = root / 'INTERFACE'
+    if interface.is_symlink():
+        raise ValueError('symlink panel fixture directory')
+    interface.mkdir(exist_ok=True)
+    panel = bytearray(collection([(8, 6, 0, 0, TOP + BLUE * 4 + BOTTOM)] * 27))
+    panel[64:64 + len(PALETTE)] = PALETTE
+    for name in ('inventory_buttons.sti', 'inventory_buttons_2.sti',
+                 'invadd-ons.sti', 'backpack_buttons.sti'):
+        write('INTERFACE/' + name, panel)
+    print('Wrote seven authored UI fixtures, including inventory-panel buttons')
 
 
 if __name__ == '__main__':
