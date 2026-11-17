@@ -32,6 +32,7 @@ Laptop/BaseTable.cpp
 Laptop/BobbyR.cpp
 Laptop/BobbyRGuns.cpp
 Laptop/BobbyRGuns.h
+Laptop/BobbyRMailOrder.cpp
 Laptop/BriefingRoom.cpp
 Laptop/BriefingRoomM.cpp
 Laptop/CampaignHistory_Summary.cpp
@@ -82,11 +83,13 @@ Strategic/Assignments.cpp
 Strategic/Auto Resolve.cpp
 Strategic/Creature Spreading.cpp
 Strategic/Game Clock.cpp
+Strategic/Game Events.cpp
 Strategic/Hourly Update.cpp
 Strategic/LuaInitNPCs.cpp
 Strategic/Map Screen Helicopter.cpp
 Strategic/Map Screen Interface Bottom.cpp
 Strategic/Map Screen Interface Map Inventory.cpp
+Strategic/Map Screen Interface Map Inventory.h
 Strategic/Map Screen Interface Map.cpp
 Strategic/Map Screen Interface Map.h
 Strategic/Map Screen Interface.cpp
@@ -105,6 +108,7 @@ Strategic/Strategic Event Handler.cpp
 Strategic/Strategic Merc Handler.cpp
 Strategic/Strategic Movement Costs.cpp
 Strategic/Strategic Movement.cpp
+Strategic/Strategic Pathing.cpp
 Strategic/Strategic Status.cpp
 Strategic/Strategic Town Loyalty.cpp
 Strategic/Strategic Transport Groups.cpp
@@ -123,6 +127,8 @@ Strategic/strategicmap.h
 Tactical/Arms Dealer Init.cpp
 Tactical/Auto Bandage.cpp
 Tactical/BinaryHeap.hpp
+Tactical/Boxing.cpp
+Tactical/Bullets.h
 Tactical/Campaign.cpp
 Tactical/Campaign.h
 Tactical/Civ Quotes.cpp
@@ -187,6 +193,7 @@ Tactical/Soldier Init List.h
 Tactical/Soldier Profile.cpp
 Tactical/SoldierTooltips.cpp
 Tactical/Spread Burst.cpp
+Tactical/Squads.cpp
 Tactical/Tactical Save.cpp
 Tactical/TeamTurns.cpp
 Tactical/Turn Based Input.cpp
@@ -223,6 +230,7 @@ Tactical/XML_SoldierProfiles.cpp
 Tactical/XML_Sounds.cpp
 Tactical/XML_Taunts.cpp
 Tactical/XML_Vehicles.cpp
+Tactical/bullets.cpp
 Tactical/faces.h
 Tactical/interface Dialogue.h
 Tactical/opplist.cpp
@@ -231,6 +239,7 @@ TacticalAI/AIUtils.cpp
 TacticalAI/Attacks.cpp
 TacticalAI/DecideAction.cpp
 TacticalAI/FindLocations.cpp
+TacticalAI/Movement.cpp
 TacticalAI/NPC.cpp
 TacticalAI/NPC.h
 TacticalAI/QuestDebug.cpp
@@ -244,6 +253,7 @@ TileEngine/Map Edgepoints.cpp
 TileEngine/Radar Screen.cpp
 TileEngine/Render Dirty.cpp
 TileEngine/Render Dirty.h
+TileEngine/Render Fun.cpp
 TileEngine/Shade Table Util.cpp
 TileEngine/Smell.cpp
 TileEngine/SmokeEffects.cpp
@@ -272,6 +282,7 @@ Utils/PopUpBox.cpp
 Utils/Quantize Wrap.cpp
 Utils/Quantize.cpp
 Utils/Quantize.h
+Utils/STIConvert.cpp
 Utils/Sound Control.cpp
 Utils/Sound Control.h
 Utils/Text Input.cpp
@@ -319,6 +330,7 @@ lua/lua_table.h
 lua/lua_tactical.cpp
 lua/lwstring.cpp
 sgp/BufferMan.cpp
+sgp/BufferMan.h
 sgp/Button System.h
 sgp/CMakeLists.txt
 sgp/Cursor Control.cpp

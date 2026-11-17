@@ -8,14 +8,28 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_sm_panel_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-17.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise the original inventory-panel lifecycle with authored images only.
 #include "Button System.h"
 #include "Interface.h"
 #include "Interface Panels.h"
 #include "Interface Items.h"
 #include "Items.h"
+#include "Animation Control.h"
+#include "Soldier Control.h"
+#include "Text.h"
 #include "vsurface.h"
 #include "FileManBackend.h"
+#include <language.hpp>
 #include <vfs/Core/vfs.h>
 #include <vfs/Core/vfs_profile.h>
 #include <vfs/Core/Location/vfs_directory_tree.h>
@@ -32,9 +46,13 @@ extern INT32 giSMZipperImages, giSMZipperButton;
 extern INT32 giSMDropPackImages, giSMDropPackButton;
 extern UINT32 guiCurrentItemDescriptionScreen;
 extern BOOLEAN gfInKeyRingPopup;
+extern BOOLEAN gfInItemStackPopup;
 extern OBJECTTYPE* gpItemDescObject;
 extern INT32 giItemDescAmmoButtonImages, giItemDescAmmoButton;
 extern INT32 giMapInvDescButtonImage, giMapInvDescButton;
+extern BOOLEAN gfUIStanceDifferent, gfAllDisabled;
+extern SOLDIERTYPE* gpSMCurrentMerc;
+extern MOUSE_REGION gSM_SELMERCBarsRegion;
 
 namespace {
 unsigned checks=0;
@@ -66,6 +84,7 @@ int main(int argc,char** argv) {
         getVFS()->getProfileStack()->pushProfile(profile.release());
         check(getVFS()->addLocation(location,mounted),"mount authored panel images");
         check(InitializeVideoObjectManager() && InitializeVideoSurfaceManager(),"resource managers");
+        BindLanguageStrings(i18n::Lang::en);
         MSYS_Init(); check(InitButtonSystem(),"button manager");
         for (int cycle=0;cycle<MAX_BUTTON_PICS+1;++cycle) {
             gsCurInterfacePanel=SM_PANEL;
@@ -88,6 +107,39 @@ int main(int argc,char** argv) {
             for (INT32 id:iSMPanelButtons) check(id==-1,"retired inventory IDs reset");
             RemoveSMPanelButtons();
         }
+
+        // A tactical redraw can race the post-load panel rebuild. The retired
+        // button IDs must make this update a no-op instead of indexing -1.
+        SOLDIERTYPE panelMerc;
+        panelMerc.initialize();
+        panelMerc.ubID=SoldierID(0);
+        panelMerc.sGridNo=1;
+        panelMerc.ubDesiredHeight=ANIM_STAND;
+        panelMerc.usAnimState=STANDING;
+        panelMerc.bWeaponMode=WM_NORMAL;
+        panelMerc.stats.bLife=100;
+        MercPtrs[0]=&panelMerc;
+        gpSMCurrentMerc=&panelMerc;
+        gfUIStanceDifferent=FALSE;
+        gfAllDisabled=FALSE;
+        UpdateSMPanel();
+        check(std::all_of(std::begin(iSMPanelButtons),std::end(iSMPanelButtons),
+                          [](INT32 id){return id==-1;}),
+              "post-load redraw ignores a retired single-merc panel");
+
+        panelMerc.flags.uiStatusFlags=SOLDIER_ROBOT;
+        gfInKeyRingPopup=FALSE;
+        gfInItemStackPopup=FALSE;
+        MSYS_DefineRegion(&gSM_SELMERCBarsRegion,0,0,10,10,MSYS_PRIORITY_NORMAL,
+                          MSYS_NO_CURSOR,nullptr,nullptr);
+        MSYS_AddRegion(&gSM_SELMERCBarsRegion);
+        BOOLEAN dirty=DIRTYLEVEL1;
+        RenderSMPanel(&dirty);
+        check(gSM_SELMERCBarsRegion.FastHelpText!=nullptr,
+              "robot vital statistics target the single-merc bars region");
+        panelMerc.flags.uiStatusFlags=0;
+        gpSMCurrentMerc=nullptr;
+        MercPtrs[0]=nullptr;
 
         // The strategic item-description close path must retire its controls
         // before unloading their images, even outside a button callback.

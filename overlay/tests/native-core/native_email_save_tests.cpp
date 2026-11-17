@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_email_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-17.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Genuine email save/load functions and FileMan/bfVFS with authored email data.
 // No game assets, user profiles, or existing saves are used.
 #include "FileMan.h"
@@ -79,6 +89,9 @@ struct BufferBounds {
 };
 void put32(Bytes& bytes, std::size_t at, UINT32 value) {
     for (unsigned i = 0; i < 4; ++i) bytes.at(at + i) = (value >> (8 * i)) & 255;
+}
+void put16(Bytes& bytes, std::size_t at, UINT16 value) {
+    for (unsigned i = 0; i < 2; ++i) bytes.at(at + i) = (value >> (8 * i)) & 255;
 }
 UINT32 get32(const Bytes& bytes, std::size_t at) {
     UINT32 value = 0;
@@ -230,6 +243,40 @@ void rejections() {
     check(save(2, false).size() == 4, "invalid native scalar rejects before its wire header");
     ShutDownEmailList();
 }
+void rejectRecordLifecycle(Bytes bytes, INT32 length, const char* reason) {
+    setEmails({L"old state"});
+    BufferBounds bounds(bytes, length);
+    auto* cursor = reinterpret_cast<char*>(bytes.data());
+    check(!LoadEmailFromSavedGame(&cursor) && gfBufferLoadFailed, reason);
+    check(pEmailList == nullptr, "failed email record releases the complete temporary list");
+}
+void recordRejections() {
+    Bytes header(4, 0);
+    rejectRecordLifecycle(header, 0, "missing email count rejects transactionally");
+
+    setEmails({L"record"});
+    auto bytes = save(4);
+    const std::size_t record = 8 + get32(bytes, 4);
+    ShutDownEmailList();
+    rejectRecordLifecycle(bytes, static_cast<INT32>(record),
+                          "missing fixed email record rejects transactionally");
+    rejectRecordLifecycle(bytes, static_cast<INT32>(bytes.size() - 1),
+                          "truncated fixed email record rejects transactionally");
+
+    put16(bytes, record, BOBBYR_ORDER_CONFIRMED);
+    rejectRecordLifecycle(bytes, static_cast<INT32>(bytes.size()),
+                          "missing Bobby Ray body length rejects transactionally");
+
+    const std::size_t bodyLength = bytes.size();
+    bytes.resize(bytes.size() + sizeof(UINT32));
+    put32(bytes, bodyLength, 2);
+    rejectRecordLifecycle(bytes, static_cast<INT32>(bytes.size()),
+                          "truncated Bobby Ray body rejects transactionally");
+
+    put32(bytes, bodyLength, 0xffffffffu);
+    rejectRecordLifecycle(bytes, static_cast<INT32>(bytes.size()),
+                          "excessive Bobby Ray body rejects before allocation");
+}
 }
 int main() {
     try {
@@ -240,6 +287,7 @@ int main() {
         guiCurrentSaveGameVersion = SAVE_GAME_VERSION;
         roundtrip();
         rejections();
+        recordRejections();
         ShutdownFileManager();
         std::cout << "email save: " << checks
                   << " checks passed; original email save/load and FileMan/VFS, synthetic data only\n";

@@ -30,6 +30,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -213,9 +221,54 @@ foreach(_p710_save_test email soldier map_message)
   target_link_libraries(p710_native_${_p710_save_test}_save_tests PRIVATE
     ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 endforeach()
+add_executable(p710_native_vehicle_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_vehicle_save_tests.cpp")
+target_link_libraries(p710_native_vehicle_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_strategic_event_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_event_save_tests.cpp")
+target_link_libraries(p710_native_strategic_event_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_underground_sector_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_underground_sector_save_tests.cpp")
+target_link_libraries(p710_native_underground_sector_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_strategic_movement_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_movement_save_tests.cpp")
+target_link_libraries(p710_native_strategic_movement_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_bullet_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_bullet_save_tests.cpp")
+target_link_libraries(p710_native_bullet_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_squad_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_squad_save_tests.cpp")
+target_link_libraries(p710_native_squad_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_militia_movement_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_militia_movement_save_tests.cpp")
+target_link_libraries(p710_native_militia_movement_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_leave_item_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_leave_item_save_tests.cpp")
+target_link_libraries(p710_native_leave_item_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_arms_dealer_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_arms_dealer_save_tests.cpp")
+target_link_libraries(p710_native_arms_dealer_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME saves.original_email_utf16_subject COMMAND p710_native_email_save_tests)
 add_test(NAME saves.original_soldier_native_layout COMMAND p710_native_soldier_save_tests)
 add_test(NAME saves.original_map_message_utf16 COMMAND p710_native_map_message_save_tests)
+add_test(NAME saves.original_vehicle_path_lifecycle COMMAND p710_native_vehicle_save_tests)
+add_test(NAME saves.original_strategic_event_lifecycle COMMAND p710_native_strategic_event_save_tests)
+add_test(NAME saves.original_underground_sector_lifecycle COMMAND p710_native_underground_sector_save_tests)
+add_test(NAME saves.original_strategic_movement_lifecycle COMMAND p710_native_strategic_movement_save_tests)
+add_test(NAME saves.original_bullet_table_lifecycle COMMAND p710_native_bullet_save_tests)
+add_test(NAME saves.original_squad_table_lifecycle COMMAND p710_native_squad_save_tests)
+add_test(NAME saves.original_militia_movement_lifecycle COMMAND p710_native_militia_movement_save_tests)
+add_test(NAME saves.original_leave_item_lifecycle COMMAND p710_native_leave_item_save_tests)
+add_test(NAME saves.original_arms_dealer_lifecycle COMMAND p710_native_arms_dealer_save_tests)
 add_executable(p710_native_map_placement_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_map_placement_tests.cpp")
 target_link_libraries(p710_native_map_placement_tests PRIVATE
@@ -241,6 +294,110 @@ add_test(NAME ui.original_popup_lifetimes COMMAND p710_native_popup_lifetime_tes
 add_test(NAME ui.original_attachment_tooltips COMMAND p710_native_attachment_tooltip_tests)
 add_test(NAME ui.original_contract_renewal_dismissal COMMAND p710_native_contract_renewal_tests)
 add_test(NAME ai.original_plan_lifetimes COMMAND p710_native_ai_plan_lifetime_tests)
+add_executable(p710_native_map_inventory_selection_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_map_inventory_selection_tests.cpp")
+target_link_libraries(p710_native_map_inventory_selection_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME inventory.original_no_selection_sector_pool
+  COMMAND p710_native_map_inventory_selection_tests)
+add_executable(p710_native_militia_pickup_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_militia_pickup_tests.cpp")
+target_link_libraries(p710_native_militia_pickup_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME inventory.original_militia_world_pickup
+  COMMAND p710_native_militia_pickup_tests)
+add_executable(p710_native_multiplayer_rpc_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_multiplayer_rpc_tests.cpp")
+target_link_libraries(p710_native_multiplayer_rpc_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME multiplayer.original_rpc_packet_runtime
+  COMMAND p710_native_multiplayer_rpc_tests)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_executable(p710_native_multiplayer_rpc_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_multiplayer_rpc_fuzzer.cpp")
+  target_link_libraries(p710_native_multiplayer_rpc_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_multiplayer_rpc_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_multiplayer_rpc_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_ui_state_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_ui_state_fuzzer.cpp")
+  target_link_libraries(p710_native_ui_state_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_ui_state_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_ui_state_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_map_placement_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_map_placement_fuzzer.cpp")
+  target_link_libraries(p710_native_map_placement_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_map_placement_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_map_placement_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_militia_pickup_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_militia_pickup_fuzzer.cpp")
+  target_link_libraries(p710_native_militia_pickup_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_militia_pickup_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_militia_pickup_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_vehicle_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_vehicle_save_fuzzer.cpp")
+  target_link_libraries(p710_native_vehicle_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_vehicle_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_vehicle_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_item_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_item_save_fuzzer.cpp")
+  target_link_libraries(p710_native_item_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_item_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_item_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_strategic_event_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_event_save_fuzzer.cpp")
+  target_link_libraries(p710_native_strategic_event_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_strategic_event_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_strategic_event_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_underground_sector_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_underground_sector_save_fuzzer.cpp")
+  target_link_libraries(p710_native_underground_sector_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_underground_sector_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_underground_sector_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_strategic_movement_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_movement_save_fuzzer.cpp")
+  target_link_libraries(p710_native_strategic_movement_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_strategic_movement_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_strategic_movement_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_bullet_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_bullet_save_fuzzer.cpp")
+  target_link_libraries(p710_native_bullet_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_bullet_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_bullet_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_squad_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_squad_save_fuzzer.cpp")
+  target_link_libraries(p710_native_squad_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_squad_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_squad_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_militia_movement_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_militia_movement_save_fuzzer.cpp")
+  target_link_libraries(p710_native_militia_movement_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_militia_movement_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_militia_movement_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_leave_item_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_leave_item_save_fuzzer.cpp")
+  target_link_libraries(p710_native_leave_item_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_leave_item_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_leave_item_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_executable(p710_native_email_save_fuzzer EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/tests/native-core/native_email_save_fuzzer.cpp")
+  target_link_libraries(p710_native_email_save_fuzzer PRIVATE
+    ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+  target_compile_options(p710_native_email_save_fuzzer PRIVATE -fsanitize=fuzzer)
+  target_link_options(p710_native_email_save_fuzzer PRIVATE -fsanitize=fuzzer)
+endif()
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/merc_portrait_plan_swap.inc"
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/extract_merc_portrait_plan_swap.py"
@@ -266,6 +423,114 @@ add_test(NAME ui.original_screen_toggle_guards
 add_test(NAME ui.original_creation_id_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_ui_creation_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_pickup_count_width
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_item_pickup_count_width.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_transform_callback_guard
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_item_transform_callback_guard.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME inventory.original_map_lifecycle_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_inventory_map_lifecycle_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_bobbyray_region_lifecycle
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_bobbyray_region_lifecycle.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME combat.original_structure_hit_pointer_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_combat_pointer_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME rendering.original_zstrip_cleanup
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_zstrip_cleanup.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME images.original_sti_conversion_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_sti_conversion_ownership.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME tactical.original_climb_point_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_climb_point_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME tactical.original_boxing_pointer_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_boxing_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME rendering.original_reveal_node_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_render_node_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME dialogue.original_event_pointer_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_dialogue_event_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME combat.original_melee_target_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_melee_target_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_enemy_heli_manpads_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_enemy_heli_manpads_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME dialogue.original_npc_quote_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_npc_quote_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_division_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_runtime_division_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME combat.original_weapon_entry_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_weapon_entry_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME combat.original_weapon_tracer_bonus_initialization
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_weapon_tracer_bonus_initialization.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_object_initialization
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_runtime_object_initialization.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_vehicle_allocation_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_vehicle_allocation_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME combat.original_los_bullet_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_los_bullet_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME multiplayer.original_death_receive_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_multiplayer_death_receive_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME multiplayer.original_start_and_death_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_multiplayer_start_and_death_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME multiplayer.original_bomb_index_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_multiplayer_bomb_index_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME multiplayer.original_rpc_packet_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_multiplayer_rpc_packet_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME tactical.original_battle_entry_soldier_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_battle_entry_soldier_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ai.original_runtime_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_ai_runtime_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME saves.original_top_level_failure_propagation
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_save_load_failure_propagation.py"
     "${P710_ENGINE_ROOT}")
 add_executable(p710_native_sm_panel_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_sm_panel_tests.cpp")

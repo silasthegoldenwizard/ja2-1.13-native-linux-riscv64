@@ -8,8 +8,19 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_attachment_tooltip_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-17.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Authored attachment state through the production tooltip and popup routines.
 #include "Interface.h"
+#include "Interface Control.h"
 #include "Interface Items.h"
 #include "GameSettings.h"
 #include "Items.h"
@@ -34,8 +45,15 @@ extern std::vector<PopupAttachmentInfo*> gPopupAttachmentInfos;
 extern MOUSE_REGION gItemDescAttachmentRegions[MAX_ATTACHMENTS];
 extern INV_ATTACHXY gItemDescAttachmentsXY[MAX_ATTACHMENTS];
 extern BOOLEAN gItemDescAttachmentPopupsInitialized;
+extern BOOLEAN gfItemDescObjectIsAttachment;
 extern UINT32 guiCurrentItemDescriptionScreen;
+extern UINT32 guiItemGraphic;
 extern OBJECTTYPE* gpItemDescObject;
+extern SOLDIERTYPE* gpItemDescSoldier;
+extern UINT8 gubPopupStatusIndex;
+extern UINT32 guiPopupItemPos;
+void ItemDescAttachmentsCallback(MOUSE_REGION* region, INT32 reason);
+void popupCallbackItem(INT16 itemId);
 
 namespace {
 unsigned checks=0;
@@ -261,11 +279,130 @@ void descriptionClosure() {
     gpItemDescObject=&root;
     gfInItemDescBox=TRUE;
     gTacticalStatus.uiFlags=0;
+    guiItemGraphic=UINT32_MAX;
+    RenderItemDescriptionBox();
+    check(gfInItemDescBox,"a missing item graphic leaves the description lifecycle recoverable");
     DeleteItemDescriptionBox();
     check(!gfInItemDescBox && regionCount()==0 && gPopupAttachmentInfos.empty() && gPopupIndex.empty(),
           "actual description closure releases regions, popups, and borrowed metadata");
     check(!gItemDescAttachmentPopupsInitialized && giActiveAttachmentPopup==-1,
           "description closure resets popup handles before callbacks retire");
+}
+
+void emptyOldAttachmentSlots() {
+    fixture();
+    auto root=object(rootItem); // OAS intentionally has no placeholder attachment objects.
+    gGameOptions.ubAttachmentSystem=ATTACHMENT_OLD;
+    gpItemDescObject=&root;
+    gpItemPointer=nullptr;
+    gfItemDescObjectIsAttachment=FALSE;
+    UpdateAttachmentTooltips(&root,0);
+    check(regionCount()==OLD_MAX_ATTACHMENTS_101,
+          "old attachment system exposes each authored empty attachment slot");
+    ItemDescAttachmentsCallback(&gItemDescAttachmentRegions[0],MSYS_CALLBACK_REASON_LBUTTON_UP);
+    ItemDescAttachmentsCallback(&gItemDescAttachmentRegions[0],MSYS_CALLBACK_REASON_RBUTTON_DWN);
+    ItemDescAttachmentsCallback(&gItemDescAttachmentRegions[0],MSYS_CALLBACK_REASON_RBUTTON_UP);
+    check(gpItemDescObject==&root && root.exists(),
+          "empty old-system attachment callbacks preserve the described item");
+    UpdateAttachmentTooltips(nullptr,0);
+    gpItemDescObject=nullptr;
+    gGameOptions.ubAttachmentSystem=ATTACHMENT_NEW;
+}
+
+void stackedSectorQuickAttachCompletion() {
+    fixture(1);
+    auto root=object(rootItem);
+    root[0]->attachments.resize(1);
+    static SOLDIERTYPE soldier;
+    soldier=SOLDIERTYPE{};
+    soldier.sSectorX=sSelMapX;
+    soldier.sSectorY=sSelMapY;
+    soldier.bSectorZ=iCurrentMapSectorZ;
+    MercPtrs[7]=&soldier;
+    gCharactersList[0].usSolID=SoldierID(7);
+    gCharactersList[0].fValid=TRUE;
+    bSelectedInfoChar=0;
+
+    WORLDITEM sectorStack;
+    sectorStack.fExists=TRUE;
+    sectorStack.object=object(firstOption);
+    sectorStack.object.objectStack.resize(2);
+    sectorStack.object.ubNumberOfObjects=2;
+    sectorStack.object[0]->data.objectStatus=80;
+    sectorStack.object[1]->data.objectStatus=95;
+    pInventoryPoolList.assign(1,sectorStack);
+
+    guiTacticalInterfaceFlags=INTERFACE_MAPSCREEN;
+    fShowMapInventoryPool=TRUE;
+    UpdateAttachmentTooltips(&root,0);
+    check(gItemDescAttachmentPopups[0]!=nullptr,
+          "stacked sector attachment creates the production quick menu");
+
+    gpItemDescObject=&root;
+    gpItemDescSoldier=nullptr;
+    gubPopupStatusIndex=0;
+    guiPopupItemPos=0;
+    giActiveAttachmentPopup=0;
+    fMapInventoryItem=FALSE;
+    popupCallbackItem(firstOption);
+
+    check(pInventoryPoolList[0].object.ubNumberOfObjects==1,
+          "successful quick attachment consumes one object from the sector stack");
+    check(root[0]->attachments.size()==1 && root[0]->attachments.front().usItem==firstOption,
+          "successful quick attachment reaches the described item");
+    check(root[0]->attachments.front()[0]->data.objectStatus==95 &&
+          pInventoryPoolList[0].object[0]->data.objectStatus==80,
+          "quick attachment selects the best object and preserves the remaining stack");
+    check(gpItemPointer==nullptr && !fMapInventoryItem,
+          "successful quick attachment completes the map item pointer");
+    check(giActiveAttachmentPopup==-1,
+          "successful quick attachment retires its popup");
+
+    UpdateAttachmentTooltips(nullptr,0);
+
+    auto missingRoot=object(rootItem);
+    missingRoot[0]->attachments.resize(1);
+    pInventoryPoolList.assign(1,sectorStack);
+    UpdateAttachmentTooltips(&missingRoot,0);
+    check(gItemDescAttachmentPopups[0]!=nullptr,
+          "missing-source fixture first creates a valid quick menu");
+    gpItemDescObject=&missingRoot;
+    giActiveAttachmentPopup=0;
+    pInventoryPoolList.clear();
+    popupCallbackItem(firstOption);
+    check(!missingRoot[0]->attachments.front().exists() && gpItemPointer==nullptr,
+          "a retired sector source leaves the described item and cursor unchanged");
+    check(giActiveAttachmentPopup==-1,
+          "a retired sector source closes its stale quick menu safely");
+
+    UpdateAttachmentTooltips(nullptr,0);
+
+    auto zeroRoot=object(rootItem);
+    zeroRoot[0]->attachments.resize(1);
+    sectorStack.object=object(firstOption);
+    sectorStack.object.objectStack.resize(2);
+    sectorStack.object.ubNumberOfObjects=2;
+    sectorStack.object[0]->data.objectStatus=0;
+    sectorStack.object[1]->data.objectStatus=0;
+    pInventoryPoolList.assign(1,sectorStack);
+    UpdateAttachmentTooltips(&zeroRoot,0);
+    check(gItemDescAttachmentPopups[0]!=nullptr,
+          "zero-condition sector objects remain represented by the quick menu");
+    gpItemDescObject=&zeroRoot;
+    giActiveAttachmentPopup=0;
+    popupCallbackItem(firstOption);
+    check(pInventoryPoolList[0].object.ubNumberOfObjects==1 &&
+          zeroRoot[0]->attachments.front().usItem==firstOption,
+          "zero-condition stacks select a defined source instead of an uninitialized pointer");
+    check(gpItemPointer==nullptr && giActiveAttachmentPopup==-1,
+          "zero-condition quick attachment completes its cursor and popup state");
+
+    UpdateAttachmentTooltips(nullptr,0);
+    pInventoryPoolList.clear();
+    gpItemDescObject=nullptr;
+    gpItemDescSoldier=nullptr;
+    guiTacticalInterfaceFlags=0;
+    fShowMapInventoryPool=FALSE;
 }
 }
 
@@ -280,6 +417,8 @@ int main() {
     slotAndStackBounds();
     rejectedOptionOwnership();
     descriptionClosure();
+    emptyOldAttachmentSlots();
+    stackedSectorQuickAttachCompletion();
     UpdateAttachmentTooltips(nullptr,0);
     MSYS_Shutdown();
     std::cout<<"PASS: "<<checks<<" actual attachment tooltip and popup assertions\n";
