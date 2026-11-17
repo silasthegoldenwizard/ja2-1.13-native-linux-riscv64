@@ -1,5 +1,20 @@
 # Changes for the native Linux source preview
 
+## November 17 crash-hardening checkpoint
+
+- Harden native UI, inventory, dialogue, save/load, strategic, projectile, and multiplayer boundaries.
+- Add production-linked regressions and bounded sanitizer fuzz targets.
+- Preserve optimized-build soldier construction and validate battle-entry state and soldier-init list cleanup.
+- Preserve long strategic routes and propagate semantic subsystem load failures.
+- Validate AI and NPC boundaries with their matching source-aware regression.
+- Retain bfVFS, the existing RakNet companion, dependencies, and release state.
+
+Development evidence: 143 native tests and 145 strict sanitizer tests.
+The preceding crash-hardening checkpoint supplied 13,122,503 accepted fuzz inputs.
+Two refreshed correction campaigns supplied another 2,000,000 inputs.
+These results do not establish a full build or gameplay result from this exact export.
+See the [crash-hardening record](CRASH-HARDENING-20261117.md) for scope and remaining limits.
+
 ## v0.1.0-alpha.1 source packaging
 
 The source preview pairs the engine overlay with the reviewed RakNet 3.401 source companion.

@@ -108,9 +108,9 @@ Display tests need an X11 environment.
 Use a separate test display to avoid interference with a desktop game.
 The snapshot-preparation records describe the earlier packaging stage.
 Use [BUILD-RESULTS.json](BUILD-RESULTS.json) for exact evidence scopes.
-The successful prior package build predates the attachment guard.
-The refreshed source has one guarded pointer condition and no new package build claim.
-Owner-reported live results and pending acceptance remain separate.
+The build record describes the earlier paired release package.
+Later source checkpoints have separate development and export evidence in [STATUS.md](STATUS.md).
+No new full exported-game build or gameplay result is claimed by this update.
 The initial native attempt found a missing unchanged `i18n/text.def` reconstruction input.
 The corrected package declares that exact pinned base file.
 Native completion reused valid objects from its initial empty isolated build; the sanitizer lane started fresh.

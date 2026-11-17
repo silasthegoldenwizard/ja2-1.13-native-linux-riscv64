@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_map_placement_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-17.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Authored legacy map placement records through the production native decoder.
 #include "native_soldiercreate101.h"
 #include "native_map_soldiercreate.h"
@@ -480,6 +490,29 @@ void modernScheduleCases() {
             "unsigned oversized schedule count is rejected by preflight");
 }
 
+void soldierInitListLifecycle() {
+    KillSoldierInitList();
+    gSoldierInitHead=nullptr;
+    gSoldierInitTail=nullptr;
+    gMapInformation.ubNumIndividuals=0;
+
+    BASIC_SOLDIERCREATE_STRUCT basic{};
+    auto* node=AddBasicPlacementToSoldierInitList(&basic);
+    require(node && gSoldierInitHead==node && gSoldierInitTail==node &&
+                !node->prev && !node->next && gMapInformation.ubNumIndividuals==1,
+            "single soldier-init placement publishes matching head and tail ownership");
+
+    KillSoldierInitList();
+    require(!gSoldierInitHead && !gSoldierInitTail &&
+                gMapInformation.ubNumIndividuals==0,
+            "single soldier-init placement teardown clears both list owners");
+
+    KillSoldierInitList();
+    require(!gSoldierInitHead && !gSoldierInitTail &&
+                gMapInformation.ubNumIndividuals==0,
+            "empty soldier-init placement teardown is idempotent");
+}
+
 // Optional local diagnostic for the separately hashed installed A10 basement.
 // No installed data is embedded in this test or required by CTest.
 void installedBasement(const char* path) {
@@ -617,6 +650,7 @@ int main(int argc,char** argv) {
         basicAndSectionCases();
         modernScheduleCases();
         schedulePrefixes();
+        soldierInitListLifecycle();
         require(!modernPlacement.Load(static_cast<INT8**>(nullptr),7.0f,31),
                 "null modern map cursor is rejected");
         if(argc==2)installedBasement(argv[1]);

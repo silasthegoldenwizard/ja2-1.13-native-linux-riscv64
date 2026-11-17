@@ -8,11 +8,29 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_ai_plan_copy_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-17.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Real soldier records and autoresolve snapshots, with the production UI swap.
 #include "Soldier Control.h"
 #include "Soldier Profile.h"
 #include "Overhead.h"
 #include "Isometric Utils.h"
+#include "Interface.h"
+#include "Interface Panels.h"
+#include "GameSettings.h"
+#include "Soldier Create.h"
+#include "PreBattle Interface.h"
+#include "jascreens.h"
+#include "screenids.h"
+#include "faces.h"
 #include "../../ModularizedTacticalAI/include/Plan.h"
 #include <cstdlib>
 #include <iostream>
@@ -20,6 +38,9 @@
 
 extern SOLDIERTYPE* ReserveTacticalSoldierForAutoresolve(UINT8);
 extern SOLDIERTYPE* ReserveTacticalMilitiaSoldierForAutoresolve(UINT8);
+extern void TrashAllSoldiers();
+extern void SwapMercPortraits(SOLDIERTYPE*,INT8);
+extern FACETYPE* gpCurrentTalkingFace;
 
 #include "merc_portrait_plan_swap.inc"
 
@@ -73,6 +94,63 @@ void swaps() {
           "a live legacy alias is detached on both records and retired once");
 }
 
+void portraitBoundaries() {
+    const UINT8 savedSquadSize=gGameOptions.ubSquadSize;
+    const INT16 savedPanel=gsCurInterfacePanel;
+    const SoldierID savedSelected=gusSelectedSoldier;
+    FACETYPE* const savedTalkingFace=gpCurrentTalkingFace;
+    TEAM_PANEL_SLOTS_TYPE savedPanelSlots[NUM_TEAM_SLOTS];
+    for (UINT8 slot=0;slot<NUM_TEAM_SLOTS;++slot) {
+        savedPanelSlots[slot]=gTeamPanel[slot];
+        gTeamPanel[slot].fOccupied=FALSE;
+        gTeamPanel[slot].ubID=NOBODY;
+    }
+
+    gsCurInterfacePanel=TEAM_PANEL;
+    gpCurrentTalkingFace=nullptr;
+    gGameOptions.ubSquadSize=2;
+    auto& first=Menptr[0];
+    auto& last=Menptr[1];
+    first.initialize(); last.initialize();
+    first.ubID=SoldierID(0); last.ubID=SoldierID(1);
+    first.stats.bLife=80; last.stats.bLife=70;
+    first.bActive=TRUE; last.bActive=TRUE;
+    first.ubProfile=10; last.ubProfile=25;
+    MercPtrs[0]=&first; MercPtrs[1]=&last;
+    gTeamPanel[0].fOccupied=TRUE; gTeamPanel[0].ubID=SoldierID(0);
+    gTeamPanel[1].fOccupied=TRUE; gTeamPanel[1].ubID=SoldierID(1);
+
+    gusSelectedSoldier=SoldierID(0);
+    SwapMercPortraits(&first,-1);
+    check(first.ubProfile==10 && last.ubProfile==25 && gusSelectedSoldier==SoldierID(0),
+          "left from the first portrait is a bounded no-op");
+
+    first.flags.uiStatusFlags|=SOLDIER_DRIVER;
+    SwapMercPortraits(&first,-1);
+    check(first.ubProfile==10 && last.ubProfile==25,
+          "vehicle-seat swap rejects a negative target before vehicle lookup");
+    first.flags.uiStatusFlags&=~SOLDIER_DRIVER;
+
+    gusSelectedSoldier=SoldierID(1);
+    SwapMercPortraits(&last,1);
+    check(first.ubProfile==10 && last.ubProfile==25 && gusSelectedSoldier==SoldierID(1),
+          "right from the last configured portrait is a bounded no-op");
+
+    gTeamPanel[0].fOccupied=FALSE;
+    gTeamPanel[0].ubID=NOBODY;
+    gusSelectedSoldier=SoldierID(0);
+    SwapMercPortraits(&first,1);
+    check(first.ubProfile==10 && last.ubProfile==25,
+          "a selected soldier outside the team panel cannot fabricate a swap position");
+
+    for (UINT8 slot=0;slot<NUM_TEAM_SLOTS;++slot) gTeamPanel[slot]=savedPanelSlots[slot];
+    gGameOptions.ubSquadSize=savedSquadSize;
+    gsCurInterfacePanel=savedPanel;
+    gusSelectedSoldier=savedSelected;
+    gpCurrentTalkingFace=savedTalkingFace;
+    first.initialize(); last.initialize();
+}
+
 void snapshot(bool militia) {
     Counts counts;
     const UINT16 index=militia ? 1 : 0;
@@ -122,10 +200,58 @@ void snapshot(bool militia) {
           "existing plan-free autoresolve reservations remain plan-free");
     copy.reset(); source.initialize();
 }
+
+void autoresolveCleanup() {
+    const UINT32 savedScreen=guiCurrentScreen;
+    const BOOLEAN savedPersistent=gfPersistantPBI;
+    auto* savedFirst=MercPtrs[0];
+    auto* savedSecond=MercPtrs[1];
+
+    auto& source=Menptr[0];
+    source.initialize();
+    source.ubID=SoldierID(0);
+    source.bActive=TRUE;
+    source.bInSector=TRUE;
+    source.stats.bLife=71;
+    source.bTeam=ENEMY_TEAM;
+    source.ubSoldierClass=SOLDIER_CLASS_ADMINISTRATOR;
+    source.sGridNo=1;
+    MercPtrs[0]=&source;
+
+    auto* single=ReserveTacticalSoldierForAutoresolve(SOLDIER_CLASS_ADMINISTRATOR);
+    check(single && single!=&source,"autoresolve cleanup fixture uses a separately owned snapshot");
+    guiCurrentScreen=AUTORESOLVE_SCREEN;
+    gfPersistantPBI=FALSE;
+    check(TacticalRemoveSoldierPointer(single,FALSE),
+          "production autoresolve cleanup releases one C++ snapshot");
+
+    source.sGridNo=1;
+    auto* first=ReserveTacticalSoldierForAutoresolve(SOLDIER_CLASS_ADMINISTRATOR);
+    source.sGridNo=1;
+    auto* second=ReserveTacticalSoldierForAutoresolve(SOLDIER_CLASS_ADMINISTRATOR);
+    check(first && second && first!=second,
+          "bulk autoresolve cleanup fixture owns two independent snapshots");
+    MercPtrs[0]=first;
+    MercPtrs[1]=second;
+    for (INT32 index=2;index<MAX_NUM_SOLDIERS;++index) {
+        MercPtrs[index]=&Menptr[index];
+        Menptr[index].bActive=FALSE;
+    }
+    TrashAllSoldiers();
+    check(true,"bulk cleanup advances through soldier IDs after releasing snapshots");
+
+    MercPtrs[0]=savedFirst;
+    MercPtrs[1]=savedSecond;
+    guiCurrentScreen=savedScreen;
+    gfPersistantPBI=savedPersistent;
+    source.initialize();
+}
 }
 int main() {
     swaps();
+    portraitBoundaries();
     snapshot(false);
     snapshot(true);
+    autoresolveCleanup();
     std::cout<<"PASS: "<<checks<<" production soldier AI-plan copy assertions\n";
 }
