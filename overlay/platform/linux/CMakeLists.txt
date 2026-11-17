@@ -38,6 +38,62 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted schedule, mini-event, and facility checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted strategic runtime-state checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted ownership and bounds checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted tile-resource ownership checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted stream-loader and word-wrap ownership checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted review correction checkpoint dated 2026-11-17.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-17.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -215,6 +271,39 @@ add_executable(p710_native_explosion_queue_save_tests
 target_link_libraries(p710_native_explosion_queue_save_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME saves.original_explosion_queue_count COMMAND p710_native_explosion_queue_save_tests)
+add_executable(p710_native_save_header_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_save_header_tests.cpp")
+target_link_libraries(p710_native_save_header_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME saves.original_header_boundaries COMMAND p710_native_save_header_tests)
+add_executable(p710_native_rebel_mission_selection_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_rebel_mission_selection_tests.cpp")
+target_link_libraries(p710_native_rebel_mission_selection_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME strategic.original_rebel_mission_selection_boundaries
+  COMMAND p710_native_rebel_mission_selection_tests)
+add_executable(p710_native_enemy_temp_load_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_enemy_temp_load_tests.cpp")
+target_link_libraries(p710_native_enemy_temp_load_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME tactical.original_enemy_temp_early_failure COMMAND p710_native_enemy_temp_load_tests)
+add_executable(p710_native_strategic_movement_cost_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_movement_cost_tests.cpp")
+target_link_libraries(p710_native_strategic_movement_cost_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME strategic.original_movement_cost_write_failure
+  COMMAND p710_native_strategic_movement_cost_tests)
+add_executable(p710_native_schedule_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_schedule_save_tests.cpp")
+target_link_libraries(p710_native_schedule_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME saves.original_schedule_lifecycle COMMAND p710_native_schedule_save_tests)
+add_executable(p710_native_facility_runtime_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_facility_runtime_tests.cpp")
+target_link_libraries(p710_native_facility_runtime_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME strategic.original_facility_runtime_guards
+  COMMAND p710_native_facility_runtime_tests)
 foreach(_p710_save_test email soldier map_message)
   add_executable(p710_native_${_p710_save_test}_save_tests
     "${P710_ENGINE_ROOT}/tests/native-core/native_${_p710_save_test}_save_tests.cpp")
@@ -527,6 +616,62 @@ add_test(NAME tactical.original_battle_entry_soldier_guards
 add_test(NAME ai.original_runtime_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_ai_runtime_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_uninitialized_state_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_uninitialized_runtime_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_quest_text_entry_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_quest_text_entry_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_minievent_lua_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_minievent_lua_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_rebel_command_mission_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_rebel_command_mission_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME saves.original_preflight_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_save_load_preflight_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_loyalty_messagebox_state_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_loyalty_messagebox_state_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_autoresolve_aim_state_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_autoresolve_aim_state_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_popup_string_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_popup_string_ownership.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_credits_state_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_credits_state_ownership.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_postal_delivery_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_postal_delivery_ownership.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_reinforcement_menu_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_reinforcement_menu_ownership.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME rendering.original_tile_resource_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_tile_resource_ownership.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_stream_loader_lifecycle
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_stream_loader_lifecycle.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_wordwrap_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_wordwrap_ownership.py"
     "${P710_ENGINE_ROOT}")
 add_test(NAME saves.original_top_level_failure_propagation
   COMMAND "${Python3_EXECUTABLE}" -B

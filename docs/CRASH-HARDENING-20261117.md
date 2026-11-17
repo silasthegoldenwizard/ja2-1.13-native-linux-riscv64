@@ -14,7 +14,8 @@ The review corrections preserve valid long strategic routes and propagate semant
 
 ## Development evidence
 
-The original development source passed 143 native tests and 145 strict AddressSanitizer, UndefinedBehaviorSanitizer, and LeakSanitizer tests.
+The latest development source passed 148 native tests and 150 strict
+AddressSanitizer, UndefinedBehaviorSanitizer, and LeakSanitizer tests.
 The preceding accepted crash-hardening checkpoint completed 13,122,503 sanitizer fuzz inputs.
 Two refreshed vehicle and militia-movement campaigns completed 2,000,000 additional inputs for the save-compatibility corrections.
 Other fuzz campaigns retain their preceding-checkpoint evidence.

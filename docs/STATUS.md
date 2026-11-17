@@ -2,27 +2,28 @@
 
 Updated: November 17, 2026.
 
-This update contains the accepted native crash-hardening checkpoint.
+This cumulative update adds accepted runtime-state, allocation-ownership, stream-loading, and word-wrap repairs to the native Linux source preview.
 The release remains [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1).
 Its assets remain unchanged.
 
-- Validate UI, item, dialogue, save/load, strategic, projectile, and multiplayer boundaries.
-- Preserve ownership and lifecycle rules through inventory callbacks and cleanup.
-- Add production-linked regressions and sanitizer fuzz targets for repaired paths.
-- Preserve soldier construction in optimized builds and validate battle-entry state and soldier-init list cleanup.
-- Preserve long strategic routes and stop the top-level load on semantic subsystem failure.
-- Include the accepted AI runtime guards and their matching source-aware regression.
+- Decode schedule-save lists transactionally and validate mini-event, facility, mission, and agent inputs.
+- Initialize selected UI, Lua, combat, loyalty, and empty-input states before use.
+- Release unpublished popup, credits, postal, tile, and word-wrap resources on failure.
+- Restore the 20- and 30-militia reinforcement choices.
+- Validate animation-list and shade-table input before publishing complete state.
+- Preserve later-page save discovery and keep header-preflight errors non-destructive.
+- Validate Rebel Command selections without narrowing roster sizes.
+- Retain the preceding crash-hardening, AI, save-compatibility, and attachment repairs.
 
-The [crash-hardening record](CRASH-HARDENING-20261117.md) separates development results from exact-export checks.
-Original development suites passed 143 native tests and 145 strict sanitizer tests.
-The preceding crash-hardening checkpoint completed 13,122,503 accepted fuzz inputs without a sanitizer diagnostic.
-The save-compatibility corrections add 2,000,000 refreshed vehicle and militia-movement fuzz inputs.
-Other campaigns retain their preceding-checkpoint evidence.
-The latest malformed multiplayer RPC campaign accounts for 1,000,000 of those executions.
-These are development-source results, not a full exported-game build or complete gameplay result.
+The [stream and text record](STREAM-TEXT-OWNERSHIP-20261117.md), [runtime-boundary record](RUNTIME-BOUNDARIES-20261117.md), and [crash-hardening record](CRASH-HARDENING-20261117.md) describe scope and limits.
+The latest development suites passed 166 native tests and 168 strict sanitizer tests.
+Both development game targets link.
+These results predate export. They do not establish a full exported-game build or complete gameplay acceptance.
+Earlier fuzz campaigns retain their recorded checkpoint scopes.
 
+The engine retains bfVFS and the pinned dependencies.
+[CI](CI.md) covers selected components, source-aware guards, and the published attachment fixture.
 Broad campaign, full sound and device coverage, valid multiplayer gameplay, and native RISC-V execution remain incomplete.
 Earlier physical-display and cropped-artifact limits retain their stated scope.
-The engine retains bfVFS. [CI](CI.md) covers selected components and the published attachment fixture.
 
 The [inventory batch](INVENTORY-20261116.md), [magazine checkpoint](MAGAZINE-20261116.md), and [earlier checkpoint](UPDATE-20261116.md) retain their historical evidence.

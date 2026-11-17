@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_world_node_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-17.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Actual world-node creation/removal functions; authored metadata only.
 #include "worlddef.h"
 #include "worldman.h"
@@ -35,6 +45,17 @@ LEVELNODE* node(UINT16 index) {
 void link(std::initializer_list<LEVELNODE*> nodes, unsigned grid = 0) {
     LEVELNODE** next = &gpWorldLevelData[grid].pStructHead;
     for (auto* value : nodes) { *next = value; next = &value->pNext; }
+    *next = nullptr;
+}
+void linkLand(std::initializer_list<LEVELNODE*> nodes, unsigned grid = 0) {
+    LEVELNODE* previous = nullptr;
+    LEVELNODE** next = &gpWorldLevelData[grid].pLandHead;
+    for (auto* value : nodes) {
+        *next = value;
+        value->pPrevNode = previous;
+        previous = value;
+        next = &value->pNext;
+    }
     *next = nullptr;
 }
 void retiredTrail() {
@@ -72,6 +93,16 @@ void identityRemoval() {
     expect(RemoveStructFromLevelNode(1, foreign), "remove foreign node from its owning grid");
     expect(!gpWorldLevelData[1].pStructHead && guiLevelNodes == 0, "all authored nodes retired");
 }
+void completeLandDeletion() {
+    auto* head = node(42); auto* middle = node(42); auto* tail = node(7);
+    linkLand({head, middle, tail});
+    gpWorldLevelData[0].pLandStart = middle;
+    expect(guiLevelNodes == 3, "three land nodes exist before complete deletion");
+    expect(DeleteAllLandLayers(0), "complete land deletion succeeds");
+    expect(!gpWorldLevelData[0].pLandHead, "complete land deletion clears the head owner");
+    expect(!gpWorldLevelData[0].pLandStart, "complete land deletion clears the full-tile owner");
+    expect(guiLevelNodes == 0, "complete land deletion retires every node exactly once");
+}
 }
 int main() {
     std::array<MAP_ELEMENT, 2> world{};
@@ -79,7 +110,7 @@ int main() {
     guiLevelNodes = 0;
     giNumberOfTiles = 0; // Authored visual nodes have no resource-backed tile metadata.
     ApplyMapChangesToMapTempFile(FALSE);
-    retiredTrail(); identityRemoval();
+    retiredTrail(); identityRemoval(); completeLandDeletion();
     gpWorldLevelData = nullptr;
     std::cout << checks << " original world-node lifetime assertions passed\n";
 }

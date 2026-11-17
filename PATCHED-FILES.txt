@@ -14,6 +14,7 @@ Ja2/MPJoinScreen.cpp
 Ja2/MPScoreScreen.cpp
 Ja2/MPXmlTeams.cpp
 Ja2/MainMenuScreen.cpp
+Ja2/MessageBoxScreen.cpp
 Ja2/Options Screen.cpp
 Ja2/SaveLoadGame.cpp
 Ja2/SaveLoadGame.h
@@ -24,6 +25,7 @@ Ja2/Sys Globals.cpp
 Ja2/XML_DifficultySettings.cpp
 Ja2/XML_IntroFiles.cpp
 Ja2/XML_Layout_MainMenu.cpp
+Ja2/aniviewscreen.cpp
 Ja2/gameloop.cpp
 Ja2/jascreens.cpp
 Laptop/AimMembers.cpp
@@ -82,6 +84,7 @@ Strategic/ASD.cpp
 Strategic/Assignments.cpp
 Strategic/Auto Resolve.cpp
 Strategic/Creature Spreading.cpp
+Strategic/Facilities.cpp
 Strategic/Game Clock.cpp
 Strategic/Game Events.cpp
 Strategic/Hourly Update.cpp
@@ -259,6 +262,8 @@ TileEngine/Smell.cpp
 TileEngine/SmokeEffects.cpp
 TileEngine/SmokeEffects.h
 TileEngine/Tactical Placement GUI.cpp
+TileEngine/Tile Animation.cpp
+TileEngine/Tile Surface.cpp
 TileEngine/environment.cpp
 TileEngine/lighting.cpp
 TileEngine/overhead map.cpp
