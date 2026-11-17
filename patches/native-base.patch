@@ -28,7 +28,7 @@
  		else if(strcmp(name, "ActionID") == 0)
 --- a/Ja2/Credits.cpp
 +++ b/Ja2/Credits.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Ja2/Credits.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -39,10 +39,50 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Ja2/Credits.cpp
++ * Native Linux source/build/test adaptations captured in the accepted ownership and bounds checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "types.h"
  	#include "Credits.h"
  	#include "vsurface.h"
-@@ -1308,7 +1318,7 @@
+@@ -595,7 +615,10 @@
+ 	//Allocate memory for the string
+ 	pNodeToAdd->pString = (CHAR16 *) MemAlloc( uiSizeOfString );
+ 	if( pNodeToAdd->pString == NULL )
++	{
++		MemFree( pNodeToAdd );
+ 		return( FALSE );
++	}
+ 
+ 	//copy the string into the node
+ 	wcscpy( pNodeToAdd->pString, pString );
+@@ -621,6 +644,9 @@
+ 
+ 		if( AddVideoSurface( &vs_desc, &pNodeToAdd->uiVideoSurfaceImage) == 0 )
+ 		{
++			MemFree( pNodeToAdd->pString );
++			pNodeToAdd->pString = NULL;
++			MemFree( pNodeToAdd );
+ 			return( FALSE );
+ 		}
+ 
+@@ -804,7 +830,7 @@
+ //return false from this function when there are no more items in the text file
+ BOOLEAN	GetNextCreditFromTextFile()
+ {
+-	CHAR16	zOriginalString[512];
++	CHAR16	zOriginalString[512] = { 0 };
+ 	CHAR16	zString[512];
+ 	CHAR16	zCodes[512];
+ 	STR16		pzNewCode=NULL;
+@@ -1308,7 +1334,7 @@
  	}
  	else if( pzCode[0] == CRDT_TITLE_FONT_COLOR )
  	{
@@ -51,7 +91,7 @@
  		swscanf( &pzCode[1], L"%d%*s", &uiBuffer );
  		gubCreditScreenTitleColor = (UINT8)uiBuffer;
  
-@@ -1316,7 +1326,7 @@
+@@ -1316,7 +1342,7 @@
  	}
  	else if( pzCode[0] == CRDT_ACTIVE_FONT_COLOR )
  	{
@@ -1058,6 +1098,49 @@
  
  	// read in block
  	if (!FileRead(hFile, lpcBuffer, uiFSize, &uiBytesRead))
+--- a/Ja2/MessageBoxScreen.cpp
++++ b/Ja2/MessageBoxScreen.cpp
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: Ja2/MessageBoxScreen.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic runtime-state checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ 	#include "sgp.h"
+ 	#include "screenids.h"
+ 	#include "Fade Screen.h"
+@@ -355,12 +365,15 @@
+ 		// This can be expanded for other message box types if the need arises.
+ 		else if( ubDefaultButton != MSG_BOX_DEFAULT_BUTTON_NONE )
+ 		{
+-			if( usFlags & MSG_BOX_FLAG_GENERIC_FOUR_BUTTONS ) // 4 rows, 1 column, medium button size
++			sButtonX = usTextBoxWidth / 2;
++			sButtonY = usTextBoxHeight - 4;
++
++			if( ( usFlags & MSG_BOX_FLAG_GENERIC_FOUR_BUTTONS ) && ubDefaultButton <= MSG_BOX_DEFAULT_BUTTON_4 ) // 4 rows, 1 column, medium button size
+ 			{
+ 				sButtonX = usTextBoxWidth / 2;
+ 				sButtonY = usTextBoxHeight - ( (4 - ubDefaultButton) * (MSGBOX_BUTTON_HEIGHT + MSGBOX_SMALL_BUTTON_X_SEP + 5) + 35 );
+ 			}
+-			else if( usFlags & MSG_BOX_FLAG_GENERIC_EIGHT_BUTTONS )
++			else if( ( usFlags & MSG_BOX_FLAG_GENERIC_EIGHT_BUTTONS ) && ubDefaultButton <= MSG_BOX_DEFAULT_BUTTON_8 )
+ 			{
+ 				if( ubStyle == MSG_BOX_BASIC_MEDIUM_BUTTONS ) // 4 rows, 2 columns, medium button size
+ 				{
+@@ -383,7 +396,7 @@
+ 					sButtonY = usTextBoxHeight - ( (2 - (UINT8)(ubDefaultButton / 4.0f + 0.8f) ) * (MSGBOX_BUTTON_HEIGHT + 10) + 30 );
+ 				}
+ 			}
+-			else if( usFlags & MSG_BOX_FLAG_GENERIC_SIXTEEN_BUTTONS )
++			else if( ( usFlags & MSG_BOX_FLAG_GENERIC_SIXTEEN_BUTTONS ) && ubDefaultButton <= MSG_BOX_DEFAULT_BUTTON_16 )
+ 			{
+ 				if( ubStyle == MSG_BOX_BASIC_STYLE ) // 4x4 medium button size
+ 				{
 --- a/Ja2/Options Screen.cpp
 +++ b/Ja2/Options Screen.cpp
 @@ -1,3 +1,24 @@
@@ -3006,13 +3089,33 @@
  BOOLEAN CopySavedSoldierInfoToNewSoldier( SOLDIERTYPE *pDestSourceInfo, SOLDIERTYPE *pSourceInfo );
 --- a/Ja2/SaveLoadScreen.cpp
 +++ b/Ja2/SaveLoadScreen.cpp
-@@ -1,3 +1,18 @@
+@@ -1,3 +1,38 @@
 +/*
 + * P710 native snapshot update: Ja2/SaveLoadScreen.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
 + * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
 + * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
 + * Update notice inserted during source-only package preparation: 2026-11-15.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
++/*
++ * P710 native snapshot update: Ja2/SaveLoadScreen.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
++/*
++ * P710 native snapshot update: Ja2/SaveLoadScreen.cpp
++ * Native Linux source/build/test adaptations captured in the accepted review correction checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
 + * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
@@ -3025,7 +3128,15 @@
  	#include	"types.h"
  	#include	"SaveLoadScreen.h"
  	#include	"video.h"
-@@ -146,7 +161,12 @@
+@@ -123,6 +158,7 @@
+ 	SLS_SAVED_GAME_VERSION_OUT_OF_DATE,
+ 	SLS_GAME_VERSION_OUT_OF_DATE,
+ 	SLS_BOTH_SAVE_GAME_AND_GAME_VERSION_OUT_OF_DATE,
++	SLS_HEADER_LOAD_FAILED,
+ };
+ 
+ //////////////////////////////////////////////////////
+@@ -146,7 +182,12 @@
  BOOLEAN		gbSaveGameArray[ NUM_SAVE_GAMES ];
  
  // anv: read times of modification to show them later
@@ -3038,7 +3149,7 @@
  
  BOOLEAN		gfDoingQuickLoad = FALSE;
  
-@@ -213,7 +233,7 @@
+@@ -213,7 +254,7 @@
  UINT16 VAL_SLOT_START = 0;
  UINT16 VAL_SLOT_END = 0;
  BOOLEAN	RenderImage = TRUE;
@@ -3047,7 +3158,15 @@
  BOOLEAN AutoSaveToSlot[5];
  
  // WANNE: Used For auto save games
-@@ -483,6 +503,7 @@
+@@ -263,6 +304,7 @@
+ void		DisableSelectedSlot();
+ void		ConfirmSavedGameMessageBoxCallBack( UINT8 bExitValue );
+ void		ConfirmLoadSavedGameMessageBoxCallBack( UINT8 bExitValue );
++void		SaveHeaderLoadFailedCallBack( UINT8 bExitValue );
+ void		FailedLoadingGameCallBack( UINT8 bExitValue );
+ void		SetSaveLoadExitScreen( UINT32 uiScreen );
+ void		NotEnoughHardDriveSpaceForQuickSaveMessageBoxCallBack( UINT8 bExitValue );
+@@ -483,6 +525,7 @@
  		// anv: add modification date
  		if( gbSaveGameArray[ VAL_SLOT_START + i ] )
  		{
@@ -3055,7 +3174,7 @@
  			swprintf( zString2, L"%04d", gstSaveGameCreationTimeArray[ VAL_SLOT_START + i ].wYear );
  			wcscpy( zString3, zString2 );
  			swprintf( zString2, L"/%02d", gstSaveGameCreationTimeArray[ VAL_SLOT_START + i ].wMonth );
-@@ -495,6 +516,14 @@
+@@ -495,6 +538,14 @@
  			swprintf( zString2, L":%02d ", gstSaveGameCreationTimeArray[ VAL_SLOT_START + i ].wMinute );
  			wcscat( zString3, zString2 );
  
@@ -3070,7 +3189,7 @@
  			wcscat( zString3, zString );
  			wcscpy( zString, zString3 );
  		}
-@@ -1070,12 +1099,18 @@
+@@ -1070,12 +1121,18 @@
  void GetSaveLoadScreenUserInput()
  {
  	InputAtom Event;
@@ -3090,7 +3209,20 @@
  
  	//if we are going to be instantly leaving the screen, dont draw the numbers
  	if( gfLoadGameUponEntry )
-@@ -1357,6 +1392,9 @@
+@@ -1299,7 +1356,11 @@
+ 		ubRetVal = CompareSaveGameVersion( bSaveGameID );
+ 		if( ubRetVal != SLS_HEADER_OK )
+ 		{
+-			if( ubRetVal == SLS_GAME_VERSION_OUT_OF_DATE )
++			if( ubRetVal == SLS_HEADER_LOAD_FAILED )
++			{
++				DoSaveLoadMessageBox( MSG_BOX_BASIC_STYLE, zSaveLoadText[SLG_LOAD_GAME_ERROR], SAVE_LOAD_SCREEN, MSG_BOX_FLAG_OK, SaveHeaderLoadFailedCallBack );
++			}
++			else if( ubRetVal == SLS_GAME_VERSION_OUT_OF_DATE )
+ 			{
+ 				DoSaveLoadMessageBox( MSG_BOX_BASIC_STYLE, zSaveLoadText[SLG_GAME_VERSION_DIF], SAVE_LOAD_SCREEN, MSG_BOX_FLAG_YESNO, LoadSavedGameWarningMessageBoxCallBack );
+ 			}
+@@ -1357,17 +1418,21 @@
  	{
  	
  		cnt2 = VAL_SLOT_START + cnt;
@@ -3100,7 +3232,12 @@
  		CreateSavedGameFileNameFromNumber( cnt2, zSaveGameName );
  
  		if( FileExists( zSaveGameName ) )
-@@ -1368,6 +1406,7 @@
+ 		{
+ 			//Get the header for the saved game
+-			if( !LoadSavedGameHeader( cnt2, &SaveGameHeader ) )
++			if( !LoadSavedGameHeader( cnt, &SaveGameHeader ) )
+ 				gbSaveGameArray[VAL_SLOT_START + cnt] = FALSE;
+ 			else
  			{
  				gbSaveGameArray[VAL_SLOT_START + cnt] = TRUE;
  
@@ -3108,7 +3245,7 @@
  				// anv: read last modified date property of save file
  				// get full path to save file
  				vfs::Path vfsPath;
-@@ -1387,6 +1426,9 @@
+@@ -1387,6 +1452,9 @@
  				// close
  				CloseHandle( hFile );
  				rfile->close();
@@ -3118,7 +3255,7 @@
  			}
  		}
  		else
-@@ -1621,7 +1663,7 @@
+@@ -1621,7 +1689,7 @@
  			swprintf( zDifString, L"%s %s", gzGIOScreenText[ GIO_EASY_TEXT + SaveGameHeader.sInitialGameOptions.ubDifficultyLevel - 1 ], zSaveLoadText[ SLG_DIFF ] );
  
  			//make a string containing the extended options
@@ -3127,7 +3264,157 @@
  				SaveGameHeader.sInitialGameOptions.ubBobbyRayQuality, 
  				SaveGameHeader.sInitialGameOptions.ubBobbyRayQuantity, 
  				SaveGameHeader.sInitialGameOptions.fGunNut ? zSaveLoadText[ SLG_ADDITIONAL_GUNS ] : zSaveLoadText[ SLG_NORMAL_GUNS ],
-@@ -2428,6 +2470,9 @@
+@@ -1782,23 +1850,52 @@
+ 	return( TRUE );
+ }
+ 
++static BOOLEAN IsSaveHeaderStringTerminated( const CHAR8 *pText, UINT32 uiLength )
++{
++	for( UINT32 uiIndex = 0; uiIndex < uiLength; ++uiIndex )
++	{
++		if( pText[ uiIndex ] == '\0' )
++			return( TRUE );
++	}
++
++	return( FALSE );
++}
++
++static BOOLEAN IsSaveHeaderStringTerminated( const CHAR16 *pText, UINT32 uiLength )
++{
++	for( UINT32 uiIndex = 0; uiIndex < uiLength; ++uiIndex )
++	{
++		if( pText[ uiIndex ] == L'\0' )
++			return( TRUE );
++	}
++
++	return( FALSE );
++}
++
+ BOOLEAN LoadSavedGameHeader( INT32 bEntry, SAVED_GAME_HEADER *pSaveGameHeader )
+ {
+ 	HWFILE hFile;
+ 	CHAR8		zSavedGameName[512];
+-	UINT32	uiNumBytesRead;
++	UINT32	uiNumBytesRead = 0;
++	UINT32	uiArrayEntry;
+ 	UINT8 newSlot;
+ 
++	if( pSaveGameHeader == NULL )
++		return( FALSE );
++
++	memset( pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
++
+ 	//make sure the entry is valid
+-	if( bEntry < 0 || bEntry > NUM_SAVE_GAMES /*NUM_SLOT*/ )
+-	{
+-		//memset( &pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
+-		memset( pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
++	if( bEntry < 0 || bEntry >= NUM_SAVE_GAMES /*NUM_SLOT*/ )
++	{
+ 		return( FALSE );
+ 	}
++	uiArrayEntry = static_cast<UINT32>( VAL_SLOT_START ) + static_cast<UINT32>( bEntry );
++	if( uiArrayEntry >= NUM_SAVE_GAMES )
++		return( FALSE );
+ 
+ 	//Get the name of the file
+-	newSlot = VAL_SLOT_START + bEntry;
++	newSlot = static_cast<UINT8>( uiArrayEntry );
+ 	CreateSavedGameFileNameFromNumber( newSlot, zSavedGameName );
+ 
+ 	if( FileExists( zSavedGameName ) )
+@@ -1807,17 +1904,17 @@
+ 		hFile = FileOpen( zSavedGameName, FILE_ACCESS_READ | FILE_OPEN_EXISTING, FALSE );
+ 		if( !hFile )
+ 		{
++			gbSaveGameArray[ uiArrayEntry ] = FALSE;
++			return(FALSE);
++		}
++
++		//Load the Save Game header file
++		if( !FileRead( hFile, pSaveGameHeader, sizeof( SAVED_GAME_HEADER ), &uiNumBytesRead ) ||
++			uiNumBytesRead != sizeof( SAVED_GAME_HEADER ) )
++		{
+ 			FileClose( hFile );
+-			gbSaveGameArray[ VAL_SLOT_START + bEntry ] = FALSE;
+-			return(FALSE);
+-		}
+-
+-		//Load the Save Game header file
+-		FileRead( hFile, pSaveGameHeader, sizeof( SAVED_GAME_HEADER ), &uiNumBytesRead );
+-		if( uiNumBytesRead != sizeof( SAVED_GAME_HEADER ) )
+-		{
+-			FileClose( hFile );
+-			gbSaveGameArray[ VAL_SLOT_START + bEntry ] = FALSE;
++			memset( pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
++			gbSaveGameArray[ uiArrayEntry ] = FALSE;
+ 			return(FALSE);
+ 		}
+ 
+@@ -1828,27 +1925,28 @@
+ 		//
+ 
+ 		//Check to see if the desc field is bigger then it should be, ie no null char
+-		if( wcslen( pSaveGameHeader->sSavedGameDesc ) >= SIZE_OF_SAVE_GAME_DESC )
++		if( !IsSaveHeaderStringTerminated( pSaveGameHeader->sSavedGameDesc, SIZE_OF_SAVE_GAME_DESC ) )
+ 		{
+ 			memset( pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
+-			gbSaveGameArray[ VAL_SLOT_START + bEntry ] = FALSE;
++			gbSaveGameArray[ uiArrayEntry ] = FALSE;
+ 			return(FALSE);
+ 		}
+ 
+ 		//Check to see if the version # field is bigger then it should be, ie no null char
+-		if( strlen( pSaveGameHeader->zGameVersionNumber ) >= GAME_VERSION_LENGTH )
++		if( !IsSaveHeaderStringTerminated( pSaveGameHeader->zGameVersionNumber, GAME_VERSION_LENGTH ) )
+ 		{
+ 			memset( pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
+-			gbSaveGameArray[ bEntry ] = FALSE;
++			gbSaveGameArray[ uiArrayEntry ] = FALSE;
+ 			return(FALSE);
+ 		}
+ 	}
+ 	else
+ 	{
+-		memset( pSaveGameHeader, 0, sizeof( SAVED_GAME_HEADER ) );
++		gbSaveGameArray[ uiArrayEntry ] = FALSE;
+ #ifdef JA2BETAVERSION
+ 		wcscpy( pSaveGameHeader->sSavedGameDesc, L"ERROR loading saved game header, file doesn't exist!!" );
+ #endif
++		return( FALSE );
+ 	}
+ 
+ 	return( TRUE );
+@@ -2283,8 +2381,13 @@
+ 		else
+ 		{
+ 			//Get the header for the specified saved game
+-			LoadSavedGameHeader( gbSelectedSaveLocation, &SaveGameHeader );
+-			wcscpy( gzGameDescTextField, SaveGameHeader.sSavedGameDesc );
++			if( !LoadSavedGameHeader( gbSelectedSaveLocation, &SaveGameHeader ) )
++			{
++				gbSaveGameArray[ VAL_SLOT_START + gbSelectedSaveLocation ] = FALSE;
++				gzGameDescTextField[0] = '\0';
++			}
++			else
++				wcscpy( gzGameDescTextField, SaveGameHeader.sSavedGameDesc );
+ 		}
+ 	}
+ 	else
+@@ -2367,9 +2470,11 @@
+ 	UINT8 ubRetVal=SLS_HEADER_OK;
+ 
+ 	SAVED_GAME_HEADER SaveGameHeader;
++	memset( &SaveGameHeader, 0, sizeof( SaveGameHeader ) );
+ 
+ 	//Get the heade for the saved game
+-	LoadSavedGameHeader( bSaveGameID, &SaveGameHeader );
++	if( !LoadSavedGameHeader( bSaveGameID, &SaveGameHeader ) )
++		return( SLS_HEADER_LOAD_FAILED );
+ 
+ 	// check to see if the saved game version in the header is the same as the current version
+ 	if( SaveGameHeader.uiSavedGameVersion != SAVE_GAME_VERSION )
+@@ -2428,6 +2533,9 @@
  	for( cnt=0; cnt<NUM_SLOT; cnt++)
  	{
  		cnt2 = VAL_SLOT_START + cnt;
@@ -3137,7 +3424,35 @@
  		DeleteSaveGameNumber( cnt2 );
  	}
  
-@@ -2707,9 +2752,17 @@
+@@ -2684,6 +2792,27 @@
+ }
+ #endif
+ 
++void SaveHeaderLoadFailedCallBack( UINT8 bExitValue )
++{
++	if( bExitValue != MSG_BOX_RETURN_OK )
++		return;
++
++	if( gbSelectedSaveLocation >= 0 && gbSelectedSaveLocation < NUM_SLOT )
++	{
++		const UINT32 uiArrayEntry = static_cast<UINT32>( VAL_SLOT_START ) +
++			static_cast<UINT32>( gbSelectedSaveLocation );
++		if( uiArrayEntry < NUM_SAVE_GAMES )
++			gbSaveGameArray[ uiArrayEntry ] = FALSE;
++
++		gbSaveGameSelectedLocation[ gbSelectedSaveLocation ] =
++			static_cast<INT8>( SLG_UNSELECTED_SLOT_GRAPHICS_NUMBER );
++	}
++
++	gbSelectedSaveLocation = -1;
++	gfExitAfterMessageBox = FALSE;
++	gfRedrawSaveLoadScreen = TRUE;
++}
++
+ void FailedLoadingGameCallBack( UINT8 bExitValue )
+ {
+ 	// yes
+@@ -2707,9 +2836,17 @@
  	}
  }
  
@@ -3391,6 +3706,255 @@
  				temp = pData->szCharData[i];
  				pData->curMainMenu.FileName[i] = temp;
  				//DebugMsg (TOPIC_JA2,DBG_LEVEL_3,String("itemEndElementHandle: szLocation[%d] = %s, temp = %s",i,&pData->curSectorLoadscreens.szLocation[i],&temp));
+--- a/Ja2/aniviewscreen.cpp
++++ b/Ja2/aniviewscreen.cpp
+@@ -1,4 +1,15 @@
++/*
++ * P710 native snapshot update: Ja2/aniviewscreen.cpp
++ * Native Linux source/build/test adaptations captured in the accepted stream-loader and word-wrap ownership checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ #include <stdio.h>
++#include <string.h>
+ #include <types.h>
+ #include <video.h>
+ #include <MemMan.h>
+@@ -33,7 +44,20 @@
+ static BOOLEAN fOKFiles = FALSE;
+ static UINT8	 ubNumStates = 0;
+ static UINT16   *pusStates = NULL;
+-static INT8   ubCurLoadedState = 0;
++static UINT8   ubCurLoadedState = 0;
++
++static void ClearAnimationStateList( )
++{
++	if ( pusStates != NULL )
++	{
++		MemFree( pusStates );
++	}
++
++	pusStates = NULL;
++	ubNumStates = 0;
++	ubCurLoadedState = 0;
++	fOKFiles = FALSE;
++}
+ 
+ static void CycleAnimations( )
+ {
+@@ -66,6 +90,7 @@
+ 
+ UINT32 AniEditScreenShutdown(void)
+ {
++	ClearAnimationStateList( );
+ 
+ 	return TRUE;
+ }
+@@ -154,7 +179,7 @@
+ 		gprintfdirty( (INT16)0,(INT16)60,L"FORCE OFF" );
+ 	}
+ 
+-	if ( fToggle2 )
++	if ( fToggle2 && fOKFiles && pusStates != NULL && ubNumStates > 0 )
+ 	{
+ 		mprintf( 0,70,L"LOADED ORDER ON" );
+ 		gprintfdirty( (INT16)0,(INT16)70,L"LOADED ORDER ON" );
+@@ -176,12 +201,7 @@
+ 
+ 			 gTacticalStatus.uiFlags &= (~LOADING_SAVED_GAME);
+ 
+-			 if ( fOKFiles )
+-			 {
+-					 MemFree( pusStates );
+-			 }
+-
+-			 fOKFiles = FALSE;
++			 ClearAnimationStateList( );
+ 
+ 			 return( GAME_SCREEN );
+     }
+@@ -231,18 +251,21 @@
+ 
+ 		if ((InputEvent.usEvent == KEY_UP) && (InputEvent.usParam == 'l' ))
+ 		{
+-			if ( !fToggle2 )
+-			{
+-				usOldState = usStartAnim;
+-
+-				pSoldier->EVENT_InitNewSoldierAnim( pusStates[ ubCurLoadedState ], 0 , TRUE );
+-			}
+-			else
+-			{
+-				pSoldier->EVENT_InitNewSoldierAnim( usOldState, 0 , TRUE );
+-			}
+-
+-			fToggle2 = !fToggle2;
++			if ( fOKFiles && pusStates != NULL && ubNumStates > 0 )
++			{
++				if ( !fToggle2 )
++				{
++					usOldState = usStartAnim;
++
++					pSoldier->EVENT_InitNewSoldierAnim( pusStates[ ubCurLoadedState ], 0 , TRUE );
++				}
++				else
++				{
++					pSoldier->EVENT_InitNewSoldierAnim( usOldState, 0 , TRUE );
++				}
++
++				fToggle2 = !fToggle2;
++			}
+ 		}
+ 
+ 
+@@ -252,7 +275,7 @@
+ 			 {
+ 					ubCurLoadedState++;
+ 
+-					if ( ubCurLoadedState == ubNumStates )
++					if ( ubCurLoadedState >= ubNumStates )
+ 					{
+ 						ubCurLoadedState = 0;
+ 					}
+@@ -267,11 +290,13 @@
+ 		{
+ 			 if ( fOKFiles && fToggle2 )
+ 			 {
+-					ubCurLoadedState--;
+-
+ 					if ( ubCurLoadedState == 0 )
+ 					{
+-						ubCurLoadedState = ubNumStates;
++						ubCurLoadedState = (UINT8)( ubNumStates - 1 );
++					}
++					else
++					{
++						ubCurLoadedState--;
+ 					}
+ 
+ 					pSoldier->EVENT_InitNewSoldierAnim( pusStates[ ubCurLoadedState ], 0 , TRUE );
+@@ -333,9 +358,10 @@
+ 	int numEntries = 0;
+ 	int	cnt;
+ 	UINT16 usState;
++	UINT16 *pNewStates;
+ 	CHAR16 zError[128];
+ 
+-
++	ClearAnimationStateList( );
+ 	//Verify the existance of the header text file.
+ 	infoFile = fopen( "ANITEST.DAT", "rb");
+ 	if(!infoFile)
+@@ -343,46 +369,75 @@
+ 		return;
+ 	}
+ 	//count STIs inside header and verify each one's existance.
+-	while( !feof( infoFile ) )
+-	{
+-		fgets( currFilename, 128, infoFile );
+-		//valid entry in header, continue on...
+-
++	while( fgets( currFilename, sizeof( currFilename ), infoFile ) != NULL )
++	{
++		currFilename[ strcspn( currFilename, "\r\n" ) ] = '\0';
++		if ( currFilename[ 0 ] == '\0' )
++		{
++			continue;
++		}
++
++		if ( numEntries >= UINT8_MAX )
++		{
++			fclose( infoFile );
++			return;
++		}
+ 		numEntries++;
+ 	}
+-	fseek( infoFile, 0, SEEK_SET ); //reset header file
+-
+-	// Allocate array
+-	pusStates = (UINT16 *) MemAlloc( sizeof( UINT16 ) * numEntries );
+-
+-	fOKFiles = TRUE;
++
++	if ( ferror( infoFile ) || numEntries == 0 )
++	{
++		fclose( infoFile );
++		return;
++	}
++
++	if ( fseek( infoFile, 0, SEEK_SET ) != 0 )
++	{
++		fclose( infoFile );
++		return;
++	}
++
++	// Allocate the unpublished array and publish only after a complete parse.
++	pNewStates = (UINT16 *) MemAlloc( sizeof( UINT16 ) * numEntries );
++	if ( pNewStates == NULL )
++	{
++		fclose( infoFile );
++		return;
++	}
+ 
+ 	cnt = 0;
+-	while( !feof( infoFile ) && cnt < numEntries )
+-	{
+-		fgets( currFilename, 128, infoFile );
+-
+-		// Remove newline
+-		currFilename[ strlen( currFilename ) -1 ] = '\0';
+-		currFilename[ strlen( currFilename ) -1 ] = '\0';
++	while( cnt < numEntries && fgets( currFilename, sizeof( currFilename ), infoFile ) != NULL )
++	{
++		currFilename[ strcspn( currFilename, "\r\n" ) ] = '\0';
++		if ( currFilename[ 0 ] == '\0' )
++		{
++			continue;
++		}
+ 
+ 		usState = GetAnimStateFromName( currFilename );
+ 
+-		if ( usState != 5555 )
+-		{
+-			// Bob: swapped places, there's numEntries things to be put in pusStates, I'm guessing supposed to start at 0
+-			pusStates[cnt] = usState;
+-			cnt++;
+-			ubNumStates	= (UINT8)cnt;			
+-			// pusStates[ cnt ] = usState;
+-		}
+-		else
++		if ( usState == 5555 )
+ 		{
+ 			swprintf( zError, L"Animation str %S is not known: ", currFilename );
+ 			DoMessageBox( MSG_BOX_BASIC_STYLE, zError, ANIEDIT_SCREEN, ( UINT8 )MSG_BOX_FLAG_YESNO, NULL, NULL );
++			MemFree( pNewStates );
+ 			fclose( infoFile );
+ 			return;
+ 		}
+-	}
+-
+-}
++
++		pNewStates[cnt] = usState;
++		cnt++;
++	}
++
++	if ( ferror( infoFile ) || cnt != numEntries )
++	{
++		MemFree( pNewStates );
++		fclose( infoFile );
++		return;
++	}
++
++	fclose( infoFile );
++	pusStates = pNewStates;
++	ubNumStates = (UINT8)cnt;
++	fOKFiles = TRUE;
++}
 --- a/Ja2/gameloop.cpp
 +++ b/Ja2/gameloop.cpp
 @@ -1,3 +1,13 @@
@@ -3692,7 +4256,7 @@
  
 --- a/Laptop/AimMembers.cpp
 +++ b/Laptop/AimMembers.cpp
-@@ -1,3 +1,15 @@
+@@ -1,3 +1,25 @@
 +/*
 + * P710 native snapshot update: Laptop/AimMembers.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -3703,12 +4267,22 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Laptop/AimMembers.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic runtime-state checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include "BobbyRGuns.h"
 +#include "soundman.h"
  	#include "email.h"
  	#include "laptop.h"
  	#include "AimMembers.h"
-@@ -631,7 +643,6 @@
+@@ -631,7 +653,6 @@
  
  //tais: tooltip regions for weaponbox images
  MOUSE_REGION	gWeaponboxFasthelpRegion[WEAPONBOX_TOTAL_ITEMS];
@@ -3716,7 +4290,18 @@
  
  
  //*******************************************
-@@ -1491,7 +1502,7 @@
+@@ -1311,8 +1332,8 @@
+ BOOLEAN	UpdateMercInfo(void)
+ {
+ 	//UINT16					PosY = 300;
+-	CHAR16					MercInfoString[ SIZE_MERC_BIO_INFO ];
+-	CHAR16					AdditionalInfoString[ SIZE_MERC_BIO_INFO ];
++	CHAR16					MercInfoString[ SIZE_MERC_BIO_INFO ] = { 0 };
++	CHAR16					AdditionalInfoString[ SIZE_MERC_BIO_INFO ] = { 0 };
+ 
+ 	if(gGameExternalOptions.gfUseNewStartingGearInterface)
+ 	{
+@@ -1491,7 +1512,7 @@
  	//		pAddInfo[i] -= 1;
  	//}
  
@@ -3725,7 +4310,7 @@
  
  	FileClose(hFile);
  	return(TRUE);
-@@ -3196,7 +3207,7 @@
+@@ -3196,7 +3217,7 @@
  				continue;
  		}
  
@@ -3734,7 +4319,7 @@
  			continue;
  
  		//if the hated merc is dead
-@@ -3225,7 +3236,7 @@
+@@ -3225,7 +3246,7 @@
  						continue;
  				}
  
@@ -3743,7 +4328,7 @@
  					continue;
  
  				if( IsMercOnTeam( bMercID, FALSE, FALSE ) && !IsMercDead( bMercID ) )
-@@ -5709,7 +5720,7 @@
+@@ -5709,7 +5730,7 @@
  			// If it's armour
  			if ( Item[ usItem ].usItemClass & IC_ARMOUR )
  			{
@@ -3752,7 +4337,7 @@
  			}
  		}
  	}
-@@ -5735,7 +5746,7 @@
+@@ -5735,7 +5756,7 @@
  				// for single items, the number is not always set, so just to be sure...
  				int number = 1;
  				if ( gMercProfileGear[gbCurrentSoldier][selectedInventory].iNumber.size( ) >= uiLoop )
@@ -5637,7 +6222,7 @@
  void HandlePMCArrival( UINT8 usId )
 --- a/Laptop/PostalService.cpp
 +++ b/Laptop/PostalService.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Laptop/PostalService.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -5648,10 +6233,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Laptop/PostalService.cpp
++ * Native Linux source/build/test adaptations captured in the accepted ownership and bounds checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include "SaveLoadMap.h"
  #include "Structure Wrap.h"
  #include "Tactical Save.h"
-@@ -11,6 +21,7 @@
+@@ -11,6 +31,7 @@
  #include <list>
  #include <string>
  #include <iostream>
@@ -5659,7 +6254,83 @@
  #include "Quests.h"
  #include "Strategic Town Loyalty.h"
  #include "email.h"
-@@ -418,7 +429,7 @@
+@@ -266,7 +287,7 @@
+ 	UINT32 sMapPos;
+ 	BOOLEAN		fPablosStoleSomething = FALSE;
+ 
+-	if(	usShipmentID > _UsedShipmentIDList.size() ||
++	if(	usShipmentID >= _UsedShipmentIDList.size() ||
+ 		!_UsedShipmentIDList[usShipmentID])
+ 	{
+ 		Assert(0);
+@@ -275,36 +296,36 @@
+ 
+ 	ShipmentListIterator sli = _Shipments.begin();
+ 
+-	while(SHIPMENT(sli).usID != usShipmentID)
+-	{
+-		if(sli == _Shipments.end())
+-		{
+-			Assert(0);
+-			return FALSE;
+-		}
++	while(sli != _Shipments.end() && SHIPMENT(sli).usID != usShipmentID)
++	{
+ 		sli++;
+ 	}
++	if(sli == _Shipments.end())
++	{
++		Assert(0);
++		return FALSE;
++	}
+ 
+ 	if(SHIPMENT(sli).ShipmentStatus == SHIPMENT_STATIONARY)
+ 	{
+ 		return FALSE;
+ 	}
+ 	
+-	PCShipmentManipulator ShipmentManipulator = new CShipmentManipulator(this, &SHIPMENT(sli));
++	CShipmentManipulator ShipmentManipulator(this, &SHIPMENT(sli));
+ 
+ 	// Delivery callback code goes here
+ 	if(_DeliveryCallbacks[0].DeliveryCallbackFunc)
+ 	{
+-		_DeliveryCallbacks[0].DeliveryCallbackFunc(*ShipmentManipulator);
+-	}
+-
+-	if(ShipmentManipulator->_fContinueCallbackChain)
++		_DeliveryCallbacks[0].DeliveryCallbackFunc(ShipmentManipulator);
++	}
++
++	if(ShipmentManipulator._fContinueCallbackChain)
+ 	{
+ 		if( SHIPMENT(sli).sSenderID + 2 <= (INT16)_DeliveryCallbacks.size() &&
+ 			_DeliveryCallbacks[SHIPMENT(sli).sSenderID + 1].DeliveryCallbackFunc)
+ 		{
+ 			// WANNE: This calls the BobbyRDeliveryCallback() method in BobbyRMailOrder.cpp
+-			_DeliveryCallbacks[SHIPMENT(sli).sSenderID + 1].DeliveryCallbackFunc(*ShipmentManipulator);
++			_DeliveryCallbacks[SHIPMENT(sli).sSenderID + 1].DeliveryCallbackFunc(ShipmentManipulator);
+ 		}
+ 	}
+ 	
+@@ -404,12 +425,12 @@
+ 			usNumberOfItems += shs.ShipmentPackages[i].ubNumber;
+ 		}
+ 
+-		OBJECTTYPE *pObject;
+-		OBJECTTYPE *pStolenObject;
++		std::unique_ptr<OBJECTTYPE[]> pObject;
++		std::unique_ptr<OBJECTTYPE[]> pStolenObject;
+ 		if(!fSectorLoaded)
+ 		{
+-			pObject = new OBJECTTYPE[usNumberOfItems];
+-			pStolenObject = new OBJECTTYPE[ usNumberOfItems ];
++			pObject.reset(new OBJECTTYPE[usNumberOfItems]);
++			pStolenObject.reset(new OBJECTTYPE[usNumberOfItems]);
+ 
+ 			if(!pObject || !pStolenObject)
+ 			{
+@@ -418,7 +439,7 @@
  			}
  		}
  
@@ -5668,7 +6339,106 @@
  		UINT8		ubItemsDelivered, ubTempNumItems;
  		UINT16		usItem;
  		
-@@ -705,7 +716,7 @@
+@@ -509,12 +530,10 @@
+ 			if (uiCount > 0)
+ 			{
+ 				if( !AddItemsToUnLoadedSector(	shs.pDestination->ubMapX, shs.pDestination->ubMapY, 
+-					shs.pDestination->ubMapZ, shs.pDestination->sGridNo, uiCount, pObject, 0, 0, 0, -1, FALSE ) )
++					shs.pDestination->ubMapZ, shs.pDestination->sGridNo, uiCount, pObject.get(), 0, 0, 0, -1, FALSE ) )
+ 				{
+ 					Assert( 0 );
+ 				}
+-				delete[]( pObject );
+-				pObject = NULL;
+ 			}
+ 
+ 			// Stolen items by Pablo
+@@ -522,12 +541,10 @@
+ 			{
+ 				// Delivered items
+ 				if( !AddItemsToUnLoadedSector(	shs.pDestination->ubMapX, shs.pDestination->ubMapY, 
+-					shs.pDestination->ubMapZ, PABLOS_STOLEN_DEST_GRIDNO, uiStolenCount, pStolenObject, 0, 0, 0, -1, FALSE ) )
++					shs.pDestination->ubMapZ, PABLOS_STOLEN_DEST_GRIDNO, uiStolenCount, pStolenObject.get(), 0, 0, 0, -1, FALSE ) )
+ 				{
+ 					Assert( 0 );
+ 				}
+-				delete[]( pStolenObject );
+-				pStolenObject = NULL;
+ 			}
+ 		}
+ 
+@@ -616,7 +633,7 @@
+ 
+ BOOLEAN CPostalService::DeliverShipmentForMultiplayer(UINT16 usShipmentID)
+ {
+-	if(	usShipmentID > _UsedShipmentIDList.size() ||
++	if(	usShipmentID >= _UsedShipmentIDList.size() ||
+ 		!_UsedShipmentIDList[usShipmentID])
+ 	{
+ 		Assert(0);
+@@ -625,35 +642,35 @@
+ 
+ 	ShipmentListIterator sli = _Shipments.begin();
+ 
+-	while(SHIPMENT(sli).usID != usShipmentID)
+-	{
+-		if(sli == _Shipments.end())
+-		{
+-			Assert(0);
+-			return FALSE;
+-		}
++	while(sli != _Shipments.end() && SHIPMENT(sli).usID != usShipmentID)
++	{
+ 		sli++;
+ 	}
++	if(sli == _Shipments.end())
++	{
++		Assert(0);
++		return FALSE;
++	}
+ 
+ 	if(SHIPMENT(sli).ShipmentStatus == SHIPMENT_STATIONARY)
+ 	{
+ 		return FALSE;
+ 	}
+ 	
+-	PCShipmentManipulator ShipmentManipulator = new CShipmentManipulator(this, &SHIPMENT(sli));
++	CShipmentManipulator ShipmentManipulator(this, &SHIPMENT(sli));
+ 
+ 	// Delivery callback code goes here
+ 	if(_DeliveryCallbacks[0].DeliveryCallbackFunc)
+ 	{
+-		_DeliveryCallbacks[0].DeliveryCallbackFunc(*ShipmentManipulator);
+-	}
+-
+-	if(ShipmentManipulator->_fContinueCallbackChain)
++		_DeliveryCallbacks[0].DeliveryCallbackFunc(ShipmentManipulator);
++	}
++
++	if(ShipmentManipulator._fContinueCallbackChain)
+ 	{
+ 		if( SHIPMENT(sli).sSenderID + 2 <= (INT16)_DeliveryCallbacks.size() &&
+ 			_DeliveryCallbacks[SHIPMENT(sli).sSenderID + 1].DeliveryCallbackFunc)
+ 		{
+-			_DeliveryCallbacks[SHIPMENT(sli).sSenderID + 1].DeliveryCallbackFunc(*ShipmentManipulator);
++			_DeliveryCallbacks[SHIPMENT(sli).sSenderID + 1].DeliveryCallbackFunc(ShipmentManipulator);
+ 		}
+ 	}
+ 	
+@@ -693,10 +710,10 @@
+ 			usNumberOfItems += shs.ShipmentPackages[i].ubNumber;
+ 		}
+ 
+-		OBJECTTYPE *pObject;
++		std::unique_ptr<OBJECTTYPE[]> pObject;
+ 		if(!fSectorLoaded)
+ 		{
+-			pObject = new OBJECTTYPE[usNumberOfItems];
++			pObject.reset(new OBJECTTYPE[usNumberOfItems]);
+ 
+ 			if(!pObject)
+ 			{
+@@ -705,7 +722,7 @@
  			}
  		}
  
@@ -5677,7 +6447,21 @@
  		UINT8		ubItemsDelivered, ubTempNumItems;
  		UINT16		usItem;
  		
-@@ -1095,9 +1106,9 @@
+@@ -746,12 +763,10 @@
+ 		if( !fSectorLoaded )
+ 		{
+ 			if( !AddItemsToUnLoadedSector(	gsMercArriveSectorX, gsMercArriveSectorY, 
+-				0, 12880, uiCount, pObject, 0, WOLRD_ITEM_FIND_SWEETSPOT_FROM_GRIDNO | WORLD_ITEM_REACHABLE, 0, 1, FALSE ) )
++				0, 12880, uiCount, pObject.get(), 0, WOLRD_ITEM_FIND_SWEETSPOT_FROM_GRIDNO | WORLD_ITEM_REACHABLE, 0, 1, FALSE ) )
+ 			{
+ 				Assert( 0 );
+ 			}
+-			delete[]( pObject );
+-			pObject = NULL;
+ 		}
+ 
+ 		shs.ShipmentPackages.clear();
+@@ -1095,9 +1110,9 @@
  	DeliveryMethodStruct dms;
  
  	dms.wstrDescription = pszDescription;
@@ -9517,7 +10301,7 @@
  							wcscpy( szTextLeft, szNewTextLeft );
 --- a/Strategic/Auto Resolve.cpp
 +++ b/Strategic/Auto Resolve.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Strategic/Auto Resolve.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -9528,11 +10312,35 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Auto Resolve.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic runtime-state checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <limits>
  #include <stdio.h>
  #include "types.h"
  #include "Auto Resolve.h"
-@@ -3103,7 +3114,7 @@
+@@ -747,7 +768,12 @@
+ 	SECTORINFO *pSector;
+ 	GROUP *pGroup;
+ 	UINT16 ubNumAdmins, ubNumTroops, ubNumElites, ubNumTanks, ubNumJeeps, ubNumRobots;	//how many soldiers of the type do we still have to assign to a group? 
+-	UINT16 ubISNumAdmins, ubISNumTroops, ubISNumElites, ubISNumTanks, ubISNumJeeps, ubISNumRobots;
++	UINT16 ubISNumAdmins = 0;
++	UINT16 ubISNumTroops = 0;
++	UINT16 ubISNumElites = 0;
++	UINT16 ubISNumTanks = 0;
++	UINT16 ubISNumJeeps = 0;
++	UINT16 ubISNumRobots = 0;
+ 	UINT16 ubNumElitesInGroup, ubNumTroopsInGroup, ubNumAdminsInGroup, ubNumTanksInGroup, ubNumJeepsInGroup, ubNumRobotsInGroup;
+ 	INT32 i;
+ 	UINT8 pSectors[4];
+@@ -3103,7 +3129,7 @@
  
  	gfTransferTacticalOppositionToAutoResolve = FALSE;
  	const UINT16 militia = CountAllMilitiaInFiveSectors( gpAR->ubSectorX, gpAR->ubSectorY );
@@ -9717,6 +10525,102 @@
  	{
  		InitLair(giLairID);
  	}
+--- a/Strategic/Facilities.cpp
++++ b/Strategic/Facilities.cpp
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: Strategic/Facilities.cpp
++ * Native Linux source/build/test adaptations captured in the accepted schedule, mini-event, and facility checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ //////////////////////////////////////////////////////////////////
+ // HEADROCK HAM 3.5: Facilities
+ //
+@@ -226,8 +236,16 @@
+ // modifier from each facility.
+ INT16 GetSectorModifier( SOLDIERTYPE *pSoldier, UINT8 ubModifierType )
+ {
+-	INT16 sCurrent;
+-	INT16 Result;
++	if (!pSoldier || pSoldier->sSectorX < MINIMUM_VALID_X_COORDINATE ||
++		pSoldier->sSectorX > MAXIMUM_VALID_X_COORDINATE ||
++		pSoldier->sSectorY < MINIMUM_VALID_Y_COORDINATE ||
++		pSoldier->sSectorY > MAXIMUM_VALID_Y_COORDINATE)
++	{
++		return 0;
++	}
++
++	INT16 sCurrent = 0;
++	INT16 Result = 0;
+ 	UINT8 ubSectorID = SECTOR(pSoldier->sSectorX, pSoldier->sSectorY);
+ 	INT8 bAssignmentType = GetSoldierFacilityAssignmentIndex(pSoldier);
+ 
+@@ -239,6 +257,8 @@
+ 		case FACILITY_SLEEP_MOD:
+ 		case FACILITY_KIT_DEGRADE_MOD:
+ 		case FACILITY_MINE_INCOME_MOD:
++		case FACILITY_CANTINA_MOD:
++		case FACILITY_PRISON_MOD:
+ 			Result = 100;
+ 			break;
+ 
+@@ -259,6 +279,9 @@
+ 		case FACILITY_SKYRIDER_COST_MOD:
+ 			Result = 0;
+ 			break;
++
++		default:
++			return 0;
+ 	}
+ 
+ 	for (UINT16 cnt = 0; cnt < NUM_FACILITY_TYPES; cnt++)
+@@ -291,6 +314,8 @@
+ 				case FACILITY_SLEEP_MOD:
+ 				case FACILITY_KIT_DEGRADE_MOD:
+ 				case FACILITY_MINE_INCOME_MOD:
++				case FACILITY_CANTINA_MOD:
++				case FACILITY_PRISON_MOD:
+ 					Result = 100 + ((Result-100) + (sCurrent-100));
+ 					break;
+ 
+@@ -920,6 +945,14 @@
+ // This function runs a specific kind of RISK associated with a facility. The character's stats may affect the result.
+ INT16 FacilityRiskResult( SOLDIERTYPE *pSoldier, UINT8 ubRiskType, UINT8 ubFacilityType, UINT8 ubAssignmentType )
+ {
++	if (!pSoldier || ubRiskType >= NUM_RISKS ||
++		ubFacilityType >= NUM_FACILITY_TYPES ||
++		ubFacilityType >= MAX_NUM_FACILITY_TYPES ||
++		ubAssignmentType >= NUM_FACILITY_ASSIGNMENTS)
++	{
++		return 0;
++	}
++
+ 	INT16 Result = 0;
+ 
+ 	INT32 iChance;
+@@ -972,7 +1005,7 @@
+ 		sAbsoluteMinResult = bBaseEffect - ubRange;
+ 	}
+ 
+-	INT16 bCombinedStats;
++	INT16 bCombinedStats = 0;
+ 
+ 	// Begin calculating the effect of skills on increasing/reducing final result. Use a mix of stats to reach a range
+ 	// of 0 to 100.
+@@ -1027,6 +1060,8 @@
+ 		case RISK_LOYALTY_GLOBAL:
+ 			bCombinedStats = (INT16)__min(100, (ubWisdom * 0.3) + (ubLeadership * 0.3) + (ubExpLevel * 2) + (ubLocalLoyalty * 0.2));
+ 			break;
++		default:
++			return 0;
+ 	}
+ 
+ 	if (bCombinedStats >= 100)
 --- a/Strategic/Game Clock.cpp
 +++ b/Strategic/Game Clock.cpp
 @@ -1,3 +1,13 @@
@@ -9896,7 +10800,7 @@
  								// merc is not amused by being prevented
 --- a/Strategic/LuaInitNPCs.cpp
 +++ b/Strategic/LuaInitNPCs.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Strategic/LuaInitNPCs.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -9907,11 +10811,21 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/LuaInitNPCs.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <cstring>
  #include <iostream>
  #include <sstream>
  
-@@ -6815,7 +6826,7 @@
+@@ -6815,7 +6836,7 @@
  	if (lua_gettop(L) >= 2)
  	{
  		INT8 ACTION = lua_tointeger(L, 1);
@@ -9920,7 +10834,7 @@
  
  
  		if (ACTION >= 1 || ACTION <= 4)
-@@ -6997,7 +7008,7 @@
+@@ -6997,7 +7018,7 @@
  	{
  		UINT16 ubTargetNPC = lua_tointeger(L, 1);
  		UINT32 ANIM = lua_tointeger(L, 2);
@@ -9929,7 +10843,7 @@
  
  		// This is not my favorite, but now it will at least work. -Asdow
  		if (ubTargetNPC != NOBODY)
-@@ -7051,7 +7062,7 @@
+@@ -7051,7 +7072,7 @@
  	if (lua_gettop(L) >= 2)
  	{
  		UINT16 group = lua_tointeger(L, 1);
@@ -9938,7 +10852,7 @@
  
  		if (ubID == NOBODY)
  			return 0;
-@@ -7090,7 +7101,7 @@
+@@ -7090,7 +7111,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -9947,7 +10861,7 @@
  
  		if (ubID != NOBODY)
  		{
-@@ -7436,7 +7447,7 @@
+@@ -7436,7 +7457,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -9956,7 +10870,7 @@
  		INT8 Side = lua_tointeger(L, 2);
  
  		if (UID != NOBODY && UID->bInSector && UID->bActive)
-@@ -7826,7 +7837,7 @@
+@@ -7826,7 +7847,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -9965,7 +10879,7 @@
  		UINT16 usItem = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY)
-@@ -7848,7 +7859,7 @@
+@@ -7848,7 +7869,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -9974,7 +10888,7 @@
  		UINT16 usItem = lua_tointeger(L, 2);
  
  		if (ubID < TOTAL_SOLDIERS)
-@@ -7866,7 +7877,7 @@
+@@ -7866,7 +7887,7 @@
  
  	if (lua_gettop(L) >= 2)
  	{
@@ -9983,7 +10897,7 @@
  		UINT16 usItem = lua_tointeger(L, 2);
  
  		if (ubID < TOTAL_SOLDIERS)
-@@ -8187,7 +8198,7 @@
+@@ -8187,7 +8208,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -9992,7 +10906,7 @@
  
  		if (ubID != NOBODY)
  		{
-@@ -8203,7 +8214,7 @@
+@@ -8203,7 +8224,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10001,7 +10915,7 @@
  		BOOLEAN Bool = FALSE;
  
  		if (ubID != NOBODY && ubID->bActive)
-@@ -8221,7 +8232,7 @@
+@@ -8221,7 +8242,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10010,7 +10924,7 @@
  		BOOLEAN Bool = FALSE;
  
  		if (ubID != NOBODY && ubID->bInSector)
-@@ -8238,7 +8249,7 @@
+@@ -8238,7 +8259,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10019,7 +10933,7 @@
  
  		if (ubID != NOBODY)
  		{
-@@ -8253,7 +8264,7 @@
+@@ -8253,7 +8274,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10028,7 +10942,7 @@
  
  		if (ubID != NOBODY)
  		{
-@@ -8312,7 +8323,7 @@
+@@ -8312,7 +8333,7 @@
  		SectorY = lua_tointeger(L, 2);
  		SectorZ = lua_tointeger(L, 3);
  		GridNo = lua_tointeger(L, 4);
@@ -10037,7 +10951,7 @@
  
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -8339,7 +8350,7 @@
+@@ -8339,7 +8360,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10046,7 +10960,7 @@
  
  		if (ubID != NOBODY)
  		{
-@@ -8355,7 +8366,7 @@
+@@ -8355,7 +8376,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10055,7 +10969,7 @@
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
  		{
-@@ -8370,7 +8381,7 @@
+@@ -8370,7 +8391,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10064,7 +10978,7 @@
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
  		{
-@@ -8412,7 +8423,7 @@
+@@ -8412,7 +8433,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10073,7 +10987,7 @@
  		UINT16 Anim = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector)
-@@ -8425,7 +8436,7 @@
+@@ -8425,7 +8446,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10082,7 +10996,7 @@
  
  		if (ubID != NOBODY && ubID->bInSector)
  			ubID->aiData.fAIFlags |= AI_HANDLE_EVERY_FRAME;
-@@ -8437,7 +8448,7 @@
+@@ -8437,7 +8458,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10091,7 +11005,7 @@
  		INT32 GridNo = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector)
-@@ -8451,7 +8462,7 @@
+@@ -8451,7 +8472,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10100,10 +11014,16 @@
  		INT32 GridNo = lua_tointeger(L, 2);
  
  
-@@ -8467,8 +8478,8 @@
- 	{
- 		INT8 bBuddyIndex;
+@@ -8463,19 +8484,19 @@
  
+ static int l_WhichBuddy(lua_State* L)
+ {
++	INT8 bBuddyIndex = -1;
++
+ 	if (lua_gettop(L) >= 2)
+ 	{
+-		INT8 bBuddyIndex;
+-
 -		SoldierID ubID1 = lua_tointeger(L, 1);
 -		SoldierID ubID2 = lua_tointeger(L, 2);
 +		SoldierID ubID1 = SoldierID::FromLegacyNumericID(lua_tointeger(L, 1));
@@ -10111,7 +11031,17 @@
  
  
  		if ((ubID1 != NOBODY && ubID1->bInSector) && (ubID2 != NOBODY && ubID2->bInSector))
-@@ -8486,7 +8497,7 @@
+ 			bBuddyIndex = WhichBuddy(ubID1->ubProfile, ubID2->ubProfile);
+-
+-		lua_pushinteger(L, bBuddyIndex);
+-	}
++	}
++
++	lua_pushinteger(L, bBuddyIndex);
+ 	return 1;
+ }
+ 
+@@ -8486,7 +8507,7 @@
  		SoldierID ubID;
  		INT32 GridNo = NOWHERE;
  
@@ -10120,7 +11050,7 @@
  		GridNo = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && GridNo != NOWHERE)
-@@ -8502,7 +8513,7 @@
+@@ -8502,7 +8523,7 @@
  		SoldierID ubID;
  		INT32 GridNo = NOWHERE;
  
@@ -10129,7 +11059,7 @@
  		GridNo = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && GridNo != NOWHERE)
-@@ -8518,7 +8529,7 @@
+@@ -8518,7 +8539,7 @@
  		SoldierID ubID;
  		INT8 AI_ACTION = 0;
  
@@ -10138,7 +11068,7 @@
  		AI_ACTION = lua_tointeger(L, 2);
  
  
-@@ -8535,7 +8546,7 @@
+@@ -8535,7 +8556,7 @@
  		SoldierID ubID;
  		UINT8 Anim = 0;
  
@@ -10147,7 +11077,7 @@
  		Anim = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -8551,7 +8562,7 @@
+@@ -8551,7 +8572,7 @@
  		SoldierID ubID;
  		UINT8 Anim = 0;
  
@@ -10156,7 +11086,7 @@
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
  			Anim = ubID->ubBodyType;
-@@ -8568,7 +8579,7 @@
+@@ -8568,7 +8589,7 @@
  		SoldierID ubID;
  		UINT8 Anim = 0;
  
@@ -10165,7 +11095,7 @@
  		Anim = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive && ubID->ubBodyType == Anim)
-@@ -8587,7 +8598,7 @@
+@@ -8587,7 +8608,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10174,7 +11104,7 @@
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive && IS_CIV_BODY_TYPE(ubID))
  			lua_pushboolean(L, true);
-@@ -8601,7 +8612,7 @@
+@@ -8601,7 +8622,7 @@
  {
  	if (lua_gettop(L) >= 4)
  	{
@@ -10183,7 +11113,7 @@
  		INT32 sGridNo = lua_tointeger(L, 2);
  		BOOLEAN fAllBombs = lua_toboolean(L, 3);
  		INT8 bLevel = lua_tointeger(L, 4);
-@@ -8616,7 +8627,7 @@
+@@ -8616,7 +8637,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10192,7 +11122,7 @@
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
  		{
-@@ -8633,8 +8644,8 @@
+@@ -8633,8 +8654,8 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10203,7 +11133,7 @@
  
  		if (ubID != NOBODY && ubID2 != NOBODY)
  		{
-@@ -8649,7 +8660,7 @@
+@@ -8649,7 +8670,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10212,7 +11142,7 @@
  
  		if (ubID != NOBODY)
  		{
-@@ -10065,7 +10076,7 @@
+@@ -10065,7 +10086,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10221,7 +11151,7 @@
  		AddToShouldBecomeHostileOrSayQuoteList(ubID);
  	}
  
-@@ -10813,7 +10824,7 @@
+@@ -10813,7 +10834,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10230,7 +11160,7 @@
  		INT8 SectorZ = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -10828,7 +10839,7 @@
+@@ -10828,7 +10849,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10239,7 +11169,7 @@
  		INT16 SectorX = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -10843,7 +10854,7 @@
+@@ -10843,7 +10864,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10248,7 +11178,7 @@
  		INT16 SectorY = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -10858,7 +10869,7 @@
+@@ -10858,7 +10879,7 @@
  {
  	if (lua_gettop(L) >= 2)
  	{
@@ -10257,7 +11187,7 @@
  		INT8 GroupID = lua_tointeger(L, 2);
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -10871,7 +10882,7 @@
+@@ -10871,7 +10892,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10266,7 +11196,7 @@
  		INT16 SectorY = 0;
  
  
-@@ -10887,7 +10898,7 @@
+@@ -10887,7 +10908,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10275,7 +11205,7 @@
  		INT16 SectorX = 0;
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -10904,7 +10915,7 @@
+@@ -10904,7 +10925,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10284,7 +11214,7 @@
  		INT8 SectorZ = 0;
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -10921,7 +10932,7 @@
+@@ -10921,7 +10942,7 @@
  {
  	if (lua_gettop(L))
  	{
@@ -10293,7 +11223,7 @@
  		UINT8 GroupID = NUMBER_OF_SQUADS;
  
  		if (ubID != NOBODY && ubID->bInSector && ubID->bActive)
-@@ -11459,7 +11470,11 @@
+@@ -11459,7 +11480,11 @@
  
  		CHAR16 w_str[1000];
  
@@ -10305,7 +11235,7 @@
  		w_str[sizeof(w_str) / sizeof(w_str[0]) - 1] = '\0';
  
  		ScreenMsg(usColor, MSG_INTERFACE, w_str);
-@@ -11619,7 +11634,11 @@
+@@ -11619,7 +11644,11 @@
  
  			CHAR16 quote_str[1000];
  
@@ -10317,7 +11247,7 @@
  			quote_str[sizeof(quote_str) / sizeof(quote_str[0]) - 1] = '\0';
  
  			SetQuoteStr(quote_str);
-@@ -11646,7 +11665,11 @@
+@@ -11646,7 +11675,11 @@
  
  			CHAR16 quote_str[1000];
  
@@ -10329,7 +11259,7 @@
  			quote_str[sizeof(quote_str) / sizeof(quote_str[0]) - 1] = '\0';
  
  			SetQuoteStr(quote_str);
-@@ -11830,7 +11853,11 @@
+@@ -11830,7 +11863,11 @@
  
  		CHAR16 w_str[1000];
  
@@ -10341,7 +11271,7 @@
  		w_str[sizeof(w_str) / sizeof(w_str[0]) - 1] = '\0';
  
  		AddPhotoFactTaken(type, sIndex, w_str);
-@@ -11937,7 +11964,11 @@
+@@ -11937,7 +11974,11 @@
  			size_t len = 0;
  			const char* str = lua_tolstring(L, 5, &len);
  
@@ -10353,7 +11283,7 @@
  			w_str[sizeof(w_str) / sizeof(w_str[0]) - 1] = '\0';
  
  			if (n >= 6)
-@@ -11945,7 +11976,11 @@
+@@ -11945,7 +11986,11 @@
  				size_t len_short = 0;
  				const char* str_short = lua_tolstring(L, 6, &len_short);
  
@@ -12290,7 +13220,7 @@
  
 --- a/Strategic/MiniEvents.cpp
 +++ b/Strategic/MiniEvents.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Strategic/MiniEvents.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -12301,10 +13231,29 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/MiniEvents.cpp
++ * Native Linux source/build/test adaptations captured in the accepted schedule, mini-event, and facility checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  /*
  Mini events are a feature where the player can receive short text blurbs, and pick one of two outcomes.
  Based on game implementations like Gloomhaven (road/city events) or Battletech (travel events).
-@@ -247,10 +257,10 @@
+@@ -124,7 +144,7 @@
+ 	{
+ 		const INT32 currentBalance = LaptopSaveInfo.iCurrentBalance;
+ 		const INT32 amount = lua_tointeger(LS, 1);
+-		bool forceToZero;
++		bool forceToZero = false;
+ 
+ 		if (lua_gettop(LS) == 2)
+ 			forceToZero = lua_toboolean(LS, 2);
+@@ -247,10 +267,10 @@
  			if (merc->ubProfile == profileId)
  			{
  				int newBreathValue = merc->bBreathMax + val;
@@ -12317,7 +13266,7 @@
  			}
  		});
  
-@@ -272,12 +282,12 @@
+@@ -272,12 +292,12 @@
  		if (!sector)
  			return 0;
  
@@ -12336,7 +13285,7 @@
  
  		return 0;
  	}
-@@ -294,8 +304,8 @@
+@@ -294,8 +314,8 @@
  			if (merc->ubProfile == profileId)
  			{
  				merc->aiData.bStrategicMoraleMod += val;
@@ -12347,7 +13296,7 @@
  				RefreshSoldierMorale(merc);
  			}
  		});
-@@ -323,7 +333,7 @@
+@@ -323,7 +343,7 @@
  			switch (stat)
  			{
  			case STAT_LIFE:
@@ -12356,7 +13305,7 @@
  				merc->stats.bLifeMax += amount;
  				merc->stats.bLife += amount;
  				statId = HEALTHAMT;
-@@ -333,7 +343,7 @@
+@@ -333,7 +353,7 @@
  				{
  					merc->ubCriticalStatDamage[DAMAGED_STAT_HEALTH] -= amount;
  					gMercProfiles[merc->ubProfile].bLifeMax = merc->stats.bLifeMax;
@@ -12365,7 +13314,7 @@
  					merc->usValueGoneUp &= ~( HEALTH_INCREASE );
  				}
  				else if (amount > 0)
-@@ -343,7 +353,7 @@
+@@ -343,7 +363,7 @@
  				}
  				break;
  			case STAT_STRENGTH:
@@ -12374,7 +13323,7 @@
  				merc->stats.bStrength += amount;
  				statId = STRAMT;
  				merc->timeChanges.uiChangeStrengthTime = GetJA2Clock();
-@@ -361,7 +371,7 @@
+@@ -361,7 +381,7 @@
  				}
  				break;
  			case STAT_AGILITY:
@@ -12383,7 +13332,7 @@
  				merc->stats.bAgility += amount;
  				statId = AGILAMT;
  				merc->timeChanges.uiChangeAgilityTime = GetJA2Clock();
-@@ -379,7 +389,7 @@
+@@ -379,7 +399,7 @@
  				}
  				break;
  			case STAT_DEXTERITY:
@@ -12392,7 +13341,7 @@
  				merc->stats.bDexterity += amount;
  				statId = DEXTAMT;
  				merc->timeChanges.uiChangeDexterityTime = GetJA2Clock();
-@@ -397,7 +407,7 @@
+@@ -397,7 +417,7 @@
  				}
  				break;
  			case STAT_WISDOM:
@@ -12401,7 +13350,7 @@
  				merc->stats.bWisdom += amount;
  				statId = WISDOMAMT;
  				merc->timeChanges.uiChangeWisdomTime = GetJA2Clock();
-@@ -415,7 +425,7 @@
+@@ -415,7 +435,7 @@
  				}
  				break;
  			case STAT_LEADERSHIP:
@@ -12410,7 +13359,7 @@
  				merc->stats.bLeadership += amount;
  				statId = LDRAMT;
  				merc->timeChanges.uiChangeLeadershipTime = GetJA2Clock();
-@@ -432,7 +442,7 @@
+@@ -432,7 +452,7 @@
  				}
  				break;
  			case STAT_MARKSMANSHIP:
@@ -12419,7 +13368,7 @@
  				merc->stats.bMarksmanship += amount;
  				statId = MARKAMT;
  				merc->timeChanges.uiChangeMarksmanshipTime = GetJA2Clock();
-@@ -449,7 +459,7 @@
+@@ -449,7 +469,7 @@
  				}
  				break;
  			case STAT_MECHANICAL:
@@ -12428,7 +13377,7 @@
  				merc->stats.bMechanical += amount;
  				statId = MECHANAMT;
  				merc->timeChanges.uiChangeMechanicalTime = GetJA2Clock();
-@@ -466,7 +476,7 @@
+@@ -466,7 +486,7 @@
  				}
  				break;
  			case STAT_EXPLOSIVE:
@@ -12437,7 +13386,7 @@
  				merc->stats.bExplosive += amount;
  				statId = EXPLODEAMT;
  				merc->timeChanges.uiChangeExplosivesTime = GetJA2Clock();
-@@ -483,7 +493,7 @@
+@@ -483,7 +503,7 @@
  				}
  				break;
  			case STAT_MEDICAL:
@@ -12446,7 +13395,7 @@
  				merc->stats.bMedical += amount;
  				statId = MEDICALAMT;
  				merc->timeChanges.uiChangeMedicalTime = GetJA2Clock();
-@@ -593,7 +603,7 @@
+@@ -593,7 +613,7 @@
  				if (vehicle)
  				{
  					vehicle->stats.bLife += val;
@@ -12455,7 +13404,7 @@
  
  					lua_pushboolean(LS, true);
  					MERCPROFILESTRUCT mps = gMercProfiles[vehicle->ubProfile];
-@@ -635,12 +645,12 @@
+@@ -635,12 +655,12 @@
  					loss = merc->stats.bLifeMax - 1;
  				}
  				merc->stats.bLifeMax -= loss;
@@ -12470,7 +13419,7 @@
  				}
  
  				if (merc->name[0] && merc->bVisible == TRUE)
-@@ -827,7 +837,7 @@
+@@ -827,7 +847,7 @@
  				return;
  
  			int newLifeValue = merc->stats.bLife - amount;
@@ -12479,7 +13428,7 @@
  
  			merc->stats.bLife = newLifeValue;
  
-@@ -1578,17 +1588,29 @@
+@@ -1578,17 +1598,29 @@
  	CHAR16 w_str[500];
  
  	std::string str = lua_tolstring(LS, 1, &len);
@@ -12509,7 +13458,7 @@
  	w_str[sizeof(w_str) / sizeof(w_str[0]) - 1] = '\0';
  
  	// we need to cache the screen here so that the second msgbox doesn't keep the global screen state in MSG_BOX_SCREEN (causes infinite recursion)
-@@ -1620,7 +1642,11 @@
+@@ -1620,7 +1652,11 @@
  		hoursToNextMiniEvent = static_cast<UINT32>(lua_tointeger(LS, 3));
  
  	CHAR16 w_str[500];
@@ -12521,7 +13470,7 @@
  	w_str[sizeof(w_str) / sizeof(w_str[0]) - 1] = '\0';
  
  	MSYS_RemoveRegion(&(gMsgBox.BackRegion));
-@@ -1638,7 +1664,11 @@
+@@ -1638,7 +1674,11 @@
  	std::string str = lua_tolstring(LS, 1, &len);
  
  	CHAR16 w_str[250];
@@ -12969,7 +13918,7 @@
  		{
 --- a/Strategic/Quest Debug System.cpp
 +++ b/Strategic/Quest Debug System.cpp
-@@ -1,5 +1,17 @@
+@@ -1,5 +1,27 @@
 -
 -	#include	"types.h"
 +/*
@@ -12982,6 +13931,16 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Quest Debug System.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include "native_point.h"
 +
 +	#include <cstddef>
@@ -12989,7 +13948,7 @@
  	#include	"Quest Debug System.h"
  	#include	"WCheck.h"
  	#include	"Font Control.h"
-@@ -675,7 +687,8 @@
+@@ -675,7 +697,8 @@
  void			EnableFactMouseRegions();
  void			DisableFactMouseRegions();
  INT32		GetMaxNumberOfQuotesToPlay( );
@@ -12999,7 +13958,7 @@
  
  //ppp
  
-@@ -1296,12 +1309,18 @@
+@@ -1296,12 +1319,18 @@
  void		GetUserInput()
  {
  	InputAtom Event;
@@ -13019,7 +13978,26 @@
  
  	while( DequeueSpecificEvent(&Event, KEY_DOWN|KEY_UP|KEY_REPEAT) )
  	{
-@@ -2815,7 +2834,7 @@
+@@ -2753,6 +2782,8 @@
+ 		{
+ 			if( fMouseRegionCreated )
+ 				break;
++			if( pString == NULL )
++				return FALSE;
+ 
+ 			fMouseRegionCreated = TRUE;
+ 
+@@ -2772,7 +2803,8 @@
+ 				BtnQuestDebugTextEntryOkBtnButtonCallback );
+ 			SetButtonCursor( guiQuestDebugTextEntryOkBtn, CURSOR_WWW );
+ 
+-			wcscpy( zString, pString );
++			wcsncpy( zString, pString, 255 );
++			zString[ 255 ] = L'\0';
+ 
+ 			gfTextEntryActive = TRUE;
+ 
+@@ -2815,7 +2847,7 @@
  			if( zText[0] != '\0' )
  			{
  				//get the number from the string
@@ -13028,7 +14006,7 @@
  			}
  			else
  				iTextEntryNumber = 0;
-@@ -3992,7 +4011,7 @@
+@@ -3992,7 +4024,7 @@
  
  void DisableFactMouseRegions()
  {
@@ -13037,7 +14015,7 @@
  
  	for( i=0; i< QUEST_DBS_NUM_DISPLAYED_FACTS; i++)
  	{
-@@ -4002,7 +4021,7 @@
+@@ -4002,7 +4034,7 @@
  
  void EnableFactMouseRegions()
  {
@@ -13046,7 +14024,7 @@
  
  	for( i=0; i< QUEST_DBS_NUM_DISPLAYED_FACTS; i++)
  	{
-@@ -4050,7 +4069,8 @@
+@@ -4050,7 +4082,8 @@
  }
  
  
@@ -13058,7 +14036,7 @@
  
 --- a/Strategic/Rebel Command.cpp
 +++ b/Strategic/Rebel Command.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Strategic/Rebel Command.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -13069,10 +14047,30 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Rebel Command.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic runtime-state checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
++/*
++ * P710 native snapshot update: Strategic/Rebel Command.cpp
++ * Native Linux source/build/test adaptations captured in the accepted review correction checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  //#pragma optimize("", off)
  /*
  Rebel Command
-@@ -58,6 +68,7 @@
+@@ -58,6 +88,7 @@
  - RebelCommandSaveInfo	- pretty much everything important is in here
  
  */
@@ -13080,7 +14078,7 @@
  #include "Rebel Command.h"
  
  #include "ASD.h"
-@@ -509,7 +520,8 @@
+@@ -509,7 +540,8 @@
  void ClearAllHelpTextRegions();
  void DeployOrReactivateAdminTeam(INT16 regionId);
  void DropdownSetup();
@@ -13090,7 +14088,7 @@
  INT32 GetDirectiveImprovementCost(const RebelCommandDirectives directive);
  INT32 GetMissionCost();
  INT8 GetMissionSuccessChanceBonus(const MERCPROFILESTRUCT* merc);
-@@ -778,7 +790,8 @@
+@@ -778,7 +810,8 @@
  	return gTownLoyalty[regionId].ubRating;
  }
  
@@ -13100,7 +14098,7 @@
  {
  	switch (directive)
  	{
-@@ -866,7 +879,7 @@
+@@ -866,7 +899,7 @@
  	if (actionIndex == RCAA_SUPPLY_LINE)
  	{
  		rebelCommandSaveInfo.regions[regionId].ubMaxLoyalty += static_cast<UINT8>(info.adminActions[RCAA_SUPPLY_LINE].fValue1);
@@ -13109,7 +14107,7 @@
  	}
  
  	rebelCommandSaveInfo.iSupplies -= cost;
-@@ -2415,7 +2428,7 @@
+@@ -2415,7 +2448,7 @@
  		{
  		case RCAM_DEEP_DEPLOYMENT:
  		{
@@ -13118,7 +14116,7 @@
  			CHAR16 rangeText[100];
  			swprintf(rangeText, szRebelCommandText[RCT_MISSION_BONUS_DEPLOY_RANGE], intModifier, locSkillText[intModifierSkill]);
  			agentBonusText.push_back(rangeText);
-@@ -2425,7 +2438,7 @@
+@@ -2425,7 +2458,7 @@
  		case RCAM_DISRUPT_ASD:
  		{
  			CHAR16 text[100];
@@ -13127,7 +14125,7 @@
  			floatModifier *= 100.f;
  			swprintf(text, szRebelCommandText[RCT_MISSION_BONUS_ASD_INCOME_REDUCTION], floatModifier, L"%s", locSkillText[floatModifierSkill]);
  			agentBonusText.push_back(text);
-@@ -2472,7 +2485,7 @@
+@@ -2472,7 +2505,7 @@
  
  		case RCAM_REDUCE_STRATEGIC_DECISION_SPEED:
  		{
@@ -13136,7 +14134,7 @@
  			floatModifier -= 1.f;
  			floatModifier *= 100.f;
  			CHAR16 rangeText[100];
-@@ -2483,7 +2496,7 @@
+@@ -2483,7 +2516,7 @@
  
  		case RCAM_REDUCE_UNALERTED_ENEMY_VISION:
  		{
@@ -13145,7 +14143,7 @@
  			floatModifier *= 100.f;
  			CHAR16 text[100];
  			swprintf(text, szRebelCommandText[RCT_MISSION_BONUS_UNALERTED_VISION_PENALTY], floatModifier, L"%s", locSkillText[floatModifierSkill]);
-@@ -2493,7 +2506,7 @@
+@@ -2493,7 +2526,7 @@
  
  		case RCAM_SABOTAGE_INFANTRY_EQUIPMENT:
  		{
@@ -13154,7 +14152,7 @@
  			CHAR16 text[100];
  			swprintf(text, szRebelCommandText[RCT_MISSION_BONUS_INFANTRY_GEAR_QUALITY], intModifier, locSkillText[intModifierSkill]);
  			agentBonusText.push_back(text);
-@@ -2502,7 +2515,7 @@
+@@ -2502,7 +2535,7 @@
  
  		case RCAM_SABOTAGE_MECHANICAL_UNITS:
  		{
@@ -13163,7 +14161,7 @@
  			CHAR16 text[100];
  			swprintf(text, szRebelCommandText[RCT_MISSION_BONUS_MECHANICAL_STAT_LOSS], intModifier, locSkillText[intModifierSkill]);
  			agentBonusText.push_back(text);
-@@ -2520,7 +2533,7 @@
+@@ -2520,7 +2553,7 @@
  
  		case RCAM_SOLDIER_BOUNTIES_KINGPIN:
  		{
@@ -13172,7 +14170,7 @@
  			CHAR16 text[100];
  			if (floatModifier > 1.f)
  			{
-@@ -2551,7 +2564,7 @@
+@@ -2551,7 +2584,7 @@
  
  		case RCAM_TRAIN_MILITIA_ANYWHERE:
  		{
@@ -13181,7 +14179,112 @@
  			CHAR16 text[100];
  			swprintf(text, szRebelCommandText[RCT_MISSION_BONUS_MAX_TRAINERS], intModifier, locSkillText[intModifierSkill]);
  			agentBonusText.push_back(text);
-@@ -3035,19 +3048,19 @@
+@@ -2802,8 +2835,30 @@
+ 	DrawTextToScreen(sText, WEBSITE_LEFT + 22, WEBSITE_TOP + WEBSITE_HEIGHT - 14, 0, FONT10ARIAL, FONT_MCOLOR_BLACK, FONT_MCOLOR_BLACK, FALSE, 0);
+ }
+ 
++BOOLEAN ResolveRebelCommandAgentSelection( INT8 selectedAgent, std::size_t rosterSize,
++	std::size_t *pSelectedIndex, BOOLEAN *pIsGenericAgent )
++{
++	if( pSelectedIndex == NULL || pIsGenericAgent == NULL || selectedAgent < 0 )
++		return( FALSE );
++
++	const std::size_t selectedAgentIndex = static_cast<std::size_t>( selectedAgent );
++	if( selectedAgentIndex > rosterSize )
++		return( FALSE );
++
++	*pSelectedIndex = selectedAgentIndex;
++	*pIsGenericAgent = selectedAgentIndex == rosterSize;
++	return( TRUE );
++}
++
+ void PrepareMission(INT8 index)
+ {
++	if (index < 0 || index >= NUM_ARC_AGENT_SLOTS)
++		return;
++
++	const INT8 missionId = rebelCommandSaveInfo.availableMissions[index];
++	if (missionId < RCAM_DEEP_DEPLOYMENT || missionId >= RCAM_NUM_MISSIONS)
++		return;
++
+ 	const INT32 cost = GetMissionCost();
+ 	if (rebelCommandSaveInfo.iSupplies < cost)
+ 	{
+@@ -2825,7 +2880,23 @@
+ 		}
+ 	}
+ 
+-	const MERCPROFILESTRUCT* merc = agentIndex[index] == mercs.size() ? nullptr : &gMercProfiles[mercs[agentIndex[index]]->ubProfile];
++	std::size_t selectedAgentIndex = 0;
++	BOOLEAN isGenericAgent = FALSE;
++	if (!ResolveRebelCommandAgentSelection(agentIndex[index], mercs.size(),
++		&selectedAgentIndex, &isGenericAgent))
++		return;
++
++	if (isGenericAgent &&
++		(missionId == RCAM_SEND_SUPPLIES_TO_TOWN || missionId == RCAM_FORGE_TRANSPORT_ORDERS))
++	{
++		return;
++	}
++
++	SOLDIERTYPE* const selectedSoldier = isGenericAgent ? nullptr : mercs[selectedAgentIndex];
++	if (!isGenericAgent && !selectedSoldier)
++		return;
++
++	const MERCPROFILESTRUCT* merc = selectedSoldier ? &gMercProfiles[selectedSoldier->ubProfile] : nullptr;
+ 	CHAR16 text[400];
+ 	RebelCommandAgentMissionsText missionTitle;
+ 	INT8 missionSuccessChance;
+@@ -2838,8 +2909,9 @@
+ 	int intSkill;
+ 	UINT16 extraBits;
+ 
+-	MissionHelpers::GetMissionInfo(static_cast<RebelCommandAgentMissions>(rebelCommandSaveInfo.availableMissions[index]), merc, durationBonus, floatModifier, intModifier, durSkill, floatSkill, intSkill, extraBits);
+-	switch (rebelCommandSaveInfo.availableMissions[index])
++	const RebelCommandAgentMissions mission = static_cast<RebelCommandAgentMissions>(missionId);
++	MissionHelpers::GetMissionInfo(mission, merc, durationBonus, floatModifier, intModifier, durSkill, floatSkill, intSkill, extraBits);
++	switch (missionId)
+ 	{
+ 	case RCAM_DEEP_DEPLOYMENT:					
+ 	{
+@@ -2938,7 +3010,7 @@
+ 	}
+ 	break;
+ 
+-	default: break;
++	default: return;
+ 	}
+ 
+ 	missionSuccessChance += GetMissionSuccessChanceBonus(merc);
+@@ -2955,15 +3027,15 @@
+ 
+ 	swprintf(text, szRebelCommandText[RCT_MISSION_POPUP_PART1], szRebelCommandAgentMissionsText[missionTitle], cost);
+ 
+-	if (agentIndex[index] == mercs.size())
++	if (isGenericAgent)
+ 	{
+ 		// sent a generic rebel
+-		MissionHelpers::missionParam = SerialiseMissionFirstEvent(TRUE, 0 /* no profile needed */, static_cast<RebelCommandAgentMissions>(rebelCommandSaveInfo.availableMissions[index]), missionDuration, 0 /* no extra data */);
++		MissionHelpers::missionParam = SerialiseMissionFirstEvent(TRUE, 0 /* no profile needed */, mission, missionDuration, 0 /* no extra data */);
+ 		swprintf(text, szRebelCommandText[RCT_MISSION_POPUP_PART2_GENERIC], text);
+ 	}
+ 	else
+ 	{
+-		MissionHelpers::missionParam = SerialiseMissionFirstEvent(FALSE, mercs[agentIndex[index]]->ubProfile, static_cast<RebelCommandAgentMissions>(rebelCommandSaveInfo.availableMissions[index]), missionDuration, static_cast<UINT8>(extraBits));
++		MissionHelpers::missionParam = SerialiseMissionFirstEvent(FALSE, selectedSoldier->ubProfile, mission, missionDuration, static_cast<UINT8>(extraBits));
+ 		if (merc->bSex == MALE)
+ 			swprintf(text, szRebelCommandText[RCT_MISSION_POPUP_PART2_MALE], text, merc->zNickname, gRebelCommandSettings.iMissionPrepTime);
+ 		else
+@@ -2981,7 +3053,7 @@
+ 				for ( SoldierID i = gTacticalStatus.Team[OUR_TEAM].bFirstID; i <= gTacticalStatus.Team[OUR_TEAM].bLastID; ++i)
+ 				{
+ 					SOLDIERTYPE* pSoldier = i;
+-					if (pSoldier->ubProfile == evt.mercProfileId)
++					if (pSoldier && pSoldier->ubProfile == evt.mercProfileId)
+ 					{
+ 						TakeSoldierOutOfVehicle(pSoldier);
+ 						RemoveCharacterFromSquads(pSoldier);
+@@ -3035,19 +3107,19 @@
  		pSoldier->bBreath -= static_cast<INT8>(info.adminActions[RCAA_SUPPLY_DISRUPTION].fValue1 * level);
  		pSoldier->bBreathMax -= static_cast<INT8>(info.adminActions[RCAA_SUPPLY_DISRUPTION].fValue1 * level);
  
@@ -13214,7 +14317,7 @@
  	};
  
  	// need to get dist between soldier and town.
-@@ -3093,7 +3106,7 @@
+@@ -3093,7 +3165,7 @@
  				}
  				else if (level == foundLevel)
  				{
@@ -13223,7 +14326,7 @@
  				}
  			}
  		}
-@@ -3116,12 +3129,12 @@
+@@ -3116,12 +3188,12 @@
  	pMilitia->stats.bStrength += (gRebelCommandSettings.iMilitiaStatBonusPerLevel * rebelCommandSaveInfo.iMilitiaStatsLevel);
  	pMilitia->stats.bMarksmanship += (gRebelCommandSettings.iMilitiaMarksmanshipBonusPerLevel * rebelCommandSaveInfo.iMilitiaStatsLevel);
  
@@ -13242,7 +14345,7 @@
  }
  
  UINT8 GetApproximateEnemyLocationResolutionIndex()
-@@ -3192,7 +3205,7 @@
+@@ -3192,7 +3264,7 @@
  			elite = Random(2);
  		}
  
@@ -13251,7 +14354,7 @@
  		{
  			if (a < green)
  				CreateNewIndividualMilitia(GREEN_MILITIA, MO_ARULCO, SECTOR(sx, sy));
-@@ -3272,14 +3285,14 @@
+@@ -3272,14 +3344,14 @@
  				}
  				else if (level == foundLevel)
  				{
@@ -13268,7 +14371,7 @@
  		createBonusMilitia(foundLevel);
  }
  
-@@ -3688,7 +3701,7 @@
+@@ -3688,7 +3760,7 @@
  				UINT8 netEnemyCount = selectedGroupPtr->pEnemyGroup->ubNumAdmins + selectedGroupPtr->pEnemyGroup->ubNumTroops + selectedGroupPtr->pEnemyGroup->ubNumElites;
  				netEnemyCount -= selectedGroupPtr->pEnemyGroup->ubNumAdmins_Turncoat - selectedGroupPtr->pEnemyGroup->ubNumTroops_Turncoat - selectedGroupPtr->pEnemyGroup->ubNumElites_Turncoat;
  				Assert(netEnemyCount >= 0);
@@ -13277,7 +14380,7 @@
  
  				const UINT8 maxAdmins = selectedGroupPtr->pEnemyGroup->ubNumAdmins - selectedGroupPtr->pEnemyGroup->ubNumAdmins_Turncoat;
  				const UINT8 maxTroops = selectedGroupPtr->pEnemyGroup->ubNumTroops - selectedGroupPtr->pEnemyGroup->ubNumTroops_Turncoat;
-@@ -3805,7 +3818,7 @@
+@@ -3805,7 +3877,7 @@
  			}
  		}
  		foundCoolness:
@@ -13286,7 +14389,7 @@
  
  		const UINT8 loyalty = GetRegionLoyalty(a);
  		for (int b = 0; b < REBEL_COMMAND_MAX_ACTIONS_PER_REGION; ++b)
-@@ -4049,7 +4062,7 @@
+@@ -4049,7 +4121,7 @@
  			// init admins
  			rebelCommandSaveInfo.regions[a].adminStatus = RAS_NONE;
  			rebelCommandSaveInfo.regions[a].ubMaxLoyalty = startingMaxLoyalty;
@@ -13295,7 +14398,7 @@
  		}
  
  		// init admin actions per region. each region has supply line + 5 random actions
-@@ -4485,7 +4498,7 @@
+@@ -4485,7 +4557,7 @@
  	UINT16 extraBits = 0;
  	MissionHelpers::GetMissionInfo(RCAM_SOLDIER_BOUNTIES_KINGPIN, &gMercProfiles[evt.mercProfileId], durationBonus, floatModifier, intModifier, durationBonusSkill, floatModifierSkill, intModifierSkill, extraBits);
  
@@ -13304,7 +14407,7 @@
  	// clamp payout like this in case the player maxes out payouts in config and we have to deal with a uint overflow
  	if (payoutLimit - payout < rebelCommandSaveInfo.cachedBountyPayout)
  		payout = payoutLimit - rebelCommandSaveInfo.cachedBountyPayout;
-@@ -4524,12 +4537,12 @@
+@@ -4524,12 +4596,12 @@
  		pSoldier->stats.bStrength -= statLoss;
  		pSoldier->stats.bMarksmanship -= statLoss;
  
@@ -13323,7 +14426,7 @@
  	}
  }
  
-@@ -4815,7 +4828,7 @@
+@@ -4815,7 +4887,7 @@
  		case MissionHelpers::SABOTAGE_ENEMY_INFANTRY_EQUIPMENT_MODIFIER_SNIPER:			modifier = gRebelCommandSettings.iSabotageInfantryEquipmentModifier_Sniper; break;
  		}
  
@@ -13334,7 +14437,7 @@
  	return initialStatus;
 --- a/Strategic/Scheduling.cpp
 +++ b/Strategic/Scheduling.cpp
-@@ -1,6 +1,29 @@
+@@ -1,6 +1,39 @@
 +/*
 + * P710 native snapshot update: Strategic/Scheduling.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -13355,6 +14458,16 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Scheduling.cpp
++ * Native Linux source/build/test adaptations captured in the accepted schedule, mini-event, and facility checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "FileMan.h"
  	#include "types.h"
  	#include "Scheduling.h"
@@ -13364,7 +14477,7 @@
  
  	#include "message.h"
  	#include "Overhead.h"
-@@ -41,6 +64,13 @@
+@@ -41,6 +74,13 @@
  
  #define FOURPM 960
  
@@ -13378,7 +14491,107 @@
  // waketime is the # of minutes in the day minus the sleep time
  #define WAKETIME( x ) (NUM_SEC_IN_DAY/NUM_SEC_IN_MIN - x)
  
-@@ -498,13 +528,46 @@
+@@ -362,51 +402,68 @@
+ extern BOOLEAN gfSchedulesHosed;
+ BOOLEAN LoadSchedulesFromSave(CHAR8** ppBuffer)
+ {
+-	SCHEDULENODE* pSchedule = NULL;
++	SCHEDULENODE* pLoadedHead = NULL;
++	SCHEDULENODE* pLoadedTail = NULL;
+ 	SCHEDULENODE temp;
+ 	UINT8 ubNum;
+ 	UINT32 ubRealNum;
+ 
+-	UINT32	uiNumBytesRead, uiNumBytesToRead;
+-
+-
+-	uiNumBytesToRead = sizeof(UINT8);
+-	if ( !LoadDataFromBuffer(&ubNum, *ppBuffer, uiNumBytesToRead, "Schedule Count") )
++	auto ReleaseLoadedSchedules = [](SCHEDULENODE*& pHead)
++	{
++		while (pHead)
++		{
++			SCHEDULENODE* pNext = pHead->next;
++			MemFree(pHead);
++			pHead = pNext;
++		}
++	};
++
++	if (!ppBuffer || !*ppBuffer)
++	{
++		gfBufferLoadFailed = TRUE;
++		return(FALSE);
++	}
++
++	if ( !LoadDataFromBuffer(&ubNum, *ppBuffer, sizeof(UINT8), "Schedule Count") )
+ 	{
+ 		return(FALSE);
+ 	}
+ 
+ 	//Hack problem with schedules getting misaligned.
+ 	ubRealNum = gfSchedulesHosed ? ubNum + 256 : ubNum;
+-
+-	gubScheduleID = 1;
+-	while ( ubRealNum )
+-	{
+-		uiNumBytesToRead = sizeof(SCHEDULENODE);
+-		if ( !LoadDataFromBuffer(&temp, *ppBuffer, uiNumBytesToRead, "Schedule Node") )
+-		{
++	if (!LoadBufferContainsElements(*ppBuffer, ubRealNum, sizeof(SCHEDULENODE), 0,
++		"Schedule Nodes"))
++	{
++		return(FALSE);
++	}
++
++	for (UINT32 uiIndex = 0; uiIndex < ubRealNum; ++uiIndex)
++	{
++		if ( !LoadDataFromBuffer(&temp, *ppBuffer, sizeof(SCHEDULENODE), "Schedule Node") )
++		{
++			ReleaseLoadedSchedules(pLoadedHead);
+ 			return(FALSE);
+ 		}
+ 
+-		if ( gpScheduleList )
+-		{
+-			pSchedule->next = (SCHEDULENODE*)MemAlloc(sizeof(SCHEDULENODE));
+-			Assert(pSchedule->next);
+-			pSchedule = pSchedule->next;
+-			memcpy(pSchedule, &temp, sizeof(SCHEDULENODE));
+-		}
++		SCHEDULENODE* pSchedule = (SCHEDULENODE*)MemAlloc(sizeof(SCHEDULENODE));
++		if (!pSchedule)
++		{
++			gfBufferLoadFailed = TRUE;
++			ReleaseLoadedSchedules(pLoadedHead);
++			return(FALSE);
++		}
++		memcpy(pSchedule, &temp, sizeof(SCHEDULENODE));
++		pSchedule->next = NULL;
++		if (pLoadedTail)
++			pLoadedTail->next = pSchedule;
+ 		else
+-		{
+-			gpScheduleList = (SCHEDULENODE*)MemAlloc(sizeof(SCHEDULENODE));
+-			Assert(gpScheduleList);
+-			memcpy(gpScheduleList, &temp, sizeof(SCHEDULENODE));
+-			pSchedule = gpScheduleList;
+-		}
+-
+-		pSchedule->next = NULL;
+-		gubScheduleID++;
+-		ubRealNum--;
+-	}
++			pLoadedHead = pSchedule;
++		pLoadedTail = pSchedule;
++	}
++
++	DestroyAllSchedulesWithoutDestroyingEvents();
++	gpScheduleList = pLoadedHead;
++	gubScheduleID = static_cast<UINT8>(ubRealNum + 1);
+ 	//Schedules are posted when the soldier is added...
+ 	return(TRUE);
+ }
+@@ -498,13 +555,46 @@
  	if (dMajorMapVersion < 7.0)
  	{
  		_OLD_SCHEDULENODE OldScheduleNode;
@@ -13425,7 +14638,7 @@
  		*this = OldScheduleNode;
  	}
  	else
-@@ -537,8 +600,21 @@
+@@ -537,8 +627,21 @@
  	return(FALSE);
  }
  
@@ -13448,7 +14661,7 @@
  	SCHEDULENODE* pSchedule = NULL;
  	SCHEDULENODE temp;
  
-@@ -550,7 +626,12 @@
+@@ -550,7 +653,12 @@
  	gubScheduleID = 1;
  	while(ubNum)
  	{
@@ -13462,7 +14675,7 @@
  		for(int i=0; i<MAX_SCHEDULE_ACTIONS; i++)//dnl ch44 280909 SCHEDULENODE translation
  		{
  			gMapTrn.GetTrnCnt((INT32&)temp.usData1[i]);
-@@ -577,6 +658,9 @@
+@@ -577,6 +685,9 @@
  		ubNum--;
  	}
  	// Schedules are posted when the soldier is added...
@@ -13472,7 +14685,7 @@
  }
  
  BOOLEAN SaveSchedules(HWFILE hFile, FLOAT dMajorMapVersion, UINT8 ubMinorMapVersion)
-@@ -727,7 +811,7 @@
+@@ -727,7 +838,7 @@
  	#ifdef JA2EDITOR
  		if ( pSoldier->ubProfile != NO_PROFILE )
  		{
@@ -13481,7 +14694,7 @@
  				gszScheduleActions[ pSchedule->ubAction[ index ] ],
  				pSoldier->name,
  				pSoldier->ubID,
-@@ -739,7 +823,7 @@
+@@ -739,7 +850,7 @@
  		}
  		else
  		{
@@ -14049,7 +15262,7 @@
  		}
 --- a/Strategic/Strategic Movement Costs.cpp
 +++ b/Strategic/Strategic Movement Costs.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Strategic/Strategic Movement Costs.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -14060,10 +15273,34 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Strategic Movement Costs.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "Campaign Types.h"
  	#include "Queen Command.h"
  	#include "Strategic Movement.h"
-@@ -5548,14 +5558,12 @@
+@@ -436,8 +456,13 @@
+ 
+ BOOLEAN WriteInStrategicMovementCosts(STR fileName)
+ {
++	if( fileName == NULL )
++		return( FALSE );
++
+ 	// Lets output the current Strategic map format using the XML structure I've devised.
+ 	FILE *outfile = fopen(fileName, "wt");
++	if( outfile == NULL )
++		return( FALSE );
+ 
+ 	UINT32 x, y, dir_type, trav_type;
+ 	SECTORINFO *pSector;
+@@ -5548,14 +5573,12 @@
  
  BOOLEAN InitStrategicMovementCosts()
  {
@@ -14939,7 +16176,7 @@
  	{
 --- a/Strategic/Strategic Town Loyalty.cpp
 +++ b/Strategic/Strategic Town Loyalty.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Strategic/Strategic Town Loyalty.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -14950,10 +16187,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Strategic Town Loyalty.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic runtime-state checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  
  	#include "Strategic Town Loyalty.h"
  	#include "strategicmap.h"
-@@ -309,7 +319,7 @@
+@@ -309,7 +329,7 @@
  	uiRemainingIncrement = uiLoyaltyIncrease;
  	while ( uiRemainingIncrement )
  	{
@@ -14962,7 +16209,7 @@
  
  		// up the gain value
  		gTownLoyalty[ bTownId ].sChange += (INT16) sThisIncrement;
-@@ -349,7 +359,7 @@
+@@ -349,7 +369,7 @@
  	uiRemainingDecrement = uiLoyaltyDecrease;
  	while ( uiRemainingDecrement )
  	{
@@ -14971,7 +16218,7 @@
  
  		// down the gain value
  		gTownLoyalty[ bTownId ].sChange -= sThisDecrement;
-@@ -391,7 +401,7 @@
+@@ -391,7 +411,7 @@
  		}
  
  		// if playing with rebel command, limit max loyalty
@@ -14980,6 +16227,74 @@
  
  		// check if we'd be going over the max
  		if( (gTownLoyalty[ bTownId ].ubRating + sRatingChange ) >= ubMaxLoyalty )
+@@ -1752,10 +1772,10 @@
+ 	INT32 iPercentAdjustment;
+ 	INT32 iDistanceAdjustedLoyalty;
+ 
+-	// preset shortest distances to high values prior to searching for a minimum
+-	for( bTownId = FIRST_TOWN; bTownId < NUM_TOWNS; ++bTownId )
+-	{
+-		iShortestDistance[ bTownId ] = 999999;
++	// preset the complete table before calls that may observe or change NUM_TOWNS
++	for (UINT8 townIndex = 0; townIndex < MAX_TOWNS; ++townIndex)
++	{
++		iShortestDistance[townIndex] = 999999;
+ 	}
+ 
+ 	sEventSector = CALCULATE_STRATEGIC_INDEX( sSectorX, sSectorY );
+@@ -1765,9 +1785,15 @@
+ 
+ 	// calc distance to the event sector from EACH SECTOR of each town, keeping only the shortest one for every town
+ 	uiIndex = 0;
+-	while( pTownNamesList[ uiIndex ] != 0 )
+-	{
+-		bTownId = (UINT8) pTownNamesList[ uiIndex ];
++	while (uiIndex < MAX_TOWN_SECTORS && pTownNamesList[uiIndex] != 0)
++	{
++		const INT32 townId = pTownNamesList[uiIndex];
++		if (townId < FIRST_TOWN || townId >= MAX_TOWNS)
++		{
++			++uiIndex;
++			continue;
++		}
++		bTownId = static_cast<INT8>(townId);
+ 
+ 		// Flugente: added to speed up function, remove if removed in loop below this one
+ 		// doesn't affect towns where player hasn't established a "presence" yet
+@@ -1868,10 +1894,10 @@
+ 	INT32 sDistanceToClosestTown = 999999;
+ 	INT8 bClosestTown = NUM_TOWNS;
+ 
+-	// preset shortest distances to high values prior to searching for a minimum
+-	for ( bTownId = FIRST_TOWN; bTownId < NUM_TOWNS; ++bTownId )
+-	{
+-		iShortestDistance[bTownId] = 999999;
++	// preset the complete table before calls that may observe or change NUM_TOWNS
++	for (UINT8 townIndex = 0; townIndex < MAX_TOWNS; ++townIndex)
++	{
++		iShortestDistance[townIndex] = 999999;
+ 	}
+ 
+ 	sEventSector = CALCULATE_STRATEGIC_INDEX( sSectorX, sSectorY );
+@@ -1881,9 +1907,15 @@
+ 
+ 	// calc distance to the event sector from EACH SECTOR of each town, keeping only the shortest one for every town
+ 	uiIndex = 0;
+-	while ( pTownNamesList[uiIndex] != 0 )
+-	{
+-		bTownId = (UINT8)pTownNamesList[uiIndex];
++	while (uiIndex < MAX_TOWN_SECTORS && pTownNamesList[uiIndex] != 0)
++	{
++		const INT32 townId = pTownNamesList[uiIndex];
++		if (townId < FIRST_TOWN || townId >= MAX_TOWNS)
++		{
++			++uiIndex;
++			continue;
++		}
++		bTownId = static_cast<INT8>(townId);
+ 
+ 		// Flugente: added to speed up function, remove if removed in loop below this one
+ 		// doesn't affect towns where player hasn't established a "presence" yet
 --- a/Strategic/Strategic Transport Groups.cpp
 +++ b/Strategic/Strategic Transport Groups.cpp
 @@ -1,3 +1,13 @@
@@ -18094,7 +19409,7 @@
  
 --- a/Tactical/Enemy Soldier Save.cpp
 +++ b/Tactical/Enemy Soldier Save.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Enemy Soldier Save.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -18105,10 +19420,49 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Enemy Soldier Save.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
      #include "GameSettings.h"
  	#include <stdio.h>
  	#include "types.h"
-@@ -1290,7 +1300,7 @@
+@@ -671,7 +691,7 @@
+ 	INT32 slots = 0;
+ 	UINT32 uiNumBytesRead;
+ 	UINT32 uiTimeStamp;
+-	HWFILE hfile;
++	HWFILE hfile = 0;
+ 	INT16 sSectorX, sSectorY;
+ 	CHAR8		zMapName[ 128 ];
+ 	#ifdef JA2TESTVERSION
+@@ -747,7 +767,7 @@
+ 	hfile = FileOpen( zMapName, FILE_ACCESS_READ | FILE_OPEN_EXISTING, FALSE );
+ 	if( hfile == 0 )
+ 	{	//Error opening map modification file
+-		return FALSE;
++		goto FAIL_LOAD;
+ 	}
+ 
+ 	//STEP TWO:	determine whether or not we should use this data.
+@@ -1081,7 +1101,9 @@
+ 		//The temp file load failed either because of IO problems related to hacking/logic, or
+ 		//various checks failed for hacker validation.	If we reach this point, the "error: exit game"
+ 		//dialog would appear in a non-testversion.
+-		FileClose( hfile );
++		if( hfile )
++			FileClose( hfile );
++		gfRestoringEnemySoldiersFromTempFile = FALSE;
+ 		#ifdef JA2TESTVERSION
+ 			AssertMsg( 0, zReason );
+ 		#endif
+@@ -1290,7 +1312,7 @@
  						{ //Add 4 life for every hour that passes.
  							INT32 iNewLife;
  							iNewLife = curr->pDetailedPlacement->bLife + uiTimeSinceLastLoaded / 15;
@@ -19180,7 +20534,7 @@
  									
 --- a/Tactical/Handle UI.cpp
 +++ b/Tactical/Handle UI.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Handle UI.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -19191,10 +20545,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Handle UI.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include "connect.h"
  #include <wchar.h>
  #include <cmath>
-@@ -1367,7 +1377,13 @@
+@@ -1367,7 +1387,13 @@
  				// The crash occurd at ~index 16000 when calling the method IsCorpseAtGridNo() ...
  				// I don't know what causes it ...
  				// Just try/catch (ugly, but works).	 
@@ -19208,7 +20572,7 @@
  				{		 
  					for(UINT32 i=0; i<(UINT32)WORLD_MAX; i+=4) 
  					{			
-@@ -1381,10 +1397,12 @@
+@@ -1381,10 +1407,12 @@
  						gubIsCorpseThere[i+3]		= IsCorpseAtGridNo( i+3, gpWorldLevelData[ i+3 ].sHeight );
  					}	
  				}
@@ -19221,6 +20585,32 @@
  
  				SoldierID tcnt = gTacticalStatus.Team[ gbPlayerNum ].bFirstID;
  				SOLDIERTYPE *tS;
+@@ -2099,6 +2127,7 @@
+ {
+ 	INT32		usMapPos;
+ 	SOLDIERTYPE	*pSoldier;
++	SOLDIERTYPE	*pMovedSoldier = NULL;
+ 	INT32		sDestGridNo;
+ 	INT32		sActionGridNo;
+ 	STRUCTURE	*pStructure;
+@@ -2142,6 +2171,7 @@
+ 						}
+ 					}
+ 
++					pMovedSoldier = pSoldier;
+ 					pSoldier->AdjustNoAPToFinishMove( FALSE );
+ 
+ 					fOldFastMove = pSoldier->flags.fUIMovementFast;
+@@ -2182,7 +2212,8 @@
+ 			gfGetNewPathThroughPeople = FALSE;
+ 
+ 			// RESET MOVE FAST FLAG
+-			SetConfirmMovementModeCursor( pSoldier, TRUE );
++			if ( pMovedSoldier )
++				SetConfirmMovementModeCursor( pMovedSoldier, TRUE );
+ 
+ 			gfUIAllMoveOn = 0;
+ 		}
 --- a/Tactical/Interface Control.cpp
 +++ b/Tactical/Interface Control.cpp
 @@ -1,3 +1,13 @@
@@ -24559,7 +25949,7 @@
  								strcat( zTS, "*" );
 --- a/Tactical/Points.cpp
 +++ b/Tactical/Points.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Points.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -24570,10 +25960,32 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Points.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "sgp.h"
  	#include "worlddef.h"
  	#include "Points.h"
-@@ -3314,7 +3324,12 @@
+@@ -1635,9 +1655,9 @@
+ {
+ 	UINT16						sAPCost = 0;
+ 	UINT16						usItemNum;
+-	INT32 sActionGridNo;
++	INT32 sActionGridNo = sGridNo;
+ 	UINT8							ubDirection;
+-	INT32 sAdjustedGridNo;
++	INT32 sAdjustedGridNo = sGridNo;
+ 	UINT32						uiItemClass;
+ 	BOOLEAN	fAddingTurningCost = FALSE;
+ 	BOOLEAN	fAddingRaiseGunCost = FALSE;
+@@ -3314,7 +3334,12 @@
  				if ( gGameExternalOptions.ubAllowAlternativeWeaponHolding )
  				{
  					// If we are told to go to the alt weapon holding mode
@@ -25171,7 +26583,7 @@
  
 --- a/Tactical/SkillMenu.cpp
 +++ b/Tactical/SkillMenu.cpp
-@@ -1,3 +1,15 @@
+@@ -1,3 +1,25 @@
 +/*
 + * P710 native snapshot update: Tactical/SkillMenu.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -25182,12 +26594,22 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/SkillMenu.cpp
++ * Native Linux source/build/test adaptations captured in the accepted ownership and bounds checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <algorithm>
 +#include <cstddef>
  /** 
   * @file
   * @author Flugente (bears-pit.com)
-@@ -47,7 +59,7 @@
+@@ -47,7 +69,7 @@
  BOOLEAN Popup_OptionOff( void )	{ return FALSE; }
  
  void
@@ -25196,7 +26618,7 @@
  {
  	// create a popup
  	gPopup = new POPUP(name);
-@@ -175,7 +187,7 @@
+@@ -175,7 +197,7 @@
  		if ( !HAS_SKILL_TRAIT(pSoldier, traitarray[i]) )
  		{
  			// Set this option off.
@@ -25205,7 +26627,7 @@
  		}
  
  		GetPopup()->addOption( *pOption );
-@@ -253,7 +265,7 @@
+@@ -253,7 +275,7 @@
  					if ( !(pSoldier->CanUseSkill(uiCounter, TRUE)) )
  					{
  						// Set this option off.
@@ -25214,7 +26636,7 @@
  					}
  					
  					GetPopup()->addOption( *pOption );
-@@ -273,7 +285,7 @@
+@@ -273,7 +295,7 @@
  					if ( !( pSoldier->CanUseSkill( uiCounter, TRUE, sTraitsMenuTargetGridNo ) ) )
  					{
  						// Set this option off.
@@ -25223,7 +26645,7 @@
  					}
  
  					GetPopup()->addOption( *pOption );
-@@ -293,7 +305,7 @@
+@@ -293,7 +315,7 @@
  					if ( !( pSoldier->CanUseSkill( uiCounter, TRUE, sTraitsMenuTargetGridNo ) ) )
  					{
  						// Set this option off.
@@ -25232,7 +26654,7 @@
  					}
  
  					GetPopup()->addOption( *pOption );
-@@ -316,7 +328,7 @@
+@@ -316,7 +338,7 @@
  					if ( !(pSoldier->CanUseSkill( uiCounter, TRUE, sTraitsMenuTargetGridNo )) )
  					{
  						// Set this option off.
@@ -25241,7 +26663,7 @@
  					}
  					
  					GetPopup()->addOption( *pOption );
-@@ -452,7 +464,7 @@
+@@ -452,7 +474,7 @@
  			if ( !IsValidArtilleryOrderSector( loopX, loopY, pSoldier->bSectorZ, pSoldier->bTeam ) && !IsValidArtilleryOrderSector( loopX, loopY, pSoldier->bSectorZ, MILITIA_TEAM ) )
  			{
  				// Set this option off.
@@ -25250,7 +26672,7 @@
  			}
  			GetPopup()->addOption( *pOption );
  		}
-@@ -509,20 +521,20 @@
+@@ -509,20 +531,20 @@
  		if ( !IsValidArtilleryOrderSector( sSectorX, sSectorY, pSoldier->bSectorZ, MILITIA_TEAM ) )
  		{
  			// Set this option off.
@@ -25274,7 +26696,7 @@
  		}
  		GetPopup()->addOption( *pOption );
  		
-@@ -610,7 +622,7 @@
+@@ -610,7 +632,7 @@
  			if ( !CanRequestMilitiaReinforcements( pSoldier->sSectorX, pSoldier->sSectorY, loopX, loopY ) )
  			{
  				// Set this option off.
@@ -25283,7 +26705,7 @@
  			}
  			GetPopup()->addOption( *pOption );
  		}
-@@ -658,7 +670,7 @@
+@@ -658,7 +680,7 @@
  		if ( numberofmilitia < 5 )
  		{
  			// Set this option off.
@@ -25292,7 +26714,7 @@
  		}
  
  		GetPopup()->addOption( *pOption );
-@@ -670,7 +682,7 @@
+@@ -670,7 +692,7 @@
  		if ( numberofmilitia < 10 )
  		{
  			// Set this option off.
@@ -25301,7 +26723,7 @@
  		}
  
  		GetPopup()->addOption( *pOption );
-@@ -682,7 +694,7 @@
+@@ -682,7 +704,7 @@
  		if ( numberofmilitia < 15 )
  		{
  			// Set this option off.
@@ -25310,25 +26732,33 @@
  		}
  
  		GetPopup()->addOption( *pOption );
-@@ -694,7 +706,7 @@
+@@ -694,8 +716,10 @@
  		if ( numberofmilitia < 20 )
  		{
  			// Set this option off.
 -			pOption->setAvail(new popupCallbackFunction<bool,void*>( &Popup_OptionOff, NULL ));
+-		}
 +			pOption->setAvail(new popupCallbackFunction<BOOLEAN,void>( &Popup_OptionOff ));
- 		}
++		}
++
++		GetPopup()->addOption( *pOption );
  
  		// 30 militia option
-@@ -704,7 +716,7 @@
+ 		swprintf( pStr, pSkillMenuStrings[SKILLMENU_X_MILITIA], 30 );
+@@ -704,8 +728,10 @@
  		if ( numberofmilitia < 30 )
  		{
  			// Set this option off.
 -			pOption->setAvail( new popupCallbackFunction<bool, void*>( &Popup_OptionOff, NULL ) );
+-		}
 +			pOption->setAvail( new popupCallbackFunction<BOOLEAN,void>( &Popup_OptionOff ) );
- 		}
++		}
++
++		GetPopup()->addOption( *pOption );
  
  		// 40 militia option
-@@ -714,7 +726,7 @@
+ 		swprintf( pStr, pSkillMenuStrings[SKILLMENU_X_MILITIA], 40 );
+@@ -714,7 +740,7 @@
  		if ( numberofmilitia < 40 )
  		{
  			// Set this option off.
@@ -25337,7 +26767,7 @@
  		}
  
  		GetPopup()->addOption( *pOption );
-@@ -794,13 +806,13 @@
+@@ -794,13 +820,13 @@
  				{
  					swprintf( pStr, L"%s", id->GetName() );
  
@@ -25353,7 +26783,7 @@
  					}
  					GetPopup()->addOption( *pOption );
  				}
-@@ -909,12 +921,19 @@
+@@ -909,12 +935,19 @@
  
  				if ( xmlentry >= 0 )
  				{
@@ -25375,7 +26805,7 @@
  
  					GetPopup()->addOption( *pOption );
  				}
-@@ -1026,9 +1045,17 @@
+@@ -1026,9 +1059,17 @@
  	GetEquipmentTemplates();
  
  	// we limit the maximum number of entries shown at once - too many entries could theoretically cause the button system to freak out
@@ -25394,7 +26824,7 @@
  
  	if ( gEquipmentSelectionLastEntryShown < gEquipmentSelectionMaxEntriesShown )
  		gEquipmentSelectionFirstEntryShown = 0;
-@@ -1049,8 +1076,15 @@
+@@ -1049,8 +1090,15 @@
  
  		CHAR16 tmpchar[256];
  
@@ -25437,7 +26867,7 @@
  	{
 --- a/Tactical/Soldier Ani.cpp
 +++ b/Tactical/Soldier Ani.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Soldier Ani.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -25448,10 +26878,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Soldier Ani.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include "stdlib.h"
  #include "DEBUG.H"
  #include "MemMan.h"
-@@ -388,7 +398,7 @@
+@@ -388,7 +408,7 @@
  								// intact window found. Smash it!
  								WindowHit(sWindowGridNo, pStructure->usStructureID, (pSoldier->ubDirection == SOUTH || pSoldier->ubDirection == EAST), TRUE);
  								// damage weapon
@@ -25460,6 +26900,15 @@
  								{
  									pSoldier->inv[HANDPOS][0]->data.objectStatus--;
  									if (Random(100) < Item[pSoldier->inv[HANDPOS].usItem].usDamageChance)
+@@ -3574,7 +3594,7 @@
+ 			// Are we a buddy of killer?
+ 			bTempBuddyIndex = WhichBuddy( pTeamSoldier->ubProfile, pKillerSoldier->ubProfile );
+ 			
+-			if ( bTempBuddyIndex != -1 )
++			if ( bTempBuddyIndex >= 0 && bTempBuddyIndex <= 5 )
+ 			{
+ 				switch( bTempBuddyIndex )
+ 				{
 --- a/Tactical/Soldier Control.cpp
 +++ b/Tactical/Soldier Control.cpp
 @@ -1,4 +1,35 @@
@@ -26567,7 +28016,7 @@
  	INT16		GetMeleeDamageBonus();
 --- a/Tactical/Soldier Create.cpp
 +++ b/Tactical/Soldier Create.cpp
-@@ -1,3 +1,43 @@
+@@ -1,3 +1,53 @@
 +/*
 + * P710 native snapshot update: Tactical/Soldier Create.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -26608,10 +28057,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Soldier Create.cpp
++ * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "sgp.h"
  	#include "Soldier Create.h"
  	#include "Overhead.h"
-@@ -852,12 +892,12 @@
+@@ -852,12 +902,12 @@
  
  					UINT16 diseasemaxbreathreduction = Disease[0].usMaxBreath * magnitude;
  
@@ -26627,7 +28086,7 @@
  				}
  			}
  		}
-@@ -1776,7 +1816,7 @@
+@@ -1776,7 +1826,7 @@
  			if ( gGameExternalOptions.fIndividualMilitia_ManageHealth )
  			{
  				// make sure militia has at least OKLIFE
@@ -26636,7 +28095,7 @@
  			}
  		}
  		else
-@@ -2229,7 +2269,10 @@
+@@ -2229,7 +2279,10 @@
  			pSoldier->DeleteSoldier( );
  		}
  
@@ -26648,7 +28107,7 @@
  	}
  
  	return( TRUE );
-@@ -2584,19 +2627,19 @@
+@@ -2584,19 +2637,19 @@
  
  	DebugMsg(TOPIC_JA2,DBG_LEVEL_3,String("CreateDetailedPlacementGivenBasicPlacementInfo: set exp. level"));
  
@@ -26676,7 +28135,7 @@
  
  	//Set the minimum base attribute
  	bBaseAttribute = 45 + ( 4 * ubStatsLevel );
-@@ -2975,8 +3018,8 @@
+@@ -2975,8 +3028,8 @@
  	// Rel level 0: Lvl 1-2, 1: Lvl 2-4, 2: Lvl 4-6, 3: Lvl 6-8, 4: Lvl 8-10
  	s->stats.bExpLevel = (INT8)(2 * bRelativeAttributeLevel + Random(3));
  
@@ -26687,7 +28146,7 @@
  
  	//Set the minimum base attribute
  	bBaseAttribute = 45 + ( 4 * s->stats.bExpLevel );
-@@ -3056,6 +3099,8 @@
+@@ -3056,6 +3109,8 @@
  				pSoldier = new SOLDIERTYPE(*MercPtrs[i]); //(SOLDIERTYPE*)MemAlloc( SIZEOF_SOLDIERTYPE );
  				if( !pSoldier )
  					return NULL;
@@ -26696,7 +28155,7 @@
  
  				//Assign a bogus ID, then return it
  				pSoldier->ubID = NUM_PROFILES;
-@@ -3364,6 +3409,8 @@
+@@ -3364,6 +3419,8 @@
  				pSoldier = new SOLDIERTYPE(*MercPtrs[i]); //(SOLDIERTYPE*)MemAlloc( SIZEOF_SOLDIERTYPE );
  				if( !pSoldier )
  					return NULL;
@@ -26705,7 +28164,7 @@
  
  				// the militia in autoresolve will drop their gear after combat. For this reason, there is no need for MercPtrs[i] to also drop it
  				MercPtrs[i]->usSoldierFlagMask |= SOLDIER_EQUIPMENT_DROPPED;
-@@ -3574,7 +3621,7 @@
+@@ -3574,7 +3631,7 @@
  				SetClothes( pSoldier, aVest, aPants, aHair, aSkin );
  
  				// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -26714,7 +28173,7 @@
  
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -3702,7 +3749,7 @@
+@@ -3702,7 +3759,7 @@
  				SetClothes( pSoldier, Random( NUMSHIRTS ), Random( NUMPANTS ) );
  
  				// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -26723,7 +28182,7 @@
  
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -3898,7 +3945,7 @@
+@@ -3898,7 +3955,7 @@
  				SET_PALETTEREP_ID( pSoldier->PantsPal, "BLACKPANTS" );
  
  				// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -26732,7 +28191,7 @@
  
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  				SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -3954,7 +4001,7 @@
+@@ -3954,7 +4011,7 @@
  	if ( pSoldier )
  	{
  		// a downed pilot might be wounded
@@ -26741,7 +28200,7 @@
  		pSoldier->bBleeding = pSoldier->stats.bLifeMax - pSoldier->stats.bLife;
  
  		AddSoldierToSector( pSoldier->ubID );
-@@ -3971,7 +4018,7 @@
+@@ -3971,7 +4028,7 @@
  			SET_PALETTEREP_ID( pSoldier->PantsPal, gUniformColors[UNIFORM_ENEMY_ADMIN].pants );
  
  			// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -26750,7 +28209,7 @@
  
  			SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->HeadPal );
  			SetPaletteReplacement( pSoldier->p8BPPPalette, pSoldier->VestPal );
-@@ -4342,11 +4389,12 @@
+@@ -4342,11 +4399,12 @@
  	INT32		cnt;
  	SOLDIERTYPE *pSoldier;
  
@@ -26768,7 +28227,16 @@
  		{
  			// Delete from world
  			TacticalRemoveSoldier( (UINT16)cnt );
-@@ -4774,8 +4822,8 @@
+@@ -4708,7 +4766,7 @@
+ // SANDRO - Added a function to add traits to soldiers
+ BOOLEAN AssignTraitsToSoldier( SOLDIERTYPE *pSoldier, SOLDIERCREATE_STRUCT *pCreateStruct )
+ {
+-	INT32 iChance;
++	INT32 iChance = 0;
+ 	UINT8	ubProgress, ubSolClass;
+ 	BOOLEAN ATraitAssigned = FALSE;
+ 	BOOLEAN BTraitAssigned = FALSE;
+@@ -4774,8 +4832,8 @@
  			{
  				pSoldier->stats.ubSkillTraits[0] = SQUADLEADER_NT;
  				// raise level and leadership for this guy
@@ -26779,7 +28247,7 @@
  				ATraitAssigned = TRUE;
  
  				bNumSquadleadersInArmy++;
-@@ -4806,8 +4854,8 @@
+@@ -4806,8 +4864,8 @@
  			{
  				pSoldier->stats.ubSkillTraits[0] = SQUADLEADER_NT;
  				// raise level and leadership for this guy
@@ -26790,7 +28258,7 @@
  				ATraitAssigned = TRUE;
  
  				bNumSquadleadersInArmy++;
-@@ -4816,8 +4864,8 @@
+@@ -4816,8 +4874,8 @@
  			{
  				pSoldier->stats.ubSkillTraits[1] = SQUADLEADER_NT;
  				// raise level and leadership for this guy
@@ -26801,7 +28269,7 @@
  				BTraitAssigned = TRUE;
  
  				bNumSquadleadersInArmy++;
-@@ -5868,7 +5916,7 @@
+@@ -5868,7 +5926,7 @@
  					}
  
  					// make sure we ar reasonably skilled
@@ -26810,7 +28278,7 @@
  				}
  				else if ( !BTraitAssigned )
  				{
-@@ -5876,7 +5924,7 @@
+@@ -5876,7 +5934,7 @@
  					BTraitAssigned = TRUE;
  
  					// make sure we ar reasonably skilled
@@ -33543,6 +35011,225 @@
  	for ( UINT8 j = gfirstMercIndex; j < end; ++j )
  	{
  		//Render the mercs
+--- a/TileEngine/Tile Animation.cpp
++++ b/TileEngine/Tile Animation.cpp
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: TileEngine/Tile Animation.cpp
++ * Native Linux source/build/test adaptations captured in the accepted tile-resource ownership checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ #include "worlddef.h"
+ #include "Tile Animation.h"
+ #include "DEBUG.H"
+@@ -22,7 +32,7 @@
+ {
+ 	ANITILE		*pAniNode;
+ 	ANITILE		*pNewAniNode;
+-	LEVELNODE	*pNode;
++	LEVELNODE	*pNode = NULL;
+ 	INT32			iCachedTile=-1;
+ 	INT32 sGridNo;
+ 	UINT8			ubLevel;
+@@ -34,6 +44,11 @@
+ 	LEVELNODE	*pGivenNode;
+ 	INT16			sX, sY, sZ;
+ 	UINT8			ubTempDir;
++
++	if ( pAniParams == NULL )
++	{
++		return( NULL );
++	}
+ 
+ 	// Get some parameters from structure sent in...
+ 	sGridNo			= pAniParams->sGridNo;
+@@ -53,11 +68,21 @@
+ 
+ 	// Allocate head
+ 	pNewAniNode = (ANITILE *) MemAlloc( sizeof( ANITILE ) );
++	if ( pNewAniNode == NULL )
++	{
++		return( NULL );
++	}
+ 
+ 	memset( pNewAniNode, 0, sizeof( ANITILE ) );
+ 
+ 	if ( (uiFlags & ANITILE_EXISTINGTILE	) )
+ 	{
++		if ( pGivenNode == NULL )
++		{
++			MemFree( pNewAniNode );
++			return( NULL );
++		}
++
+ 		pNewAniNode->pLevelNode						= pGivenNode;
+ 		pNewAniNode->pLevelNode->pAniTile = pNewAniNode;
+ 	}
+@@ -69,6 +94,7 @@
+ 
+ 			if ( iCachedTile == -1 )
+ 			{
++				MemFree( pNewAniNode );
+ 				return( NULL );
+ 			}
+ 
+@@ -85,36 +111,81 @@
+ 
+ 		case ANI_SHADOW_LEVEL:
+ 
+-			AddShadowToHead( sGridNo, usTileIndex );
+-			pNode = gpWorldLevelData[ sGridNo ].pShadowHead;
++			if ( AddShadowToHead( sGridNo, usTileIndex ) == FALSE )
++			{
++				pNode = NULL;
++			}
++			else
++			{
++				pNode = gpWorldLevelData[ sGridNo ].pShadowHead;
++			}
+ 			break;
+ 
+ 		case ANI_OBJECT_LEVEL:
+ 
+-			AddObjectToHead( sGridNo, usTileIndex );
+-			pNode = gpWorldLevelData[ sGridNo ].pObjectHead;
++			if ( AddObjectToHead( sGridNo, usTileIndex ) == FALSE )
++			{
++				pNode = NULL;
++			}
++			else
++			{
++				pNode = gpWorldLevelData[ sGridNo ].pObjectHead;
++			}
+ 			break;
+ 
+ 		case ANI_ROOF_LEVEL:
+ 
+-			AddRoofToHead( sGridNo, usTileIndex );
+-			pNode = gpWorldLevelData[ sGridNo ].pRoofHead;
++			if ( AddRoofToHead( sGridNo, usTileIndex ) == FALSE )
++			{
++				pNode = NULL;
++			}
++			else
++			{
++				pNode = gpWorldLevelData[ sGridNo ].pRoofHead;
++			}
+ 			break;
+ 
+ 		case ANI_ONROOF_LEVEL:
+ 
+-			AddOnRoofToHead( sGridNo, usTileIndex );
+-			pNode = gpWorldLevelData[ sGridNo ].pOnRoofHead;
++			if ( AddOnRoofToHead( sGridNo, usTileIndex ) == FALSE )
++			{
++				pNode = NULL;
++			}
++			else
++			{
++				pNode = gpWorldLevelData[ sGridNo ].pOnRoofHead;
++			}
+ 			break;
+ 
+ 		case ANI_TOPMOST_LEVEL:
+ 
+-			AddTopmostToHead( sGridNo, usTileIndex );
+-			pNode = gpWorldLevelData[ sGridNo ].pTopmostHead;
++			if ( AddTopmostToHead( sGridNo, usTileIndex ) == FALSE )
++			{
++				pNode = NULL;
++			}
++			else
++			{
++				pNode = gpWorldLevelData[ sGridNo ].pTopmostHead;
++			}
+ 			break;
+ 
+ 		default:
+ 
++			if ( iCachedTile != -1 )
++			{
++				RemoveCachedTile( iCachedTile );
++			}
++			MemFree( pNewAniNode );
++			return( NULL );
++		}
++
++		if ( pNode == NULL )
++		{
++			if ( iCachedTile != -1 )
++			{
++				RemoveCachedTile( iCachedTile );
++			}
++			MemFree( pNewAniNode );
+ 			return( NULL );
+ 		}
+ 
+--- a/TileEngine/Tile Surface.cpp
++++ b/TileEngine/Tile Surface.cpp
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: TileEngine/Tile Surface.cpp
++ * Native Linux source/build/test adaptations captured in the accepted tile-resource ownership checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ 
+ 	#include "DEBUG.H"
+ 	#include "Sys Globals.h"
+@@ -64,6 +74,10 @@
+ 		pStructureFileRef = LoadStructureFile( cStructureFilename );
+ 		if (pStructureFileRef == NULL || hVObject->usNumberOfObjects != pStructureFileRef->usNumberOfStructures)
+ 		{
++			if ( pStructureFileRef != NULL )
++			{
++				FreeStructureFile( pStructureFileRef );
++			}
+ 			DestroyImage( hImage );
+ 			DeleteVideoObject( hVObject );
+ 			SET_ERROR(	"Structure file error: %s", cStructureFilename );
+@@ -75,6 +89,7 @@
+ 		fOk = AddZStripInfoToVObject( hVObject, pStructureFileRef, FALSE, 0 );
+ 		if (fOk == FALSE)
+ 		{
++			FreeStructureFile( pStructureFileRef );
+ 			DestroyImage( hImage );
+ 			DeleteVideoObject( hVObject );
+ 			SET_ERROR(	"ZStrip creation error: %s", cStructureFilename );
+@@ -123,6 +138,16 @@
+ 
+ 
+ 	pTileSurf = (PTILE_IMAGERY) MemAlloc( sizeof( TILE_IMAGERY ) );
++	if ( pTileSurf == NULL )
++	{
++		if ( pStructureFileRef != NULL )
++		{
++			FreeStructureFile( pStructureFileRef );
++		}
++		DestroyImage( hImage );
++		DeleteVideoObject( hVObject );
++		return( NULL );
++	}
+ 
+ 	// Set all values to zero
+ 	memset( pTileSurf, 0, sizeof( TILE_IMAGERY ) );
+@@ -156,6 +181,7 @@
+ 		pTileSurf->pAuxData = (AuxObjectData *) MemAlloc( hImage->uiAppDataSize );
+ 		if ( pTileSurf->pAuxData == NULL)
+ 		{
++			MemFree( pTileSurf );
+ 			DestroyImage( hImage );
+ 			DeleteVideoObject( hVObject );
+ 			return( NULL );
 --- a/TileEngine/environment.cpp
 +++ b/TileEngine/environment.cpp
 @@ -1,3 +1,13 @@
@@ -33597,7 +35284,7 @@
  		if ( gfScrollPending || gfScrollInertia )
 --- a/TileEngine/lighting.cpp
 +++ b/TileEngine/lighting.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: TileEngine/lighting.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -33608,11 +35295,50 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: TileEngine/lighting.cpp
++ * Native Linux source/build/test adaptations captured in the accepted stream-loader and word-wrap ownership checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <math.h>
  /****************************************************************************************
  * JA2 Lighting Module
  *
-@@ -1271,7 +1282,7 @@
+@@ -163,7 +184,7 @@
+ 	FILE *fp;
+ 	INT32 i, j;
+ 	INT32 num;
+-	CHAR8 str[10];
++	UINT16 newShadeLevels[16][3];
+ 	if( gfLoadShadeTablesFromTextFile )
+ 	{
+ 		fp = fopen( "ShadeTables.txt", "r" );
+@@ -174,12 +195,16 @@
+ 			{
+ 				for( j = 0; j < 3; j++ )
+ 				{
+-					fscanf( fp, "%s", str );
+-					sscanf( str, "%d", &num );
+-					gusShadeLevels[i][j] = (UINT16)num;
++					if ( fscanf( fp, "%d", &num ) != 1 || num < 0 || num > UINT16_MAX )
++					{
++						fclose( fp );
++						return;
++					}
++					newShadeLevels[ i ][ j ] = (UINT16)num;
+ 				}
+ 			}
+ 			fclose( fp );
++			memcpy( gusShadeLevels, newShadeLevels, sizeof( gusShadeLevels ) );
+ 		}
+ 	}
+ }
+@@ -1271,7 +1296,7 @@
  				else
  					pShadowNode = gpWorldLevelData[ sNewGridNo ].pShadowHead;
  				if(pShadowNode != NULL)				{
@@ -33621,7 +35347,7 @@
  				}
  			}
  		}
-@@ -3094,10 +3105,10 @@
+@@ -3094,10 +3119,10 @@
  
  			//Kris:	added map boundary checking!!!
  			if(LightRevealWall(
@@ -33636,7 +35362,7 @@
  				))
  			{
  				uiCount=LightFindNextRay(0, uiCount);
-@@ -3202,10 +3213,10 @@
+@@ -3202,10 +3227,10 @@
              // Same boundary clamp LightRevealWall's caller got from Kris (line 2411); unclamped
              // coords wrap through MAPROWCOLTOPOS and write gpWorldLevelData out of bounds
              if ( LightWhiteTile(
@@ -33651,7 +35377,7 @@
              {
                  uiCount = LightFindNextRay(gLightDebugSelection, uiCount);
                  SetRenderFlags(RENDER_FLAG_MARKED);
-@@ -3345,10 +3356,10 @@
+@@ -3345,10 +3370,10 @@
  			pLight=pLightList[0]+(usNodeIndex&(~LIGHT_BACKLIGHT));
  			//Kris:	added map boundary checking!!!
  			if(LightHideWall(
@@ -35457,7 +37183,7 @@
  BOOLEAN SetMusicMode(UINT8 ubMusicMode);
 --- a/Utils/PopUpBox.cpp
 +++ b/Utils/PopUpBox.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Utils/PopUpBox.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -35468,10 +37194,56 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Utils/PopUpBox.cpp
++ * Native Linux source/build/test adaptations captured in the accepted ownership and bounds checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include "PopUpBox.h"
  #include "sysutil.h"
  
-@@ -1639,8 +1649,8 @@
+@@ -386,7 +406,10 @@
+ 
+ 	pLocalString = (STR16)MemAlloc( (wcslen( pString ) + 1) * sizeof( CHAR16 ) );
+ 	if ( pLocalString == NULL )
+-		return;
++	{
++		MemFree( pStringSt );
++		return;
++	}
+ 
+ 	wcscpy( pLocalString, pString );
+ 
+@@ -435,7 +458,10 @@
+ 
+ 	pLocalString = (STR16)MemAlloc( (wcslen( pString ) + 1) * sizeof( CHAR16 ) );
+ 	if ( pLocalString == NULL )
+-		return;
++	{
++		MemFree( pStringSt );
++		return;
++	}
+ 
+ 	wcscpy( pLocalString, pString );
+ 
+@@ -484,7 +510,10 @@
+ 
+ 	pLocalString = (STR16)MemAlloc( (wcslen( pString ) + 1) * sizeof( CHAR16 ) );
+ 	if ( pLocalString == NULL )
+-		return;
++	{
++		MemFree( pStringSt );
++		return;
++	}
+ 
+ 	wcscpy( pLocalString, pString );
+ 
+@@ -1639,8 +1668,8 @@
  	}
  
  	// Flugente we shouldn't have added more popup options than we can display anyway, but I have no idea where to stop that, so at least we can fix this
@@ -36819,7 +38591,7 @@
  BOOLEAN IfWin95(void);
 --- a/Utils/WordWrap.cpp
 +++ b/Utils/WordWrap.cpp
-@@ -1,4 +1,14 @@
+@@ -1,4 +1,24 @@
 -﻿	#include "WordWrap.h"
 +﻿/*
 + * P710 native snapshot update: Utils/WordWrap.cpp
@@ -36831,11 +38603,262 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Utils/WordWrap.cpp
++ * Native Linux source/build/test adaptations captured in the accepted stream-loader and word-wrap ownership checkpoint dated 2026-11-17.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-17.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +	#include "WordWrap.h"
  	#include "sgp.h"
  	#include "Render Dirty.h"
  	#include "Font Control.h"
-@@ -384,9 +394,13 @@
+@@ -12,6 +32,41 @@
+ 
+ BOOLEAN	gfUseSingleCharWordsForWordWrap = FALSE;
+ 
++static BOOLEAN AppendWrappedString( WRAPPED_STRING *pFirstWrappedString, const CHAR16 *pString )
++{
++	WRAPPED_STRING *pWrappedString;
++	WRAPPED_STRING *pNewString;
++
++	if ( pFirstWrappedString == NULL || pString == NULL )
++	{
++		return( FALSE );
++	}
++
++	pWrappedString = pFirstWrappedString;
++	while ( pWrappedString->pNextWrappedString != NULL )
++	{
++		pWrappedString = pWrappedString->pNextWrappedString;
++	}
++
++	pNewString = (WRAPPED_STRING *) MemAlloc( sizeof( WRAPPED_STRING ) );
++	if ( pNewString == NULL )
++	{
++		return( FALSE );
++	}
++
++	pNewString->sString = (STR16) MemAlloc( ( wcslen( pString ) + 2 ) * sizeof( CHAR16 ) );
++	if ( pNewString->sString == NULL )
++	{
++		MemFree( pNewString );
++		return( FALSE );
++	}
++
++	wcscpy( pNewString->sString, pString );
++	pNewString->pNextWrappedString = NULL;
++	pWrappedString->pNextWrappedString = pNewString;
++	return( TRUE );
++}
++
+ 
+ void UseSingleCharWordsForWordWrap( BOOLEAN fUseSingleCharWords )
+ {
+@@ -22,7 +77,6 @@
+ WRAPPED_STRING *LineWrapForSingleCharWords(INT32 iFont, UINT16 usLineWidthPixels, UINT16 *pusLineWidthIfWordIsWiderThenWidth, STR16 pString, ...)
+ {
+ 	WRAPPED_STRING FirstWrappedString;
+-	WRAPPED_STRING *pWrappedString = NULL;
+ 	CHAR16					TempString[1024];
+ //	CHAR16		 pNullString[2];
+ 	INT16						usCurIndex, usEndIndex, usDestIndex;
+@@ -39,12 +93,14 @@
+ //	pNullString[0]=L' ';
+ //	pNullString[1]=0;
+ 
++	if ( pusLineWidthIfWordIsWiderThenWidth == NULL || pString == NULL )
++	{
++		return( NULL );
++	}
++
+ 	memset(&FirstWrappedString, 0, sizeof(WRAPPED_STRING) );
+ 
+ 	*pusLineWidthIfWordIsWiderThenWidth = usLineWidthPixels;
+-
+-	if(pString == NULL)
+-		return(FALSE);
+ 
+ 	va_start(argptr, pString);			// Set up variable argument pointer
+ 	vswprintf(TempString, pString, argptr);	// process string (get output str)
+@@ -74,19 +130,11 @@
+ 		//If we are at the end of the string
+ 		if(TempString[ usCurIndex	] == 0)
+ 		{
+-			//get to next WrappedString structure
+-			pWrappedString = &FirstWrappedString;
+-			while(pWrappedString->pNextWrappedString != NULL)
+-				pWrappedString = pWrappedString->pNextWrappedString;
+-
+-			//allocate memory for the string
+-			pWrappedString->pNextWrappedString = (WRAPPED_STRING *) MemAlloc( sizeof(WRAPPED_STRING) );
+-			pWrappedString->pNextWrappedString->sString = (STR16) MemAlloc( (wcslen(DestString) +2 )* sizeof(CHAR16) );
+-			if( pWrappedString->pNextWrappedString->sString == NULL)
++			if ( !AppendWrappedString( &FirstWrappedString, DestString ) )
++			{
++				DeleteWrappedString( FirstWrappedString.pNextWrappedString );
+ 				return (NULL);
+-
+-			wcscpy(pWrappedString->pNextWrappedString->sString, DestString);
+-			pWrappedString->pNextWrappedString->pNextWrappedString = NULL;
++			}
+ 
+ 			return(FirstWrappedString.pNextWrappedString);
+ 		}
+@@ -103,18 +151,11 @@
+ 			//End the current line
+ 			DestString[ usDestIndex + 1 ] = '\0';
+ 
+-			//get to next WrappedString structure
+-			pWrappedString = &FirstWrappedString;
+-			while(pWrappedString->pNextWrappedString != NULL)
+-				pWrappedString = pWrappedString->pNextWrappedString;
+-
+-			//allocate memory for the string
+-			pWrappedString->pNextWrappedString = (WRAPPED_STRING *) MemAlloc(sizeof(WRAPPED_STRING));
+-			pWrappedString->pNextWrappedString->sString = (STR16) MemAlloc((wcslen(DestString) +2 )* sizeof(CHAR16) );
+-
+-			//Copy the string into the new struct
+-			wcscpy(pWrappedString->pNextWrappedString->sString, DestString);
+-			pWrappedString->pNextWrappedString->pNextWrappedString = NULL;
++			if ( !AppendWrappedString( &FirstWrappedString, DestString ) )
++			{
++				DeleteWrappedString( FirstWrappedString.pNextWrappedString );
++				return( NULL );
++			}
+ 
+ 			fNewLine = FALSE;
+ 
+@@ -139,7 +180,6 @@
+ WRAPPED_STRING *LineWrap(INT32 iFont, UINT16 usLineWidthPixels, UINT16 *pusLineWidthIfWordIsWiderThenWidth, STR16 pString, ...)
+ {
+ 	WRAPPED_STRING FirstWrappedString;
+-	WRAPPED_STRING *pWrappedString = NULL;
+ 	CHAR16					TempString[1024];
+ 	CHAR16		 pNullString[2];
+ 	INT16					usCurIndex, usEndIndex, usDestIndex, usLastMaxWidthIndex;
+@@ -153,6 +193,12 @@
+ 	BOOLEAN					fTheStringIsToLong=FALSE;
+ 	INT32 iCounter=0;
+ 	INT32 iErrorCount = 0;
++
++	if ( pusLineWidthIfWordIsWiderThenWidth == NULL || pString == NULL )
++	{
++		return( NULL );
++	}
++
+ 	pNullString[0]=L' ';
+ 	pNullString[1]=0;
+ 
+@@ -162,11 +208,6 @@
+ 
+ 	*pusLineWidthIfWordIsWiderThenWidth = usLineWidthPixels;
+ 
+-	if(pString == NULL)
+-	{
+-		DebugMsg (TOPIC_JA2,DBG_LEVEL_3,String("LineWrap: done"));
+-		return(FALSE);
+-	}
+ 	va_start(argptr, pString);			// Set up variable argument pointer
+ 	vswprintf(TempString, pString, argptr);	// process string (get output str)
+ 	va_end(argptr);
+@@ -204,22 +245,12 @@
+ 		//      NEWLINE_CHAR "±" is only used to handle Chinese ITMES.XML file.
+ 		if (TempString[ usCurIndex ] == 0 && !fNewLine) 
+ 		{
+-			//get to next WrappedString structure
+-			pWrappedString = &FirstWrappedString;
+-			while(pWrappedString->pNextWrappedString != NULL)
+-				pWrappedString = pWrappedString->pNextWrappedString;
+-
+-			//allocate memory for the string
+-			pWrappedString->pNextWrappedString = (WRAPPED_STRING *) MemAlloc( sizeof(WRAPPED_STRING) );
+-			pWrappedString->pNextWrappedString->sString = (STR16) MemAlloc( (wcslen(DestString) +2 )* sizeof(CHAR16) );
+-			if( pWrappedString->pNextWrappedString->sString == NULL)
++			if ( !AppendWrappedString( &FirstWrappedString, DestString ) )
+ 			{
+ 				DebugMsg (TOPIC_JA2,DBG_LEVEL_3,String("LineWrap: done"));
+-
++				DeleteWrappedString( FirstWrappedString.pNextWrappedString );
+ 				return (NULL);
+ 			}
+-			wcscpy(pWrappedString->pNextWrappedString->sString, DestString);
+-			pWrappedString->pNextWrappedString->pNextWrappedString = NULL;
+ 
+ 			DebugMsg (TOPIC_JA2,DBG_LEVEL_3,String("LineWrap: done"));
+ 
+@@ -308,24 +339,14 @@
+ 				DestString[usEndIndex] = 0;
+ 			} //Juqi: endif
+ 
+-			//get to next WrappedString structure
+-			pWrappedString = &FirstWrappedString;
+-			while(pWrappedString->pNextWrappedString != NULL)
+-				pWrappedString = pWrappedString->pNextWrappedString;
+-
+ 			if( wcslen(DestString) != 0 )
+ 			{
+-				//allocate memory for the string
+-				pWrappedString->pNextWrappedString = (WRAPPED_STRING *) MemAlloc( sizeof(WRAPPED_STRING) );
+-				pWrappedString->pNextWrappedString->sString = (STR16) MemAlloc( (wcslen(DestString) +2 )* sizeof(CHAR16) );
+-				if( pWrappedString->pNextWrappedString->sString == NULL)
++				if ( !AppendWrappedString( &FirstWrappedString, DestString ) )
+ 				{
+ 					DebugMsg (TOPIC_JA2,DBG_LEVEL_3,String("LineWrap: done"));
+-
++					DeleteWrappedString( FirstWrappedString.pNextWrappedString );
+ 					return (NULL);
+ 				}
+-				wcscpy(pWrappedString->pNextWrappedString->sString, DestString);
+-				pWrappedString->pNextWrappedString->pNextWrappedString = NULL;
+ 
+ 				usCurrentWidthPixels =0;
+ 				usDestIndex = 0;
+@@ -351,30 +372,18 @@
+ 						iCounter++;
+ 					}
+ 
+-					//get to next WrappedString structure
+-					pWrappedString = &FirstWrappedString;
+-					while(pWrappedString->pNextWrappedString != NULL)
+-						pWrappedString = pWrappedString->pNextWrappedString;
+-
+-					//allocate memory for the string
+-					pWrappedString->pNextWrappedString = (WRAPPED_STRING *) MemAlloc( sizeof(WRAPPED_STRING) );
+-					pWrappedString->pNextWrappedString->sString = (STR16) MemAlloc( (wcslen(DestString) + 2) * sizeof(CHAR16) );
+-					if( pWrappedString->pNextWrappedString->sString == NULL)
++					if ( !AppendWrappedString( &FirstWrappedString, DestString ) )
++					{
++						DeleteWrappedString( FirstWrappedString.pNextWrappedString );
+ 						return (NULL);
+-
+-					wcscpy(pWrappedString->pNextWrappedString->sString, DestString);
+-					pWrappedString->pNextWrappedString->pNextWrappedString = NULL;
++					}
+ 					if(fNewLine)
+ 					{
+-					pWrappedString = &FirstWrappedString;
+-					while(pWrappedString->pNextWrappedString != NULL)
+-						pWrappedString = pWrappedString->pNextWrappedString;
+-
+-					//allocate memory for the string
+-					pWrappedString->pNextWrappedString = (WRAPPED_STRING *) MemAlloc(sizeof(WRAPPED_STRING));
+-					pWrappedString->pNextWrappedString->sString = (STR16) MemAlloc((wcslen(pNullString) +2 )* sizeof(CHAR16) );
+-					wcscpy(pWrappedString->pNextWrappedString->sString, pNullString);
+-					pWrappedString->pNextWrappedString->pNextWrappedString = NULL;
++						if ( !AppendWrappedString( &FirstWrappedString, pNullString ) )
++						{
++							DeleteWrappedString( FirstWrappedString.pNextWrappedString );
++							return( NULL );
++						}
+ 					}
+ 
+ 					fDone = TRUE;
+@@ -384,9 +393,13 @@
  			}
  			else
  			{
@@ -36851,7 +38874,7 @@
  
  				DebugMsg( TOPIC_JA2, DBG_LEVEL_3, zText );
  
-@@ -2053,6 +2067,31 @@
+@@ -2053,6 +2066,31 @@
  	return ( CurrentRecord );
  }
  
@@ -36883,7 +38906,7 @@
  BOOLEAN ReduceStringLength( STR16 pString, UINT32 uiWidthToFitIn, INT32 iFont )
  {
  	CHAR16			OneChar[2];
-@@ -2122,3 +2161,5 @@
+@@ -2122,3 +2160,5 @@
  
  	return( TRUE );
  }

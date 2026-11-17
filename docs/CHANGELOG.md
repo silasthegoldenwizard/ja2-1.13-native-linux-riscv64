@@ -1,5 +1,57 @@
 # Changes for the native Linux source preview
 
+## November 17 review corrections
+
+- Keep save-header requests page-relative while filenames retain their absolute slot.
+- Invalidate only the bad preflight slot and redraw without restarting the campaign.
+- Validate negative agent selections before comparing a widened index with the roster size.
+- Add matching production-linked boundary tests and source guards.
+
+The corrected development source passed 166 native and 168 strict sanitizer tests.
+The focused lanes passed four tests each, including 48 save and 16 selection assertions.
+These results predate export. Exact source reconstruction and source checks remain separate.
+
+## November 17 stream and text ownership checkpoint
+
+- Validate animation-list and shade-table reads before publishing complete state.
+- Close streams and release unpublished allocations on every rejected input.
+- Validate word-wrap inputs and release complete partial lists after allocation failure.
+- Retain the cumulative runtime-state, popup, credits, postal, reinforcement, and tile-resource repairs.
+- Run the matching source-aware regressions in the required native check.
+
+The latest development suites passed 161 native tests and 163 strict sanitizer tests.
+Both game targets link. The 19 stream and 10 word-wrap checks failed before repair and pass afterward.
+These development results predate export. Exact reconstructed-source checks remain separate.
+See the [stream and text record](STREAM-TEXT-OWNERSHIP-20261117.md) for scope and limits.
+
+## November 17 schedule, mini-event, and facility checkpoint
+
+- Load schedule-save lists transactionally and discard serialized runtime links.
+- Define the optional one-argument mini-event withdrawal policy.
+- Validate facility modifier and risk entry points before table access.
+- Add production-linked schedule and facility regressions plus a source-aware mini-event guard.
+
+Development evidence: 151 native tests and 153 strict AddressSanitizer,
+UndefinedBehaviorSanitizer, and LeakSanitizer tests. Both game targets link, and
+fresh Clang 19 analysis finds no memory-safety or uninitialized-value issue in
+the changed paths. These results belong to the development source; exact
+exported-source checks are separate.
+See the [runtime-boundary record](RUNTIME-BOUNDARIES-20261117.md) for scope and limits.
+
+## November 17 runtime-boundary checkpoint
+
+- Make save-header loading transactional and reject truncated or unterminated headers.
+- Retire preserved-enemy restore state and invalid file handles on every early failure.
+- Initialize move-all, Lua buddy, melee-grid, buddy-quote, and trait-probability state before use.
+- Reject null quest text-entry input, bound its fixed-buffer copy, and report movement-cost output-open failures.
+- Extend the production-linked world-node deletion regression without changing the validated list implementation.
+
+Development evidence: 148 native tests and 150 strict AddressSanitizer,
+UndefinedBehaviorSanitizer, and LeakSanitizer tests. Fresh Clang 19 analysis of
+the changed Strategic units reports no bug. These results belong to the
+development source; exact exported-source checks are separate.
+See the [runtime-boundary record](RUNTIME-BOUNDARIES-20261117.md) for scope and limits.
+
 ## November 17 crash-hardening checkpoint
 
 - Harden native UI, inventory, dialogue, save/load, strategic, projectile, and multiplayer boundaries.

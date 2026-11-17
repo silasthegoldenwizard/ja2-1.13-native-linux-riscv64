@@ -46,6 +46,29 @@ jobs:
             cmake --build "$RUNNER_TEMP/build-$mode" --parallel 2
             ctest --test-dir "$RUNNER_TEMP/build-$mode" --output-on-failure --no-tests=error
           done
+      - name: Verify strategic runtime state guards
+        run: |
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_rebel_command_mission_guards.py" "$RUNNER_TEMP/p710/source"
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_loyalty_messagebox_state_guards.py" "$RUNNER_TEMP/p710/source"
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_autoresolve_aim_state_guards.py" "$RUNNER_TEMP/p710/source"
+      - name: Verify ownership and bounds regressions
+        run: |
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_popup_string_ownership.py" "$RUNNER_TEMP/p710/source"
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_credits_state_ownership.py" "$RUNNER_TEMP/p710/source"
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_postal_delivery_ownership.py" "$RUNNER_TEMP/p710/source"
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_reinforcement_menu_ownership.py" "$RUNNER_TEMP/p710/source"
+      - name: Verify tile-resource ownership regression
+        run: |
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_tile_resource_ownership.py" "$RUNNER_TEMP/p710/source"
+      - name: Verify stream-loader lifecycle regression
+        run: |
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_stream_loader_lifecycle.py" "$RUNNER_TEMP/p710/source"
+      - name: Verify word-wrap ownership regression
+        run: |
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_wordwrap_ownership.py" "$RUNNER_TEMP/p710/source"
+      - name: Verify save-load preflight regression
+        run: |
+          python3 -B "$RUNNER_TEMP/p710/source/tests/native-core/check_save_load_preflight_guards.py" "$RUNNER_TEMP/p710/source"
       - name: Verify attachment completion regression
         run: |
           for mode in debug sanitized; do
