@@ -178,6 +178,7 @@ Tactical/LogicalBodyTypes/PaletteDB.cpp
 Tactical/LogicalBodyTypes/PaletteTable.cpp
 Tactical/LogicalBodyTypes/Singleton.h
 Tactical/LogicalBodyTypes/SurfaceCache.h
+Tactical/Merc Hiring.cpp
 Tactical/Militia Control.cpp
 Tactical/Minigame.cpp
 Tactical/Morale.cpp
