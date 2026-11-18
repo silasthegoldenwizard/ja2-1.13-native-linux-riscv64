@@ -68,6 +68,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted multiplayer roster checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -90,12 +100,14 @@
 #include "TileDat.h"
 #include "Vehicles.h"
 #include "Weapons.h"
+#include "TeamTurns.h"
 #include "World Items.h"
 #include "strategic.h"
 #include "strategicmap.h"
 #include "worlddef.h"
 #include "worldman.h"
 #include "opplist.h"
+#include "connect.h"
 
 #include <cstring>
 #include <iostream>
@@ -133,6 +145,12 @@ extern void ObliterateSector();
 extern void HandleFortification();
 extern INT16 MakeAutomaticSurgeryOnAllPatients(SOLDIERTYPE* pDoctor);
 extern void HandleTacticalAmmoCrates(UINT8 magType);
+extern UINT8 numenemyLAN(UINT8 ubSectorX, UINT8 ubSectorY);
+extern void overide_callback(UINT8 ubResult);
+extern void end_interrupt(BOOLEAN fMarkInterruptOccurred);
+extern bool goahead;
+extern int numready;
+extern bool status;
 extern BOOLEAN CreateLevelNode(LEVELNODE**);
 extern UINT32 guiLevelNodes;
 
@@ -909,6 +927,152 @@ void runUpdatePublicSparseRosterScenario()
 	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
 }
 
+void runMultiplayerEnemyCountSparseRosterScenario()
+{
+	SOLDIERTYPE* previousOwners[36];
+	for (UINT16 slot = 120; slot <= 155; ++slot)
+	{
+		previousOwners[slot - 120] = MercPtrs[slot];
+		MercPtrs[slot] = nullptr;
+	}
+
+	SOLDIERTYPE enemy;
+	enemy.initialize();
+	enemy.ubID = SoldierID(121);
+	enemy.bTeam = ENEMY_TEAM;
+	enemy.bSide = 1;
+	enemy.bActive = TRUE;
+	enemy.bInSector = TRUE;
+	enemy.stats.bLife = 100;
+	enemy.aiData.bNeutral = FALSE;
+	MercPtrs[121] = &enemy;
+
+	check(numenemyLAN(9, 1) == 1,
+	      "multiplayer enemy counting skips empty runtime slots");
+
+	for (UINT16 slot = 120; slot <= 155; ++slot)
+		MercPtrs[slot] = previousOwners[slot - 120];
+}
+
+void runMultiplayerStartBattleSparseRosterScenario()
+{
+	const bool previousIsClient = is_client;
+	const bool previousAllowLaptop = allowlaptop;
+	const bool previousGameStarted = is_game_started;
+	const bool previousGoAhead = goahead;
+	const int previousNumReady = numready;
+	const bool previousStatus = status;
+	const UINT8 previousPlayer = gbPlayerNum;
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+	GROUP* const previousGroupList = gpGroupList;
+
+	SOLDIERTYPE soldier;
+	soldier.initialize();
+	soldier.ubID = SoldierID(1);
+	soldier.bTeam = OUR_TEAM;
+	soldier.bActive = TRUE;
+	soldier.stats.bLife = 100;
+	soldier.ubGroupID = 255;
+
+	is_client = true;
+	allowlaptop = true;
+	is_game_started = false;
+	goahead = true;
+	numready = 17;
+	status = true;
+	gbPlayerNum = OUR_TEAM;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(0);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(1);
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &soldier;
+	gpGroupList = nullptr;
+
+	start_battle();
+
+	check(!goahead,
+	      "multiplayer battle start consumes the ready signal after an empty first slot");
+	check(numready == 0 && !status,
+	      "multiplayer battle start reaches the ready-state reset with a sparse roster");
+
+	gpGroupList = previousGroupList;
+	MercPtrs[1] = previousOwner1;
+	MercPtrs[0] = previousOwner0;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+	gbPlayerNum = previousPlayer;
+	status = previousStatus;
+	numready = previousNumReady;
+	goahead = previousGoAhead;
+	is_game_started = previousGameStarted;
+	allowlaptop = previousAllowLaptop;
+	is_client = previousIsClient;
+}
+
+void runMultiplayerOverrideSparseRosterScenario()
+{
+	const bool previousIsServer = is_server;
+	const bool previousGoAhead = goahead;
+	const int previousNumReady = numready;
+	const bool previousStatus = status;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+	GROUP* const previousGroupList = gpGroupList;
+
+	SOLDIERTYPE soldier;
+	soldier.initialize();
+	soldier.ubID = SoldierID(1);
+	soldier.bActive = TRUE;
+	soldier.ubGroupID = 255;
+
+	is_server = true;
+	goahead = true;
+	numready = 17;
+	status = true;
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &soldier;
+	gpGroupList = nullptr;
+
+	overide_callback(2);
+
+	check(!goahead && numready == 0 && !status,
+	      "multiplayer override tolerates an empty first slot and a missing group");
+
+	gpGroupList = previousGroupList;
+	MercPtrs[1] = previousOwner1;
+	MercPtrs[0] = previousOwner0;
+	status = previousStatus;
+	numready = previousNumReady;
+	goahead = previousGoAhead;
+	is_server = previousIsServer;
+}
+
+void runMultiplayerEndInterruptSparseRosterScenario()
+{
+	const UINT16 previousPersons = gubOutOfTurnPersons;
+	const UINT16 previousOrder0 = gubOutOfTurnOrder[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+
+	gubOutOfTurnPersons = 0;
+	gubOutOfTurnOrder[0] = 1;
+	MercPtrs[1] = nullptr;
+
+	end_interrupt(FALSE);
+	check(gubOutOfTurnPersons == 0,
+	      "multiplayer interrupt completion ignores a missing current owner");
+
+	gubOutOfTurnPersons = MAXMERCS;
+	end_interrupt(FALSE);
+	check(gubOutOfTurnPersons == MAXMERCS,
+	      "multiplayer interrupt completion rejects an out-of-range order index");
+
+	MercPtrs[1] = previousOwner1;
+	gubOutOfTurnOrder[0] = previousOrder0;
+	gubOutOfTurnPersons = previousPersons;
+}
+
 void runObliterateSectorScenario()
 {
 	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
@@ -1172,6 +1336,14 @@ int main(int argc, char** argv)
 		runRadioSightingsAllSparseRosterScenario();
 	else if (std::strcmp(argv[1], "update-public-sparse-roster") == 0)
 		runUpdatePublicSparseRosterScenario();
+	else if (std::strcmp(argv[1], "multiplayer-enemy-count-sparse-roster") == 0)
+		runMultiplayerEnemyCountSparseRosterScenario();
+	else if (std::strcmp(argv[1], "multiplayer-start-battle-sparse-roster") == 0)
+		runMultiplayerStartBattleSparseRosterScenario();
+	else if (std::strcmp(argv[1], "multiplayer-override-sparse-roster") == 0)
+		runMultiplayerOverrideSparseRosterScenario();
+	else if (std::strcmp(argv[1], "multiplayer-end-interrupt-sparse-roster") == 0)
+		runMultiplayerEndInterruptSparseRosterScenario();
 	else if (std::strcmp(argv[1], "obliterate-sector") == 0)
 		runObliterateSectorScenario();
 	else if (std::strcmp(argv[1], "vehicle-roster") == 0)

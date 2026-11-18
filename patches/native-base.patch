@@ -7972,7 +7972,7 @@
                      ai_index_to_factory_mapping_.back()->initialize();
 --- a/Multiplayer/client.cpp
 +++ b/Multiplayer/client.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Multiplayer/client.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -7993,10 +7993,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Multiplayer/client.cpp
++ * Native Linux source/build/test adaptations captured in the accepted multiplayer roster checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "Bullets.h"
  	#include <stdio.h>
  	#include <string.h>
-@@ -110,7 +130,11 @@
+@@ -110,7 +140,11 @@
  #include "transfer_rules.h"
  
  #include "Keys.h"
@@ -8008,7 +8018,7 @@
  #include "types.h"
  #include "connect.h"
  #include "message.h"
-@@ -520,6 +544,14 @@
+@@ -520,6 +554,14 @@
  	UINT32 uiPreRandomIndex; // send out our current pre-random index
  } disarm_struct;
  
@@ -8023,7 +8033,7 @@
  typedef struct
  {
  	INT32 sGridNo;
-@@ -538,7 +570,11 @@
+@@ -538,7 +580,11 @@
  	SoldierID	ubSoldierID;
  	UINT16		usExplosiveClassID;
  	INT16		sSubsequent;
@@ -8035,7 +8045,7 @@
  	INT16		sWoundAmt;
  	INT16		sBreathAmt;
  	SoldierID	ubAttackerID;
-@@ -547,6 +583,10 @@
+@@ -547,6 +593,10 @@
  	UINT32		uiDist;
  	UINT32		uiPreRandomIndex;
  } explosiondamage_struct;
@@ -8046,7 +8056,19 @@
  
  bullets_table bTable[11][50];
  
-@@ -1714,7 +1754,7 @@
+@@ -1260,6 +1310,11 @@
+ 	for ( cnt=120 ; cnt <= 155; cnt++ )
+ 	{
+ 		pSoldier = MercPtrs[cnt];
++		if ( pSoldier == NULL )
++		{
++			continue;
++		}
++
+ 		if ( pSoldier->bActive && pSoldier->bInSector && pSoldier->stats.bLife > 0 )
+ 		{
+ 			if ( !pSoldier->aiData.bNeutral && (pSoldier->bSide != 0 ) )
+@@ -1714,22 +1769,29 @@
  			numready=0;
  
  			// Find first active soldier. This is needed, because if the soldier is dismissed it does not belong to any group
@@ -8054,8 +8076,13 @@
 +			SOLDIERTYPE *pSoldier = NULL;
  			for (int i = 0; i <= 19; i++)
  			{
- 				if (MercPtrs[ i ]->bActive)
-@@ -1724,12 +1764,18 @@
+-				if (MercPtrs[ i ]->bActive)
++				SOLDIERTYPE* candidate = MercPtrs[i];
++				if (candidate != NULL && candidate->bActive)
+ 				{
+-					pSoldier = MercPtrs[i];
++					pSoldier = candidate;
+ 					break;
  				}
  			}
  
@@ -8078,7 +8105,7 @@
  			gpBattleGroup = pGroup;
  			gubPBSectorX = gpBattleGroup->ubSectorX;
  			gubPBSectorY = gpBattleGroup->ubSectorY;
-@@ -1742,11 +1788,12 @@
+@@ -1742,11 +1804,12 @@
  			UINT32	i;
  			for(i=0; i<4;i++)
  			{	
@@ -8094,7 +8121,59 @@
  					// OJW - 20090318 - fixed name copying bug with multiple games
  					CHAR16 full[255];
  					memset(full,0,sizeof(CHAR16)*255);
-@@ -3236,7 +3283,7 @@
+@@ -2125,7 +2188,22 @@
+ 
+ void end_interrupt ( BOOLEAN fMarkInterruptOccurred )
+ {
+-	SOLDIERTYPE * pSoldier = MercPtrs[(gubOutOfTurnOrder[gubOutOfTurnPersons])];
++	if (gubOutOfTurnPersons >= MAXMERCS)
++	{
++		return;
++	}
++
++	const UINT16 usSoldierID = gubOutOfTurnOrder[gubOutOfTurnPersons];
++	if (usSoldierID >= TOTAL_SOLDIERS)
++	{
++		return;
++	}
++
++	SOLDIERTYPE * pSoldier = MercPtrs[usSoldierID];
++	if (pSoldier == NULL)
++	{
++		return;
++	}
+ 
+ 	INT_STRUCT INT;
+ 	INT.ubID = pSoldier->ubID;
+@@ -2210,11 +2288,26 @@
+ 			goahead=0;
+ 			status=0;//reset
+ 			numready=0;
+-			SOLDIERTYPE *pSoldier = MercPtrs[ 0 ];
++			SOLDIERTYPE *pSoldier = NULL;
++			for (int i = 0; i <= 19; ++i)
++			{
++				SOLDIERTYPE* candidate = MercPtrs[i];
++				if (candidate != NULL && candidate->bActive)
++				{
++					pSoldier = candidate;
++					break;
++				}
++			}
++			if (pSoldier == NULL)
++				return;
++
+ 			UINT8 ubGroupID = pSoldier->ubGroupID;
+ 
+ 			GROUP *pGroup;
+ 			pGroup = GetGroup( ubGroupID ); 
++			if (pGroup == NULL)
++				return;
++
+ 			gpBattleGroup = pGroup;
+ 			gubPBSectorX = gpBattleGroup->ubSectorX;
+ 			gubPBSectorY = gpBattleGroup->ubSectorY;
+@@ -3236,7 +3329,7 @@
  		if ((pSoldier->bTeam == 1 && is_server) || IsOurSoldier(pSoldier))
  		{
  			// find the appropriate world bomb for the world item
@@ -8103,7 +8182,7 @@
  			UINT32 uiCount;
  			for(uiCount=0; uiCount < guiNumWorldBombs; uiCount++)
  			{
-@@ -3247,7 +3294,7 @@
+@@ -3247,7 +3340,7 @@
  				}
  			}
  
@@ -8112,7 +8191,7 @@
  			{
  				detonate_struct det;
  				det.ubID = ubID;
-@@ -3289,11 +3336,14 @@
+@@ -3289,11 +3382,14 @@
  
  void recieveDETONATEEXPLOSIVE (RPCParameters *rpcParameters)
  {
@@ -8128,7 +8207,7 @@
  	if (pSoldier != NULL)
  	{
  		// if explosive detonation didnt originate from this client then its need to be performed here
-@@ -3350,7 +3400,7 @@
+@@ -3350,7 +3446,7 @@
  		if ((pSoldier->bTeam == 1 && is_server) || IsOurSoldier(pSoldier))
  		{
  			// find the appropriate world bomb for the world item
@@ -8137,7 +8216,7 @@
  			UINT32 uiCount;
  			for(uiCount=0; uiCount < guiNumWorldBombs; uiCount++)
  			{
-@@ -3361,7 +3411,7 @@
+@@ -3361,7 +3457,7 @@
  				}
  			}
  
@@ -8146,7 +8225,7 @@
  			{
  				disarm_struct disarm;
  				disarm.ubID = ubID;
-@@ -3402,11 +3452,14 @@
+@@ -3402,11 +3498,14 @@
  
  void recieveDISARMEXPLOSIVE (RPCParameters *rpcParameters)
  {
@@ -8162,7 +8241,7 @@
  	if (pSoldier != NULL)
  	{
  		// if explosive disarm didnt originate from this client then its need to be performed here
-@@ -3735,14 +3788,15 @@
+@@ -3735,14 +3834,15 @@
  
  	BULLET * pBullet;
  
@@ -8182,7 +8261,7 @@
  
  	//add bullet to bullet table for translation
  	bTable[bTeam][net_iBullet].remote_id = net_iBullet;
-@@ -3770,7 +3824,7 @@
+@@ -3770,7 +3870,7 @@
  	pBullet->bEndCubesAboveLevelZ=netb->net_bullet.bEndCubesAboveLevelZ;
  	pBullet->iDistanceLimit=netb->net_bullet.iDistanceLimit;
  
@@ -8191,7 +8270,7 @@
  }
  
  void send_changestate (EV_S_CHANGESTATE * SChangeState)
-@@ -3944,10 +3998,23 @@
+@@ -3944,10 +4044,23 @@
  #endif
  }
  
@@ -8216,7 +8295,7 @@
  
  	SoldierID ubAttackerID;
  	if((nDeath->attacker_id >= ubID_prefix) && (nDeath->attacker_id < (ubID_prefix+6)))
-@@ -3955,11 +4022,11 @@
+@@ -3955,11 +4068,11 @@
  	else
  		ubAttackerID = nDeath->attacker_id;
  
@@ -8233,7 +8312,7 @@
  
  	if(pAttacker)
  	{
-@@ -3972,16 +4039,12 @@
+@@ -3972,16 +4085,12 @@
  			pA_bTeam=CLIENT_NUM;
  	}
  
@@ -8256,7 +8335,7 @@
  			
  	if(pSoldier->bActive)
  	{
-@@ -4002,8 +4065,8 @@
+@@ -4002,8 +4111,8 @@
  
  		if (pSoldier->bTeam==1)  
  			ScreenMsg( FONT_YELLOW, MSG_MPSYSTEM, MPClientMessage[67]);	
@@ -8267,7 +8346,7 @@
  	}
  	else
  	{
-@@ -4023,12 +4086,14 @@
+@@ -4023,12 +4132,14 @@
  	WideCharToMultiByte(CP_UTF8,0,pS_name,-1, s_name,10,NULL,NULL);
  	WideCharToMultiByte(CP_UTF8,0,pA_name,-1, a_name,10,NULL,NULL);
  	
@@ -8287,7 +8366,7 @@
  #endif
  }
  
-@@ -5120,13 +5185,25 @@
+@@ -5120,13 +5231,25 @@
  // Otherwise we want the 1st byte
  unsigned char GetPacketIdentifier(Packet *p)
  {

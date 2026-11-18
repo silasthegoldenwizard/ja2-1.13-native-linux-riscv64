@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 multiplayer roster checkpoint
+
+Skip empty roster slots when counting enemies and selecting a soldier for battle start and server override.
+Check the order index, soldier ID, and runtime owner before completing a multiplayer interrupt.
+
+Both development game targets linked. The development gates passed 250 native and 252 strict sanitizer tests.
+Live networked multiplayer, Windows, RISC-V, and full campaign validation remain open.
+
 ## November 18 UpdatePublic checkpoint
 
 Skip empty team slots when updating public opponent knowledge.
