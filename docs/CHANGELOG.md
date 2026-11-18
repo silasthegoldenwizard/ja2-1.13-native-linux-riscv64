@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 all-opponents radio checkpoint
+
+Skip empty roster slots when reporting sightings for all opponents.
+Add a production-linked regression for an empty first slot with a live opponent in a later slot.
+
+Both development game targets linked. The development gates passed 245 native and 247 strict sanitizer tests.
+These results include 14 X11 contracts in each lane. Fresh Windows, RISC-V, and full campaign validation remain open.
+
 ## November 18 panel and radio checkpoint
 
 Protect player panel updates and radio sightings when roster slots are empty.
