@@ -33271,7 +33271,7 @@
  	{
 --- a/Tactical/Vehicles.cpp
 +++ b/Tactical/Vehicles.cpp
-@@ -1,3 +1,36 @@
+@@ -1,3 +1,46 @@
 +/*
 + * P710 native snapshot update: Tactical/Vehicles.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -33302,13 +33302,23 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Vehicles.cpp
++ * Native Linux source/build/test adaptations captured in the accepted vehicle roster checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#if !defined(_WIN32)
 +#include <cstdint>
 +#endif
  	#include "Vehicles.h"
  	#include "Strategic Pathing.h"
  	#include "Assignments.h"
-@@ -224,7 +257,6 @@
+@@ -224,7 +267,6 @@
  	// how many vehicles are there?
  	INT32 iVehicleIdValue = -1;
  	INT32 iCounter = 0, iCount = 0;
@@ -33316,7 +33326,7 @@
  	BOOLEAN fFoundEmpty = FALSE;
  	GROUP *pGroup;
  
-@@ -251,10 +283,13 @@
+@@ -251,10 +293,13 @@
  
  	if( iCount == 0 )
  	{
@@ -33332,7 +33342,7 @@
  
  		ubNumberOfVehicles = 1;
  		iVehicleIdValue		= 0;
-@@ -264,22 +299,12 @@
+@@ -264,22 +309,12 @@
  	{
  
  		// no empty slot found, need to realloc
@@ -33361,7 +33371,7 @@
  
  		// now get the index value
  		iVehicleIdValue = ubNumberOfVehicles;
-@@ -402,8 +427,8 @@
+@@ -402,8 +437,8 @@
  
  		MemFree( pVehicleList );
  		pVehicleList = NULL;
@@ -33372,7 +33382,20 @@
  
  /*
  	// empty out the vehicle list
-@@ -2356,6 +2381,11 @@
+@@ -487,7 +522,11 @@
+ 	//CHRISL: Get number of vehicles currently in player team
+ 	for(int x = 0; x < giMAXIMUM_NUMBER_OF_PLAYER_SLOTS; x++)
+ 	{
+-		if(MercPtrs[x]->bTeam == OUR_TEAM && (MercPtrs[x]->flags.uiStatusFlags & SOLDIER_VEHICLE) && MercPtrs[x]->bActive == TRUE)
++		SOLDIERTYPE* pTeamSoldier = NULL;
++		if (!GetSoldier(&pTeamSoldier, SoldierID(x)))
++			continue;
++
++		if(pTeamSoldier->bTeam == OUR_TEAM && (pTeamSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE))
+ 			vCount ++;
+ 	}
+ 
+@@ -2356,6 +2395,11 @@
  	PathSt* pPath = NULL;
  	UINT8 ubPassengerCnt = 0;
  	PathSt* pTempPath;
@@ -33384,7 +33407,7 @@
  
  	//Clear out th vehicle list
  	ClearOutVehicleList();
-@@ -2363,7 +2393,7 @@
+@@ -2363,7 +2407,7 @@
  	//Load the number of elements
  	if (!LoadDataFromBuffer(&ubNumberOfVehicles, *ppBuffer, sizeof(UINT8), "VehicleInformation"))
  	{
@@ -33393,7 +33416,7 @@
  	}
  
  	if ( ubNumberOfVehicles != 0 )
-@@ -2371,7 +2401,7 @@
+@@ -2371,7 +2415,7 @@
  		//allocate memory to hold the vehicle list
  		pVehicleList = (VEHICLETYPE*)MemAlloc(sizeof(VEHICLETYPE) * ubNumberOfVehicles);
  		if ( pVehicleList == NULL )
@@ -33402,7 +33425,7 @@
  		memset(pVehicleList, 0, sizeof(VEHICLETYPE) * ubNumberOfVehicles);
  
  
-@@ -2382,13 +2412,21 @@
+@@ -2382,13 +2426,21 @@
  			{
  				break;
  			}
@@ -33429,7 +33452,7 @@
  
  				//
  				// Build the passenger list
-@@ -2403,7 +2441,11 @@
+@@ -2403,7 +2455,11 @@
  						{
  							// ! The id of the soldier was saved in the passenger pointer.	The passenger pointer is converted back
  							// ! to a UINT8 so we can get the REAL pointer to the soldier.
@@ -33441,7 +33464,7 @@
  						}
  					}
  					else
-@@ -2412,7 +2454,11 @@
+@@ -2412,7 +2468,11 @@
  						{
  							// ! The id of the soldier was saved in the passenger pointer.	The passenger pointer is converted back
  							// ! to a UINT8 so we can get the REAL pointer to the soldier.
@@ -33453,7 +33476,7 @@
  						}
  						else
  						{
-@@ -2423,7 +2469,11 @@
+@@ -2423,7 +2483,11 @@
  
  
  				//Load the number of nodes
@@ -33466,7 +33489,7 @@
  
  				if ( uiTotalNodeCount != 0 )
  				{
-@@ -2437,11 +2487,15 @@
+@@ -2437,11 +2501,15 @@
  						//allocate memory to hold the vehicle path
  						pTempPath = (PathSt*)MemAlloc(sizeof(PathSt));
  						if ( pTempPath == NULL )
@@ -33484,7 +33507,7 @@
  
  
  						//
-@@ -2483,7 +2537,7 @@
+@@ -2483,7 +2551,7 @@
  
  	if ( gfBufferLoadFailed )
  	{
@@ -33493,7 +33516,7 @@
  	}
  	return(TRUE);
  }
-@@ -2883,7 +2937,11 @@
+@@ -2883,7 +2951,11 @@
  	for( SoldierID id = gTacticalStatus.Team[ OUR_TEAM ].bFirstID; id <= gTacticalStatus.Team[ OUR_TEAM ].bLastID; ++id )
  	{
  		// get the current soldier

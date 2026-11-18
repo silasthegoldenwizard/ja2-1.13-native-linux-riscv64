@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted vehicle roster checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -21,6 +31,7 @@
 #include "Campaign.h"
 #include "Game Clock.h"
 #include "Soldier Add.h"
+#include "Vehicles.h"
 #include "strategic.h"
 #include "strategicmap.h"
 
@@ -627,6 +638,33 @@ void runObliterateSectorScenario()
 	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
 	check(true, "sector obliteration ignores empty non-player slots");
 }
+
+void runVehicleRosterScenario()
+{
+	VEHICLETYPE vehicle{};
+	vehicle.fValid = TRUE;
+	vehicle.ubVehicleType = 0;
+
+	VEHICLETYPE* const previousVehicles = pVehicleList;
+	const UINT8 previousVehicleCount = ubNumberOfVehicles;
+	SOLDIERTYPE* const previousOwner = MercPtrs[0];
+
+	SOLDIERTYPE passenger;
+	passenger.initialize();
+	passenger.bTeam = OUR_TEAM;
+	vehicle.pPassengers[0] = &passenger;
+
+	pVehicleList = &vehicle;
+	ubNumberOfVehicles = 1;
+	MercPtrs[0] = nullptr;
+	check(AddSoldierToVehicle(&passenger, 0) == FALSE,
+	      "vehicle admission ignores an empty roster slot while checking capacity");
+
+	MercPtrs[0] = previousOwner;
+	ubNumberOfVehicles = previousVehicleCount;
+	pVehicleList = previousVehicles;
+}
+
 }
 
 int main(int argc, char** argv)
@@ -717,6 +755,8 @@ int main(int argc, char** argv)
 		runPersonnelRosterScenario();
 	else if (std::strcmp(argv[1], "obliterate-sector") == 0)
 		runObliterateSectorScenario();
+	else if (std::strcmp(argv[1], "vehicle-roster") == 0)
+		runVehicleRosterScenario();
 	else
 	{
 		std::cerr << "unknown mode: " << argv[1] << '\n';
