@@ -32683,7 +32683,7 @@
  				}
 --- a/Tactical/Turn Based Input.cpp
 +++ b/Tactical/Turn Based Input.cpp
-@@ -1,3 +1,49 @@
+@@ -1,3 +1,59 @@
 +/*
 + * P710 native snapshot update: Tactical/Turn Based Input.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -32724,6 +32724,16 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Turn Based Input.cpp
++ * Native Linux source/build/test adaptations captured in the accepted ammo crate roster checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <cerrno>
 +#include <climits>
 +#include <cwchar>
@@ -32733,7 +32743,7 @@
  #include <stdio.h>
  #include "stdlib.h"
  #include "DEBUG.H"
-@@ -1659,11 +1705,35 @@
+@@ -1659,11 +1715,35 @@
  		}
  }
  
@@ -32769,7 +32779,7 @@
  	}
  	memset(gszMsgBoxInputString, 0, sizeof(gszMsgBoxInputString));
  }
-@@ -1672,8 +1742,14 @@
+@@ -1672,8 +1752,14 @@
  {
  	if (ubResult == MSG_BOX_RETURN_OK && wcscmp(gszMsgBoxInputString,L"") > 0)
  	{
@@ -32784,7 +32794,7 @@
  
  	}
  	memset(gszMsgBoxInputString,0,sizeof(gszMsgBoxInputString));
-@@ -1683,8 +1759,17 @@
+@@ -1683,8 +1769,17 @@
  {
  	if ( ubResult == MSG_BOX_RETURN_OK && wcscmp(gszMsgBoxInputString, L"") > 0 )
  	{
@@ -32802,7 +32812,7 @@
  	}
  	memset(gszMsgBoxInputString, 0, sizeof(gszMsgBoxInputString));
  }
-@@ -1696,7 +1781,7 @@
+@@ -1696,7 +1791,7 @@
  {
  	InputAtom					InputEvent;
  	BOOLEAN						fKeyTaken = FALSE;
@@ -32811,7 +32821,7 @@
  	//SOLDIERTYPE				*pSoldier;
  	static BOOLEAN	fShifted = FALSE;
  	static BOOLEAN	fShifted2 = FALSE;
-@@ -1705,8 +1790,14 @@
+@@ -1705,8 +1800,14 @@
  	
  	CHAR16	zString[128]; 
  
@@ -32826,7 +32836,7 @@
  
  	GetMouseMapPos( &usMapPos );
  
-@@ -3393,8 +3484,14 @@
+@@ -3393,8 +3494,14 @@
  
  								if ( CHEATER_CHEAT_LEVEL( ) )
  								{
@@ -32842,7 +32852,7 @@
  										if ( pSoldier->bActive && pSoldier->stats.bLife > 0 )
  										{
  											// Get APs back...
-@@ -3601,8 +3698,13 @@
+@@ -3601,8 +3708,13 @@
  
  											CHAR16 whcarthing[100];
  
@@ -32856,7 +32866,7 @@
  
  											swprintf( zOutputString, L"Tileset %d: Tilesetname: %s tileindex: %d", giCurrentTilesetID, whcarthing, pStruct->pDBStructureRef->pDBStructure->usStructureNumber );
  											ScreenMsg( FONT_MCOLOR_LTGREEN, MSG_INTERFACE, zOutputString );
-@@ -4079,7 +4181,11 @@
+@@ -4079,7 +4191,11 @@
  				{
  					if ( INFORMATION_CHEAT_LEVEL( ) )
  					{
@@ -32868,7 +32878,7 @@
  					}
  				}
  				else
-@@ -4498,8 +4604,14 @@
+@@ -4498,8 +4614,14 @@
  						INT32 cnt;
  						SOLDIERTYPE *pSoldier;
  
@@ -32885,7 +32895,7 @@
  							if ( pSoldier->bActive && pSoldier->stats.bLife > 0 )
  							{
  								if (pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE)
-@@ -5407,8 +5519,12 @@
+@@ -5407,8 +5529,12 @@
  	ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_TESTVERSION, L"Obliterating Sector!" );
  #endif
  	const INT32 end = MAX_NUM_SOLDIERS;
@@ -32900,7 +32910,7 @@
  		if ( pTSoldier->bActive && !pTSoldier->aiData.bNeutral && (pTSoldier->bSide != gbPlayerNum ) )
  		{
  			//	ANITILE_PARAMS	AniParams;
-@@ -6977,15 +7093,16 @@
+@@ -6977,15 +7103,16 @@
  					// Bob: also empty out LBE items in sector inventory
  					if (gWorldItems[uiLoop].object.IsActiveLBE(x)) {
  						LBENODE * lbePtr = gWorldItems[uiLoop].object.GetLBEPointer(x);
@@ -32925,7 +32935,7 @@
  					}
  				
  				}
-@@ -7221,6 +7338,20 @@
+@@ -7221,6 +7348,20 @@
  	}
  }
  
@@ -32946,7 +32956,7 @@
  //silversurfer: this allows swapping of merc portraits in tactical screen using CTRL+LEFTARROW / CTRL+RIGHTARROW
  void SwapMercPortraits ( SOLDIERTYPE *pSoldier, INT8 bDirection )
  {
-@@ -7239,7 +7370,8 @@
+@@ -7239,7 +7380,8 @@
  	UINT8 ubGroupID = pSoldier->ubGroupID;
  	INT8 bOldPosition = GetTeamSlotFromPlayerID ( ubSourceMerc );
  	INT8 bNewPosition = bOldPosition + bDirection;
@@ -32956,7 +32966,7 @@
  
  	// anv: vehicle passengers are swapped differently
  	if( pSoldier->flags.uiStatusFlags & ( SOLDIER_DRIVER | SOLDIER_PASSENGER ) )
-@@ -7259,6 +7391,9 @@
+@@ -7259,6 +7401,9 @@
  		return;
  	}
  
@@ -32966,7 +32976,7 @@
  	// check if new position is occupied by another merc? we won't replace an empty slot
  	if ( gTeamPanel[ bNewPosition ].fOccupied && gTeamPanel[ bNewPosition ].ubID != NOBODY )
  	{
-@@ -7277,8 +7412,7 @@
+@@ -7277,8 +7422,7 @@
  		FACETYPE TempFace = gFacesData[ iSourceFace ];
  
  		// swap the data
@@ -32976,7 +32986,7 @@
  		// also swap face data, otherwise face gear, opp count etc won't update
  		gFacesData[ iSourceFace ] = gFacesData[ iTargetFace ];
  		gFacesData[ iTargetFace ] = TempFace;
-@@ -7954,7 +8088,7 @@
+@@ -7954,7 +8098,7 @@
  		SOLDIERTYPE *pTeamSoldier;
  		SoldierID 	bLoop;
  		UINT16		bullets;
@@ -32985,7 +32995,7 @@
  
  		// Search for soldier
  		for ( bLoop = gTacticalStatus.Team[gbPlayerNum].bFirstID; bLoop <= gTacticalStatus.Team[gbPlayerNum].bLastID; ++bLoop )
-@@ -7968,7 +8102,7 @@
+@@ -7968,7 +8112,7 @@
  				{
  					if ( (Item[pTeamSoldier->inv[bLoop2].usItem].usItemClass & (IC_GUN | IC_LAUNCHER)) )
  					{
@@ -32994,7 +33004,7 @@
  
  						UINT16 gunmagsize = GetMagSize( pGun );
  
-@@ -8009,6 +8143,52 @@
+@@ -8009,6 +8153,52 @@
  						if ( (*pGun)[0]->data.gun.ubGunShotsLeft < gunmagsize )
  						{
  							AutoReload( pTeamSoldier );
@@ -33047,7 +33057,7 @@
  						}
  					}
  				}
-@@ -8103,52 +8283,6 @@
+@@ -8103,52 +8293,6 @@
  								}
  							}
  						}
@@ -33100,7 +33110,7 @@
  					}
  				}
  			}
-@@ -8457,18 +8591,19 @@
+@@ -8457,18 +8601,19 @@
  	INT32		crateItem;
  	INT32		worldItem;
  	//UINT8		magType;
@@ -33122,6 +33132,29 @@
  			if(Item[gWorldItems[wItem].object.usItem].usItemClass == IC_AMMO && gWorldItems[wItem].bVisible == TRUE && gWorldItems[wItem].fExists && (gWorldItems[wItem].usFlags & WORLD_ITEM_REACHABLE) && !(gWorldItems[wItem].usFlags & WORLD_ITEM_ARMED_BOMB))
  			{
  				worldItem = gWorldItems[wItem].object.usItem;
+@@ -8512,14 +8657,18 @@
+ 					{
+ 						for(int loop=0; loop<(int)OUR_TEAM_SIZE_NO_VEHICLE; ++loop)
+ 						{
+-							if(MercPtrs[loop]->bActive && MercPtrs[loop]->bInSector)
++							SOLDIERTYPE* pTeamSoldier = NULL;
++							if (!GetSoldier(&pTeamSoldier, SoldierID(loop)))
++								continue;
++
++							if(pTeamSoldier->bInSector)
+ 							{
+-								UINT32 invsize = MercPtrs[loop]->inv.size();
++									UINT32 invsize = pTeamSoldier->inv.size();
+ 								for(UINT32 pocket=0; pocket < invsize; ++pocket)
+ 								{
+-									if(MercPtrs[loop]->inv[pocket].usItem == crateItem)
++										if(pTeamSoldier->inv[pocket].usItem == crateItem)
+ 									{
+-										DistributeStatus(&gWorldItems[wItem].object, &MercPtrs[loop]->inv[pocket], Magazine[Item[crateItem].ubClassIndex].ubMagSize);
++											DistributeStatus(&gWorldItems[wItem].object, &pTeamSoldier->inv[pocket], Magazine[Item[crateItem].ubClassIndex].ubMagSize);
+ 										if(gWorldItems[wItem].object.ubNumberOfObjects < 1)
+ 										{
+ 											mergeSuccessful = true;
 --- a/Tactical/UI Cursors.cpp
 +++ b/Tactical/UI Cursors.cpp
 @@ -1,3 +1,13 @@
