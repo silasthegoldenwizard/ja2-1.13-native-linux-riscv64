@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 vehicle roster checkpoint
+
+Skip empty player roster slots when counting vehicles for admission.
+Add a production-linked regression for a missing roster entry.
+
+Both development game targets linked. The development gates passed 239 native and 241 strict sanitizer tests.
+These results include 14 isolated X11 cases in each lane. Fresh Windows, RISC-V, and full campaign validation remain open.
+
 ## November 18 native checkpoint
 
 - Skip empty soldier slots in tactical and strategic team scans.
