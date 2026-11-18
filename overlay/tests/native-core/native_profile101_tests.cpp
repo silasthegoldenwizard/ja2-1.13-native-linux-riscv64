@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_profile101_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Authored Windows profile wire records through genuine original Load,
 // crypto/conversion/competence and production FileMan/bfVFS. No game assets.
 #include "soldier profile type.h"
@@ -141,6 +151,29 @@ void publicLoad(const Temp& t,int mode) {
     check(p.Load(&cursor,true,mode==1,mode!=0)&&cursor==reinterpret_cast<char*>(both.data()+1432),"buffer second716byte boundary");verify(p,2);
     check(static_cast<UINT8>(*cursor)==0xa5&&!gfBufferLoadFailed,"buffer canary and bounds status");
 }
+void legacyRecordAlignment() {
+    guiCurrentSaveGameVersion=110;
+    Bytes bytes(SIZEOF_MERCPROFILESTRUCT_POD+4096,0);
+    const std::size_t records=offsetof(MERCPROFILESTRUCT,usTotalDaysServed);
+    put16(bytes,records+0,11);
+    put16(bytes,records+2,22);
+    put16(bytes,records+4,333);
+    put16(bytes,records+6,222);
+    put16(bytes,records+8,44);
+    put16(bytes,records+10,55);
+    put16(bytes,records+12,0x6b5a);
+    BufferBounds bounds(bytes);
+    char* cursor=reinterpret_cast<char*>(bytes.data());
+    MERCPROFILESTRUCT profile;
+    (void)profile.Load(&cursor,false,false,false);
+    check(!gfBufferLoadFailed,"v110 profile alignment fixture stays inside its authored buffer");
+    check(profile.records.usKillsRegulars==11&&profile.records.usAssistsMercs==22&&
+          profile.records.usShotsFired==333&&profile.records.usShotsHit==222&&
+          profile.records.usBattlesTactical==44&&profile.records.usTimesWoundedShot==55,
+          "v110 loader consumes all six retired UINT16 record fields");
+    check(profile.usTotalDaysServed==0x6b5a,
+          "v110 loader preserves the field immediately after retired records");
+}
 void rejection(const Temp& t) {
     guiCurrentSaveGameVersion=0;
     for(unsigned length:{0u,59u,79u,351u,715u}) {
@@ -170,4 +203,4 @@ void prepare(const Temp& t) {
     for(unsigned at:{0u,60u})for(unsigned unit:{0xd800u,0xdc00u}){auto b=record(1);put16(b,at,unit);put16(b,at+2,'X');write(t.root/("invalid"+std::to_string(at)+"-"+std::to_string(unit)),encrypt(b,1));}
 }
 }
-int main(){try{Temp temp;prepare(temp);mount(temp.root);check(InitializeFileManager(nullptr),"real FileMan initializes");for(int mode=0;mode<3;++mode)publicLoad(temp,mode);rejection(temp);ShutdownFileManager();std::cout<<"profile101: "<<checks<<" checks passed; original engine Load/crypto/conversion/competence, synthetic wire only\n";return 0;}catch(const std::exception& e){ShutdownFileManager();std::cerr<<"profile101 failed at check "<<checks<<": "<<e.what()<<'\n';return 1;}}
+int main(){try{Temp temp;prepare(temp);mount(temp.root);check(InitializeFileManager(nullptr),"real FileMan initializes");for(int mode=0;mode<3;++mode)publicLoad(temp,mode);legacyRecordAlignment();rejection(temp);ShutdownFileManager();std::cout<<"profile101: "<<checks<<" checks passed; original engine Load/crypto/conversion/competence, synthetic wire only\n";return 0;}catch(const std::exception& e){ShutdownFileManager();std::cerr<<"profile101 failed at check "<<checks<<": "<<e.what()<<'\n';return 1;}}

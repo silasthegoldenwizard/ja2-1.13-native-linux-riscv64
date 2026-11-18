@@ -1,30 +1,30 @@
 {
-  "test_sha256": "fa6dd03bf2669db4101d46a5547da746f437569b54d9ccea35006a4416461777",
+  "test_sha256": "4f53eada53daeab500a699bd36ddad1cd19862898624c35ca6b163501f9241f3",
   "review_sha256": "964c37f680ceaab9cd77cff55de2f13d037efc7ab90da63feeb81b01bf3baeb0",
   "header_sha256": "375234e9c571393f3950c6208389ecee6498ef557947f32de17c09946e65eee7",
   "normalized_sources": {
-    "Tactical/Interface Items.cpp": "290424d80dabba5e5ce627b844ed54b3cfc316337f80b2611e3abceaa5e6913e",
+    "Tactical/Interface Items.cpp": "9f536e20b4429d971eaf8105aa4837d729a309fe79e4ed98e318dc57e763e5a7",
     "Tactical/Item Types.cpp": "94572dce6d806c04b56599e58b9252d227b1c517556ef9b2bb10e6cbb5c4719a"
   },
   "fragments": [
     {
       "name": "do_attachment",
       "source": "Tactical/Interface Items.cpp",
-      "first_line": 6272,
-      "bytes": 1129,
-      "sha256": "807ca96032793fbfee8c59682d775bd993bec67473ebc0490f5e1a4beb0a4637"
+      "first_line": 6289,
+      "bytes": 1942,
+      "sha256": "4a58fe73bbecf88fdc8f1d0068f6bc365f9fe6795aa0f5759ebb976718f5df5b"
     },
     {
       "name": "completion_before",
       "source": "Tactical/Interface Items.cpp",
-      "first_line": 6392,
+      "first_line": 6434,
       "bytes": 914,
       "sha256": "c25cecc1d26fb11466432233a3d09b66bb8b8dc1f6107e2b20906e127c0581eb"
     },
     {
       "name": "completion_fixed",
       "source": "Tactical/Interface Items.cpp",
-      "first_line": 6392,
+      "first_line": 6434,
       "bytes": 931,
       "sha256": "013e73c9b7171139a52a7c0fffb89713a19190ab25677920337c63b6b8cdf5cc"
     },

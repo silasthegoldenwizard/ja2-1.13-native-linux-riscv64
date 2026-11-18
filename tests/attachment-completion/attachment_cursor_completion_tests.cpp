@@ -292,7 +292,10 @@ void run(UINT32 flags, UINT8 count, Outcome selectedOutcome, unsigned repeats)
         // fixture. Do not catch it or replace it with a test-side check.
         complete();
 
-        std::vector<Event> expected{Attach};
+        // An empty cursor stops at the production guard before AttachObject.
+        std::vector<Event> expected;
+        if (priorCount > 0)
+            expected.push_back(Attach);
         if (cleared) {
             if (map) {
                 expected.push_back(MapEnd);

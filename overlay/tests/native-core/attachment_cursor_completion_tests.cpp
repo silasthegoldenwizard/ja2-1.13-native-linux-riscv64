@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/attachment_cursor_completion_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Completion-only regression. No game data is required.
 // AttachObject below supplies synthetic outcomes, not game attachment rules.
 // Generated includes retain current production statements and source line records.
@@ -25,13 +35,14 @@
 #include "attachment_object_methods.inc"
 
 namespace {
-void check(bool value)
+void check_impl(bool value, int line)
 {
     if (!value) {
-        std::fputs("FAIL attachment completion fixture\n", stderr);
+        std::fprintf(stderr, "FAIL attachment completion fixture at line %d\n", line);
         std::abort();
     }
 }
+#define check(value) check_impl((value), __LINE__)
 
 // These values select isolated branches. They are not game UI definitions.
 constexpr UINT32 INTERFACE_MAPSCREEN = 1;
@@ -280,6 +291,7 @@ void run(UINT32 flags, UINT8 count, Outcome selectedOutcome, unsigned repeats)
     for (unsigned iteration = 0; iteration < repeats; ++iteration) {
         check(gpItemPointer == &source);
         const UINT8 priorCount = source.ubNumberOfObjects;
+        const bool actionable = priorCount > 0;
         const bool success = selectedOutcome == Outcome::TransferOne;
         check(!success || priorCount > 0);
         const UINT8 remaining = static_cast<UINT8>(priorCount - (success ? 1 : 0));
@@ -295,9 +307,19 @@ void run(UINT32 flags, UINT8 count, Outcome selectedOutcome, unsigned repeats)
 
         // The retained API negative control reached the production null member
         // call here before the cursor-lifetime guard was applied.
+        check(gpItemDescObject != nullptr);
+        check(gpItemPointer != nullptr);
+        check(gpItemDescObject->exists());
+        check(gpItemPointer->exists() == actionable);
+        check(!gpItemDescObject->objectStack.empty());
+        check(!gpItemPointer->objectStack.empty());
+        check(1 < gpItemDescObject->ubNumberOfObjects);
+        check(1 < gpItemDescObject->objectStack.size());
         complete();
 
-        std::vector<Event> expected{Attach};
+        std::vector<Event> expected;
+        if (actionable)
+            expected.push_back(Attach);
         if (cleared) {
             if (map) {
                 expected.push_back(MapEnd);
@@ -324,6 +346,15 @@ void run(UINT32 flags, UINT8 count, Outcome selectedOutcome, unsigned repeats)
         expected.push_back(StatCoords);
         expected.push_back(Tooltips);
         expected.push_back(TooltipRegion);
+        if (events != expected) {
+            std::fputs("actual events:", stderr);
+            for (Event event : events)
+                std::fprintf(stderr, " %d", static_cast<int>(event));
+            std::fputs("\nexpected events:", stderr);
+            for (Event event : expected)
+                std::fprintf(stderr, " %d", static_cast<int>(event));
+            std::fputc('\n', stderr);
+        }
         check(events == expected);
         check(gpItemPointer == (cleared ? nullptr : &source));
         check(source.ubNumberOfObjects == remaining);

@@ -31,7 +31,7 @@ Release tags, release notes, and release assets use a separate publication step.
 
 ## Native component checks
 
-The `native` job reconstructs the 1592 declared source files from the pinned public base and this overlay.
+The `native` job reconstructs the 1625 declared source files from the pinned public base and this overlay.
 The existing CMake/CTest component lane builds production code with C++17 and Clang on Ubuntu 24.04.
 It runs seven normal tests and nine sanitizer tests, including the existing sanitizer diagnostic probes.
 VFS, image, SDL, FFmpeg, FreeType, RakNet, and full-game integration are outside this component lane.

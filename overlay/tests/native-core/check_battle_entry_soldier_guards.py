@@ -8,6 +8,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: tests/native-core/check_battle_entry_soldier_guards.py
+# Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-18.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 
 from pathlib import Path
 import re
@@ -179,11 +187,17 @@ def main() -> int:
         ),
         (
             bool(re.search(
-                r"if\s*\(\s*pTeamSoldier\s*&&\s*"
-                r"\(\s*pTeamSoldier->usSoldierFlagMask\s*&\s*SOLDIER_POW_PRISON\s*\)\s*\)",
+                r"if\s*\(\s*pTeamSoldier\s*&&\s*pTeamSoldier->bActive\s*&&\s*"
+                r"pTeamSoldier->bInSector\s*&&.*?"
+                r"pTeamSoldier->sSectorX\s*==\s*sMapX\s*&&.*?"
+                r"pTeamSoldier->sSectorY\s*==\s*sMapY\s*&&.*?"
+                r"pTeamSoldier->bSectorZ\s*==\s*sMapZ\s*\)\s*\{.*?"
+                r"if\s*\(\s*pTeamSoldier->usSoldierFlagMask\s*&\s*"
+                r"SOLDIER_POW_PRISON\s*\)",
                 prisoners,
+                re.DOTALL,
             )),
-            "prisoner counting dereferences an unresolved civilian slot",
+            "prisoner counting includes retired or out-of-sector civilian slots",
         ),
         (
             "RemoveSoldierNodeFromInitList( gSoldierInitHead );" in list_cleanup

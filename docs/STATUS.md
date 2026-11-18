@@ -1,8 +1,8 @@
 # Source update status
 
-Updated: November 17, 2026.
+Updated: November 18, 2026.
 
-This cumulative update adds accepted runtime-state, allocation-ownership, stream-loading, and word-wrap repairs to the native Linux source preview.
+The current native Linux source preview includes the [November 18 checkpoint](CHANGELOG.md#november-18-native-checkpoint).
 The release remains [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1).
 Its assets remain unchanged.
 
@@ -16,7 +16,7 @@ Its assets remain unchanged.
 - Retain the preceding crash-hardening, AI, save-compatibility, and attachment repairs.
 
 The [stream and text record](STREAM-TEXT-OWNERSHIP-20261117.md), [runtime-boundary record](RUNTIME-BOUNDARIES-20261117.md), and [crash-hardening record](CRASH-HARDENING-20261117.md) describe scope and limits.
-The latest development suites passed 166 native tests and 168 strict sanitizer tests.
+The latest development suites passed 238 native tests and 240 strict sanitizer tests.
 Both development game targets link.
 These results predate export. They do not establish a full exported-game build or complete gameplay acceptance.
 Earlier fuzz campaigns retain their recorded checkpoint scopes.

@@ -1,5 +1,7 @@
 Editor/XML_ActionItems.cpp
+Editor/editscreen.cpp
 Ja2/Credits.cpp
+Ja2/Fade Screen.cpp
 Ja2/FeaturesScreen.cpp
 Ja2/GameInitOptionsScreen.cpp
 Ja2/GameSettings.cpp
@@ -31,10 +33,12 @@ Ja2/jascreens.cpp
 Laptop/AimMembers.cpp
 Laptop/AimSort.cpp
 Laptop/BaseTable.cpp
+Laptop/BaseTable.h
 Laptop/BobbyR.cpp
 Laptop/BobbyRGuns.cpp
 Laptop/BobbyRGuns.h
 Laptop/BobbyRMailOrder.cpp
+Laptop/BobbyRShipments.cpp
 Laptop/BriefingRoom.cpp
 Laptop/BriefingRoomM.cpp
 Laptop/CampaignHistory_Summary.cpp
@@ -53,6 +57,7 @@ Laptop/IMP Minor Trait.cpp
 Laptop/IMP Personality Quiz.cpp
 Laptop/IMP Skill Trait.cpp
 Laptop/Intelmarket.cpp
+Laptop/Intelmarket.h
 Laptop/PMC.cpp
 Laptop/PostalService.cpp
 Laptop/PostalService.h
@@ -103,6 +108,7 @@ Strategic/MiniEvents.cpp
 Strategic/PreBattle Interface.cpp
 Strategic/Queen Command.cpp
 Strategic/Quest Debug System.cpp
+Strategic/Quests.cpp
 Strategic/Rebel Command.cpp
 Strategic/Scheduling.cpp
 Strategic/Scheduling.h
@@ -177,6 +183,7 @@ Tactical/Minigame.cpp
 Tactical/Morale.cpp
 Tactical/Overhead Types.h
 Tactical/Overhead.cpp
+Tactical/Overhead.h
 Tactical/PATHAI.cpp
 Tactical/Points.cpp
 Tactical/Rain.cpp
@@ -185,6 +192,7 @@ Tactical/Rotting Corpses.cpp
 Tactical/ShopKeeper Interface.cpp
 Tactical/SkillMenu.cpp
 Tactical/SkillMenu.h
+Tactical/Soldier Add.cpp
 Tactical/Soldier Ani.cpp
 Tactical/Soldier Control.cpp
 Tactical/Soldier Control.h
@@ -197,6 +205,7 @@ Tactical/Soldier Profile.cpp
 Tactical/SoldierTooltips.cpp
 Tactical/Spread Burst.cpp
 Tactical/Squads.cpp
+Tactical/Strategic Exit GUI.cpp
 Tactical/Tactical Save.cpp
 Tactical/TeamTurns.cpp
 Tactical/Turn Based Input.cpp
@@ -235,6 +244,8 @@ Tactical/XML_Taunts.cpp
 Tactical/XML_Vehicles.cpp
 Tactical/bullets.cpp
 Tactical/faces.h
+Tactical/fov.cpp
+Tactical/fov.h
 Tactical/interface Dialogue.h
 Tactical/opplist.cpp
 TacticalAI/AIMain.cpp
@@ -263,13 +274,18 @@ TileEngine/SmokeEffects.cpp
 TileEngine/SmokeEffects.h
 TileEngine/Tactical Placement GUI.cpp
 TileEngine/Tile Animation.cpp
+TileEngine/Tile Cache.h
 TileEngine/Tile Surface.cpp
+TileEngine/TileDat.cpp
+TileEngine/TileDat.h
 TileEngine/environment.cpp
 TileEngine/lighting.cpp
 TileEngine/overhead map.cpp
 TileEngine/renderworld.cpp
 TileEngine/renderworld.h
 TileEngine/structure.cpp
+TileEngine/tiledef.cpp
+TileEngine/tiledef.h
 TileEngine/worlddef.cpp
 TileEngine/worldman.cpp
 Utils/Animated ProgressBar.cpp
