@@ -7578,7 +7578,7 @@
  
 --- a/Laptop/laptop.cpp
 +++ b/Laptop/laptop.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Laptop/laptop.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -7589,11 +7589,21 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Laptop/laptop.cpp
++ * Native Linux source/build/test adaptations captured in the accepted laptop roster checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include "native_point.h"
  	#include "sgp.h"
  	#include "Utilities.h"
  	#include "WCheck.h"
-@@ -698,10 +709,16 @@
+@@ -698,10 +719,16 @@
  void GetLaptopKeyboardInput()
  {
  	InputAtom					InputEvent;
@@ -7612,7 +7622,7 @@
  
  	fTabHandled = FALSE;
  
-@@ -2409,7 +2426,7 @@
+@@ -2409,7 +2436,7 @@
  
  				uiCurrTime = GetJA2Clock();
  				iPercentage = (uiCurrTime-uiStartTime) * 100 / uiTimeRange;
@@ -7621,7 +7631,7 @@
  
  				iRealPercentage = iPercentage;
  
-@@ -3193,7 +3210,7 @@
+@@ -3193,7 +3220,7 @@
  
  					uiCurrTime = GetJA2Clock();
  					iPercentage = (uiCurrTime-uiStartTime) * 100 / uiTimeRange;
@@ -7630,7 +7640,7 @@
  					iPercentage = 100 - iPercentage;
  
  					iRealPercentage = iPercentage;
-@@ -3838,9 +3855,15 @@
+@@ -3838,9 +3865,15 @@
  void
  CheckIfMouseLeaveScreen()
  {
@@ -7647,6 +7657,38 @@
  	if((MousePos.x >LAPTOP_SCREEN_LR_X )||(MousePos.x<LAPTOP_UL_X)||(MousePos.y<LAPTOP_UL_Y )||(MousePos.y >LAPTOP_SCREEN_LR_Y))
  	{
  		guiCurrentLapTopCursor=LAPTOP_PANEL_CURSOR;
+@@ -6232,9 +6265,7 @@
+ void PrintNumberOnTeam( void )
+ {
+ 	CHAR16 pString[ 32 ];
+-	SOLDIERTYPE *pSoldier, *pTeamSoldier;
+-	SoldierID cnt = 0;
+-	INT32 iCounter=0;
++	const INT32 iCounter = NumberOfMercsOnPlayerTeam();
+ 	UINT16 usPosX, usPosY, usFontHeight, usStrLength;
+ 
+ 
+@@ -6242,20 +6273,6 @@
+ 	SetFontForeground( FONT_BLACK );
+ 	SetFontBackground( FONT_BLACK );
+ 	SetFontShadow( NO_SHADOW );
+-
+-	// grab number on team
+-	pSoldier = MercPtrs[0];
+-
+-	for ( ; cnt <= gTacticalStatus.Team[ pSoldier->bTeam ].bLastID; ++cnt )
+-	{
+-		pTeamSoldier = cnt;
+-
+-		if( ( pTeamSoldier->bActive)&&( !( pTeamSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) ) )
+-		{
+-			iCounter++;
+-		}
+-	}
+-
+ 
+ 	swprintf( pString, L"%s %d",pPersonnelString[ 0 ], iCounter );
+ 
 --- a/Laptop/merccompare.cpp
 +++ b/Laptop/merccompare.cpp
 @@ -1,3 +1,23 @@
@@ -7849,7 +7891,7 @@
  					tempGearCost += number * Item[usItem].usPrice;
 --- a/Laptop/personnel.h
 +++ b/Laptop/personnel.h
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Laptop/personnel.h
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -7860,10 +7902,28 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Laptop/personnel.h
++ * Native Linux source/build/test adaptations captured in the accepted laptop roster checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #ifndef __PERSONNEL_H
  #define __PERSONNEL_H
  
-@@ -76,6 +86,16 @@
+@@ -54,6 +74,7 @@
+ };
+ 
+ void GameInitPersonnel();
++INT32 RefreshPersonnelCurrentTeamList();
+ void EnterPersonnel();
+ void ExitPersonnel();
+ void HandlePersonnel();
+@@ -76,6 +97,16 @@
  
  BOOLEAN RemoveNewlyHiredMercFromPersonnelDepartedList( UINT8 ubProfile );
  

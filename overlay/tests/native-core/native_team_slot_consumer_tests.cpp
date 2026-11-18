@@ -28,13 +28,25 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted laptop roster checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
 #include "Drugs And Alcohol.h"
 #include "Militia Control.h"
 #include "Map Screen Interface.h"
+#include "Merc Hiring.h"
 #include "Morale.h"
+#include "personnel.h"
 #include "PATHAI.H"
 #include "Queen Command.h"
 #include "Strategic Merc Handler.h"
@@ -648,6 +660,72 @@ void runPersonnelRosterScenario()
 	      "personnel average ignores an empty player-team slot");
 }
 
+void runMercTeamCountScenario()
+{
+	const UINT8 previousPlayer = gbPlayerNum;
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+
+	SOLDIERTYPE soldier;
+	soldier.initialize();
+	soldier.ubID = SoldierID(1);
+	soldier.bTeam = OUR_TEAM;
+	soldier.bActive = TRUE;
+	soldier.stats.bLife = 100;
+
+	gbPlayerNum = OUR_TEAM;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(0);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(1);
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &soldier;
+	check(NumberOfMercsOnPlayerTeam() == 1,
+	      "team count finds a live mercenary after an empty first slot");
+
+	MercPtrs[0] = &soldier;
+	MercPtrs[1] = nullptr;
+	check(NumberOfMercsOnPlayerTeam() == 1,
+	      "team count skips an empty later slot");
+
+	MercPtrs[1] = previousOwner1;
+	MercPtrs[0] = previousOwner0;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+	gbPlayerNum = previousPlayer;
+}
+
+void runPersonnelEntryRosterScenario()
+{
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+
+	SOLDIERTYPE soldier;
+	soldier.initialize();
+	soldier.ubID = SoldierID(1);
+	soldier.bTeam = OUR_TEAM;
+	soldier.bActive = TRUE;
+	soldier.stats.bLife = 100;
+
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(0);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(1);
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &soldier;
+	check(RefreshPersonnelCurrentTeamList() == 1,
+	      "personnel entry finds a live mercenary after an empty first slot");
+
+	MercPtrs[1] = nullptr;
+	check(RefreshPersonnelCurrentTeamList() == 0,
+	      "personnel entry accepts an entirely empty roster");
+
+	MercPtrs[1] = previousOwner1;
+	MercPtrs[0] = previousOwner0;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+}
+
 void runObliterateSectorScenario()
 {
 	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
@@ -899,6 +977,10 @@ int main(int argc, char** argv)
 		runPostAttackStatsScenario();
 	else if (std::strcmp(argv[1], "personnel-roster") == 0)
 		runPersonnelRosterScenario();
+	else if (std::strcmp(argv[1], "merc-team-count") == 0)
+		runMercTeamCountScenario();
+	else if (std::strcmp(argv[1], "personnel-entry-roster") == 0)
+		runPersonnelEntryRosterScenario();
 	else if (std::strcmp(argv[1], "obliterate-sector") == 0)
 		runObliterateSectorScenario();
 	else if (std::strcmp(argv[1], "vehicle-roster") == 0)

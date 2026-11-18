@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 laptop roster checkpoint
+
+Skip empty slots when counting the laptop team and opening Personnel.
+Add production-linked tests for roster holes and an empty Personnel list.
+
+Both development game targets linked. The development gates passed 242 native and 244 strict sanitizer tests.
+These results include 14 X11 contracts in each lane. Fresh Windows, RISC-V, and full campaign validation remain open.
+
 ## November 18 ammo crate roster checkpoint
 
 Skip empty player roster slots when searching for a compatible ammo crate.

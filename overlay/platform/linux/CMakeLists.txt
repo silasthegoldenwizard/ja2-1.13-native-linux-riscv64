@@ -118,6 +118,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted laptop roster checkpoint dated 2026-11-18.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-18.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -775,6 +783,10 @@ add_test(NAME tactical.original_post_attack_stats_team_slots
   COMMAND p710_native_team_slot_consumer_tests post-attack-stats)
 add_test(NAME laptop.original_personnel_roster_team_slots
   COMMAND p710_native_team_slot_consumer_tests personnel-roster)
+add_test(NAME laptop.original_merc_team_count_slots
+  COMMAND p710_native_team_slot_consumer_tests merc-team-count)
+add_test(NAME laptop.original_personnel_entry_roster_slots
+  COMMAND p710_native_team_slot_consumer_tests personnel-entry-roster)
 add_test(NAME tactical.original_obliterate_sector_team_slots
   COMMAND p710_native_team_slot_consumer_tests obliterate-sector)
 add_test(NAME tactical.original_vehicle_roster_slots
