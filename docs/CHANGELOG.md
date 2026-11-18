@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 UpdatePublic checkpoint
+
+Skip empty team slots when updating public opponent knowledge.
+Add a production-linked regression that checks the public sighting and reported location after an empty slot.
+
+Both development game targets linked. The development gates passed 246 native and 248 strict sanitizer tests.
+Fresh Windows, RISC-V, multiplayer, and full campaign validation remain open.
+
 ## November 18 all-opponents radio checkpoint
 
 Skip empty roster slots when reporting sightings for all opponents.
