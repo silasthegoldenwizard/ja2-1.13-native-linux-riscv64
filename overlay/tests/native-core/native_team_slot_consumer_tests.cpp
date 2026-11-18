@@ -48,6 +48,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted all-opponents radio checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -794,6 +804,62 @@ void runRadioSightingsSparseRosterScenario()
 	gbPlayerNum = previousPlayer;
 }
 
+void runRadioSightingsAllSparseRosterScenario()
+{
+	const UINT8 previousPlayer = gbPlayerNum;
+	const INT8 previousShowEnemies = gbShowEnemies;
+	const INT8 previousPublicKnowledge = gbPublicOpplist[OUR_TEAM][20];
+	const INT32 previousPublicLocation = gsPublicLastKnownOppLoc[OUR_TEAM][20];
+	const INT8 previousPublicLevel = gbPublicLastKnownOppLevel[OUR_TEAM][20];
+	const SoldierID previousLastRadio =
+		gTacticalStatus.Team[OUR_TEAM].ubLastMercToRadio;
+	SOLDIERTYPE* previousOwners[MAXMERCS];
+
+	for (UINT16 slot = 0; slot < MAXMERCS; ++slot)
+	{
+		previousOwners[slot] = MercPtrs[slot];
+		MercPtrs[slot] = nullptr;
+	}
+
+	SOLDIERTYPE observer;
+	observer.initialize();
+	observer.ubID = SoldierID(1);
+	observer.bTeam = OUR_TEAM;
+	observer.bSide = 0;
+	observer.bActive = TRUE;
+	observer.bInSector = TRUE;
+	observer.stats.bLife = 100;
+	observer.aiData.bOppList[20] = SEEN_CURRENTLY;
+
+	SOLDIERTYPE opponent;
+	opponent.initialize();
+	opponent.ubID = SoldierID(20);
+	opponent.bTeam = ENEMY_TEAM;
+	opponent.bSide = 1;
+	opponent.bActive = TRUE;
+	opponent.bInSector = TRUE;
+	opponent.stats.bLife = 100;
+	opponent.aiData.bNeutral = FALSE;
+
+	gbPlayerNum = OUR_TEAM;
+	gbShowEnemies = FALSE;
+	gbPublicOpplist[OUR_TEAM][20] = SEEN_CURRENTLY;
+	MercPtrs[1] = &observer;
+	MercPtrs[20] = &opponent;
+	RadioSightings(&observer, EVERYBODY, OUR_TEAM);
+	check(gbPublicOpplist[OUR_TEAM][20] == SEEN_CURRENTLY,
+	      "all-opponent radio sightings skip empty runtime slots");
+
+	for (UINT16 slot = 0; slot < MAXMERCS; ++slot)
+		MercPtrs[slot] = previousOwners[slot];
+	gTacticalStatus.Team[OUR_TEAM].ubLastMercToRadio = previousLastRadio;
+	gbPublicLastKnownOppLevel[OUR_TEAM][20] = previousPublicLevel;
+	gsPublicLastKnownOppLoc[OUR_TEAM][20] = previousPublicLocation;
+	gbPublicOpplist[OUR_TEAM][20] = previousPublicKnowledge;
+	gbShowEnemies = previousShowEnemies;
+	gbPlayerNum = previousPlayer;
+}
+
 void runObliterateSectorScenario()
 {
 	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
@@ -1053,6 +1119,8 @@ int main(int argc, char** argv)
 		runNullMercPanelDirtyScenario();
 	else if (std::strcmp(argv[1], "radio-sightings-sparse-roster") == 0)
 		runRadioSightingsSparseRosterScenario();
+	else if (std::strcmp(argv[1], "radio-sightings-all-sparse-roster") == 0)
+		runRadioSightingsAllSparseRosterScenario();
 	else if (std::strcmp(argv[1], "obliterate-sector") == 0)
 		runObliterateSectorScenario();
 	else if (std::strcmp(argv[1], "vehicle-roster") == 0)

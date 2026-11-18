@@ -36649,7 +36649,7 @@
  BOOLEAN InitTalkingMenu( UINT8 ubCharacterNum, INT32 sGridNo );
 --- a/Tactical/opplist.cpp
 +++ b/Tactical/opplist.cpp
-@@ -1,3 +1,24 @@
+@@ -1,3 +1,34 @@
 +/*
 + * P710 native snapshot update: Tactical/opplist.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -36670,11 +36670,21 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/opplist.cpp
++ * Native Linux source/build/test adaptations captured in the accepted all-opponents radio checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <math.h>
  	#include "sgp.h"
  	#include "Isometric Utils.h"
  	#include "Overhead.h"
-@@ -336,7 +357,7 @@
+@@ -336,7 +367,7 @@
  
  		FLOAT appliedpenalty = 1.0f;
  		if ( HAS_SKILL_TRAIT( pSoldier, SURVIVAL_NT ) && (gGameOptions.fNewTraitSystem) )
@@ -36683,7 +36693,7 @@
  
  		sNewDist -= (INT16)(sNewDist * weatherpenalty * appliedpenalty);
  
-@@ -1608,7 +1629,7 @@
+@@ -1608,7 +1639,7 @@
  		// Added a feature to reduce rain effect on regaining breath with Ranger trait - SANDRO
  		FLOAT appliedpenalty = 1.0f;
  		if ( HAS_SKILL_TRAIT( pSoldier, SURVIVAL_NT ) && gGameOptions.fNewTraitSystem )
@@ -36692,7 +36702,7 @@
  
  		bHearing -= (INT16)(bHearing * weatherpenalty * appliedpenalty);
  	}
-@@ -3112,8 +3133,8 @@
+@@ -3112,8 +3143,8 @@
  	INT8* pbPublOL = &(gbPublicOpplist[ubTeam][ubID]);
  
  	// if new opplist is more up-to-date, or we are just wiping it for some reason
@@ -36703,7 +36713,27 @@
  	{
  		// if this team is becoming aware of a soldier it wasn't previously aware of
  		if ((bNewOpplist != NOT_HEARD_OR_SEEN) && (*pbPublOL == NOT_HEARD_OR_SEEN))
-@@ -3801,13 +3822,6 @@
+@@ -3682,11 +3713,15 @@
+ 	 // hang a pointer to the start of this guy's opponents in the public opplist
+ 	 pbPublOL = &(gbPublicOpplist[ubTeamToRadioTo][start]);
+ 
+-	pOpponent = MercPtrs[start];
+-
+ 	// loop through every one of this guy's opponents
+-	for (iLoop = start; iLoop < end; ++iLoop,pOpponent++,pPersOL++,pbPublOL++)
+-	{
++	for (iLoop = start; iLoop < end; ++iLoop,pPersOL++,pbPublOL++)
++	{
++		pOpponent = MercPtrs[iLoop];
++		if (pOpponent == NULL)
++		{
++			continue;
++		}
++
+ 		fContactSeen = FALSE;
+ 
+ #ifdef TESTOPPLIST
+@@ -3801,13 +3836,6 @@
  							// chalk up another "revealed" enemy
  							++revealedEnemies;
  							fContactSeen = TRUE;
@@ -36717,7 +36747,7 @@
  						}
  					}
  
-@@ -5437,11 +5451,11 @@
+@@ -5437,11 +5465,11 @@
  	// sevenfm: if dragging something, add dragging sound volume
  	if(pSoldier->IsDragging())
  	{
@@ -36734,7 +36764,7 @@
  
  	return (UINT8)sVolume;
  }
-@@ -6498,7 +6512,7 @@
+@@ -6498,7 +6526,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
@@ -36743,7 +36773,7 @@
  			}
  
  		}
-@@ -6547,7 +6561,7 @@
+@@ -6547,7 +6575,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
@@ -36752,7 +36782,7 @@
  
  				SetNewSituation( pSoldier );	// force a fresh AI decision to be made
  			}
-@@ -6655,7 +6669,7 @@
+@@ -6655,7 +6683,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
@@ -36761,7 +36791,7 @@
  
  				SetNewSituation( pSoldier );	// force a fresh AI decision to be made
  			}
-@@ -6672,7 +6686,7 @@
+@@ -6672,7 +6700,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
