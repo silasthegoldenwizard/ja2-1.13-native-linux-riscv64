@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_militia_pickup_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise sentinel-based militia pickup through the production world-item path.
 #include "GameSettings.h"
 #include "Handle Items.h"
@@ -16,6 +26,8 @@
 #include "SaveLoadMap.h"
 #include "TileDat.h"
 #include "World Items.h"
+#include "renderworld.h"
+#include "strategicmap.h"
 #include "worlddef.h"
 #include "worldman.h"
 #include <array>
@@ -107,7 +119,25 @@ void exercise(INT32 action, UINT16 worldFlag, UINT64 objectFlag,
     gpWorldLevelData = nullptr;
 }
 
-void exerciseMovedRecipientDuringGive(bool replacementOccupiesGrid) {
+void exerciseMovedRecipientDuringGive(INT16 structureSoldierId) {
+    const auto oldWorldSectorZ = gbWorldSectorZ;
+    const auto oldCenterWorldX = gCenterWorldX;
+    const auto oldCenterWorldY = gCenterWorldY;
+    const auto oldTLX = gsTLX;
+    const auto oldTLY = gsTLY;
+    const auto oldTRX = gsTRX;
+    const auto oldBLY = gsBLY;
+    const auto oldCX = gsCX;
+    const auto oldCY = gsCY;
+    gbWorldSectorZ = 1;
+    gCenterWorldX = 0;
+    gCenterWorldY = 0;
+    gsTLX = 0;
+    gsTLY = 0;
+    gsTRX = 200;
+    gsBLY = 200;
+    gsCX = 100;
+    gsCY = 100;
     Item[testItem].usItemClass = IC_MISC;
     std::array<MAP_ELEMENT, 1> world{};
     gpWorldLevelData = world.data();
@@ -137,14 +167,15 @@ void exerciseMovedRecipientDuringGive(bool replacementOccupiesGrid) {
     SOLDIERTYPE originalRecipient;
     originalRecipient.initialize();
     originalRecipient.ubID = SoldierID(1);
+    originalRecipient.bActive = FALSE;
     originalRecipient.flags.uiStatusFlags |= SOLDIER_ENGAGEDINACTION;
     SOLDIERTYPE* oldRecipient = MercPtrs[1];
     MercPtrs[1] = &originalRecipient;
 
     STRUCTURE replacement{};
-    if (replacementOccupiesGrid) {
+    if (structureSoldierId >= 0) {
         replacement.fFlags = STRUCTURE_PERSON;
-        replacement.usStructureID = 2;
+        replacement.usStructureID = static_cast<UINT16>(structureSoldierId);
         replacement.sGridNo = 0;
         replacement.sCubeOffset = 0;
         world[0].pStructureHead = &replacement;
@@ -178,6 +209,15 @@ void exerciseMovedRecipientDuringGive(bool replacementOccupiesGrid) {
     gWorldItems.clear();
     gTempObject.initialize();
     gpWorldLevelData = nullptr;
+    gbWorldSectorZ = oldWorldSectorZ;
+    gCenterWorldX = oldCenterWorldX;
+    gCenterWorldY = oldCenterWorldY;
+    gsTLX = oldTLX;
+    gsTLY = oldTLY;
+    gsTRX = oldTRX;
+    gsBLY = oldBLY;
+    gsCX = oldCX;
+    gsCY = oldCY;
 }
 }
 
@@ -196,8 +236,9 @@ int main() {
     exercise(0, 0, TAKEN_BY_MILITIA, IC_FACE);
     exercise(ITEM_PICKUP_ACTION_ALL, WORLD_ITEM_TABOO_FOR_MILITIA_EQ_GREEN,
              TAKEN_BY_MILITIA_TABOO_GREEN, IC_MISC, true);
-    exerciseMovedRecipientDuringGive(false);
-    exerciseMovedRecipientDuringGive(true);
+    exerciseMovedRecipientDuringGive(-1);
+    exerciseMovedRecipientDuringGive(2);
+    exerciseMovedRecipientDuringGive(1);
 
     gGameExternalOptions.fMilitiaUseSectorInventory = oldUse;
     gGameExternalOptions.fMilitiaUseSectorInventory_Face = oldFace;

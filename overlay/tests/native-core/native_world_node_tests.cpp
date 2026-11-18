@@ -18,6 +18,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_world_node_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Actual world-node creation/removal functions; authored metadata only.
 #include "worlddef.h"
 #include "worldman.h"
@@ -103,6 +113,29 @@ void completeLandDeletion() {
     expect(!gpWorldLevelData[0].pLandStart, "complete land deletion clears the full-tile owner");
     expect(guiLevelNodes == 0, "complete land deletion retires every node exactly once");
 }
+void rejectedLandInsertion() {
+    auto* head = node(11);
+    linkLand({head});
+    const UINT32 liveNodes = guiLevelNodes;
+    expect(!InsertLandIndexAtLevel(0, 22, 3), "out-of-range land insertion is rejected");
+    expect(guiLevelNodes == liveNodes, "rejected insertion does not leak a level node");
+    expect(gpWorldLevelData[0].pLandHead == head && !head->pNext,
+           "rejected insertion preserves the existing land list");
+    expect(DeleteAllLandLayers(0), "land cleanup succeeds after rejected insertion");
+    expect(guiLevelNodes == 0, "rejected-insertion cleanup leaves no live nodes");
+}
+void malformedLandBackLinkCleanup() {
+    auto* head = node(51);
+    auto* tail = node(52);
+    linkLand({head, tail});
+    gpWorldLevelData[0].pLandStart = tail;
+    head->pPrevNode = tail; // Simulate malformed map state; forward ownership is still complete.
+    expect(guiLevelNodes == 2, "malformed land list owns two nodes");
+    expect(DeleteAllLandLayers(0), "complete cleanup tolerates a malformed back-link");
+    expect(!gpWorldLevelData[0].pLandHead, "malformed cleanup clears the head owner");
+    expect(!gpWorldLevelData[0].pLandStart, "malformed cleanup clears the full-tile owner");
+    expect(guiLevelNodes == 0, "malformed cleanup retires every forward-owned node once");
+}
 }
 int main() {
     std::array<MAP_ELEMENT, 2> world{};
@@ -110,7 +143,8 @@ int main() {
     guiLevelNodes = 0;
     giNumberOfTiles = 0; // Authored visual nodes have no resource-backed tile metadata.
     ApplyMapChangesToMapTempFile(FALSE);
-    retiredTrail(); identityRemoval(); completeLandDeletion();
+    retiredTrail(); identityRemoval(); completeLandDeletion(); rejectedLandInsertion();
+    malformedLandBackLinkCleanup();
     gpWorldLevelData = nullptr;
     std::cout << checks << " original world-node lifetime assertions passed\n";
 }

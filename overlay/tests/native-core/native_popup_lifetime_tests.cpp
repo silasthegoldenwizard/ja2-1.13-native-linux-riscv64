@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_popup_lifetime_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Actual popup ownership and callback lifetimes; no render assets or game data.
 // Strict LeakSanitizer must also verify option/callback storage deallocation:
 // destructor counts alone cannot detect explicit destructor calls without delete.
@@ -17,8 +27,11 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "Interface Items.h"
 #include "mousesystem.h"
 #include "popup_class.h"
+
+extern BOOLEAN gfSkipDestroyTransformPopup;
 
 namespace {
 unsigned checks=0;
@@ -181,6 +194,32 @@ void actionDeletesPopup() {
     check(!popup && counts.called==1 && counts.destroyed==1,"action deletes its popup and callback once");
     check(gPopupIndex.size()==baseline && !findPopupInIndex(id),"self-retired popup leaves no registered owner");
 }
+void itemDescriptionTransformPopupRetirement() {
+    const auto baseline=gPopupIndex.size();
+    Counts action;
+    gItemDescTransformPopup=makePopup().release();
+    check(gItemDescTransformPopup->addOption(L"No available adjustments",new CountingCallback(action))!=nullptr,
+          "item-description transformation popup owns its option");
+    gfItemDescTransformPopupInitialized=TRUE;
+    gfItemDescTransformPopupVisible=TRUE;
+    gfSkipDestroyTransformPopup=FALSE;
+    check(DismissItemDescTransformPopup(),"tab redraw retires the transformation popup");
+    check(gItemDescTransformPopup==nullptr && !gfItemDescTransformPopupInitialized &&
+          !gfItemDescTransformPopupVisible,"tab redraw clears every transformation popup handle");
+    check(action.destroyed==1 && gPopupIndex.size()==baseline,
+          "tab redraw releases popup ownership and restores the registry baseline");
+
+    gItemDescTransformPopup=makePopup().release();
+    gfItemDescTransformPopupInitialized=TRUE;
+    gfItemDescTransformPopupVisible=TRUE;
+    gfSkipDestroyTransformPopup=TRUE;
+    check(!DismissItemDescTransformPopup() && gItemDescTransformPopup!=nullptr,
+          "active transformation keeps its protected popup alive");
+    gfSkipDestroyTransformPopup=FALSE;
+    check(DismissItemDescTransformPopup() && gItemDescTransformPopup==nullptr,
+          "protected popup retires after transformation ownership ends");
+    check(gPopupIndex.size()==baseline,"protected popup cleanup restores the registry baseline");
+}
 void leakControl() {
     Counts counts;
     {
@@ -206,6 +245,7 @@ int main(int argc,char** argv) {
         const auto popupBaseline=gPopupIndex.size(),regionBaseline=gPopupRegionIndex.size();
         ownedOptions(); optionReplacement(); popupCallbackReplacement();
         childOwnership(); regionIndexLifetime(); actionDeletesPopup();
+        itemDescriptionTransformPopupRetirement();
         check(gPopupIndex.size()==popupBaseline && gPopupRegionIndex.size()==regionBaseline,
               "all production popup registries return to baseline");
         MSYS_Shutdown();

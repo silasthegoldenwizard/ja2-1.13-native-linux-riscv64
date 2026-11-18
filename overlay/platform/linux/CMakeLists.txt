@@ -94,6 +94,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-18.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -318,6 +326,12 @@ add_executable(p710_native_strategic_event_save_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_event_save_tests.cpp")
 target_link_libraries(p710_native_strategic_event_save_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_executable(p710_native_strategic_event_insert_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_event_insert_tests.cpp")
+target_link_libraries(p710_native_strategic_event_insert_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+target_link_options(p710_native_strategic_event_insert_tests PRIVATE
+  -Wl,--wrap=_Z21ExecuteStrategicEventP14STRATEGICEVENT)
 add_executable(p710_native_underground_sector_save_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_underground_sector_save_tests.cpp")
 target_link_libraries(p710_native_underground_sector_save_tests PRIVATE
@@ -351,6 +365,7 @@ add_test(NAME saves.original_soldier_native_layout COMMAND p710_native_soldier_s
 add_test(NAME saves.original_map_message_utf16 COMMAND p710_native_map_message_save_tests)
 add_test(NAME saves.original_vehicle_path_lifecycle COMMAND p710_native_vehicle_save_tests)
 add_test(NAME saves.original_strategic_event_lifecycle COMMAND p710_native_strategic_event_save_tests)
+add_test(NAME strategic.original_event_callback_insertion COMMAND p710_native_strategic_event_insert_tests)
 add_test(NAME saves.original_underground_sector_lifecycle COMMAND p710_native_underground_sector_save_tests)
 add_test(NAME saves.original_strategic_movement_lifecycle COMMAND p710_native_strategic_movement_save_tests)
 add_test(NAME saves.original_bullet_table_lifecycle COMMAND p710_native_bullet_save_tests)
@@ -368,6 +383,12 @@ add_executable(p710_native_translation_table_tests
 target_link_libraries(p710_native_translation_table_tests PRIVATE p710_engine_contract)
 add_test(NAME text.original_translation_tables
   COMMAND p710_native_translation_table_tests)
+add_executable(p710_native_fov_direction_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_fov_direction_tests.cpp")
+target_link_libraries(p710_native_fov_direction_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME tactical.original_fov_direction_guards
+  COMMAND p710_native_fov_direction_tests)
 add_executable(p710_native_weapon_tooltip_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_weapon_tooltip_tests.cpp")
 target_link_libraries(p710_native_weapon_tooltip_tests PRIVATE
@@ -521,6 +542,10 @@ add_test(NAME ui.original_transform_callback_guard
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_item_transform_callback_guard.py"
     "${P710_ENGINE_ROOT}")
+add_test(NAME ui.original_item_desc_tab_redraw
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_item_desc_tab_redraw.py"
+    "${P710_ENGINE_ROOT}")
 add_test(NAME inventory.original_map_lifecycle_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_inventory_map_lifecycle_guards.py"
@@ -529,9 +554,48 @@ add_test(NAME ui.original_bobbyray_region_lifecycle
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_bobbyray_region_lifecycle.py"
     "${P710_ENGINE_ROOT}")
+set(P710_BOBBYR_SHIPMENT_REGION_DIR
+  "${CMAKE_CURRENT_BINARY_DIR}/bobbyr-shipment-regions")
+set(P710_BOBBYR_SHIPMENT_REGION_INCLUDES
+  "${P710_BOBBYR_SHIPMENT_REGION_DIR}/create_previous_shipments_regions.inc"
+  "${P710_BOBBYR_SHIPMENT_REGION_DIR}/remove_previous_shipments_regions.inc")
+add_custom_command(OUTPUT ${P710_BOBBYR_SHIPMENT_REGION_INCLUDES}
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_bobbyr_shipment_regions.py"
+    "${P710_ENGINE_ROOT}" "${P710_BOBBYR_SHIPMENT_REGION_DIR}"
+  DEPENDS
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_bobbyr_shipment_regions.py"
+    "${P710_ENGINE_ROOT}/Laptop/BobbyRShipments.cpp"
+  VERBATIM)
+add_executable(p710_native_bobbyr_shipment_region_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_bobbyr_shipment_region_tests.cpp"
+  ${P710_BOBBYR_SHIPMENT_REGION_INCLUDES})
+target_include_directories(p710_native_bobbyr_shipment_region_tests PRIVATE
+  "${P710_BOBBYR_SHIPMENT_REGION_DIR}")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_bobbyr_shipment_region_tests PRIVATE
+    -fsanitize=address,undefined -fno-omit-frame-pointer
+    -fno-sanitize-recover=all)
+  target_link_options(p710_native_bobbyr_shipment_region_tests PRIVATE
+    -fsanitize=address,undefined -fno-sanitize-recover=all)
+endif()
+add_test(NAME ui.original_bobbyray_shipment_region_lifecycle
+  COMMAND p710_native_bobbyr_shipment_region_tests)
+add_test(NAME ui.original_laptop_video_object_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_laptop_video_object_ownership.py"
+    "${P710_ENGINE_ROOT}")
 add_test(NAME combat.original_structure_hit_pointer_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_combat_pointer_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_soldier_sentinel_bounds
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_soldier_sentinel_bounds.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME rendering.original_fade_in_presentation
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_fade_in_presentation.py"
     "${P710_ENGINE_ROOT}")
 add_test(NAME rendering.original_zstrip_cleanup
   COMMAND "${Python3_EXECUTABLE}" -B
@@ -565,13 +629,199 @@ add_test(NAME strategic.original_enemy_heli_manpads_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_enemy_heli_manpads_guards.py"
     "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_enemy_heli_repair_cost
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_enemy_heli_repair_cost.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_individual_militia_team_bounds
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_individual_militia_team_bounds.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME tactical.original_mine_stop_team_bounds
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_mine_stop_team_bounds.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME tactical.original_reinforcement_slot_contract
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_reinforcement_slot_contract.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME tactical.original_team_iteration_bounds
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_tactical_team_iteration_bounds.py"
+    "${P710_ENGINE_ROOT}")
+add_executable(p710_native_disease_team_slot_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_disease_team_slot_tests.cpp")
+target_link_libraries(p710_native_disease_team_slot_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME tactical.original_disease_team_slots
+  COMMAND p710_native_disease_team_slot_tests)
+add_executable(p710_native_campaign_team_slot_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_campaign_team_slot_tests.cpp")
+target_link_libraries(p710_native_campaign_team_slot_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME tactical.original_campaign_team_slots
+  COMMAND p710_native_campaign_team_slot_tests)
+add_executable(p710_native_team_slot_followup_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_team_slot_followup_tests.cpp")
+target_link_libraries(p710_native_team_slot_followup_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME tactical.original_stale_boxer_slots
+  COMMAND p710_native_team_slot_followup_tests stale-boxer)
+add_test(NAME tactical.original_boxing_player_team_slots
+  COMMAND p710_native_team_slot_followup_tests boxing-player)
+add_test(NAME strategic.original_militia_command_team_slots
+  COMMAND p710_native_team_slot_followup_tests militia-command)
+add_test(NAME strategic.original_map_character_team_slots
+  COMMAND p710_native_team_slot_followup_tests map-characters)
+add_test(NAME strategic.original_transport_inventory_team_slots
+  COMMAND p710_native_team_slot_followup_tests transport-inventory)
+add_executable(p710_native_team_slot_consumer_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_team_slot_consumer_tests.cpp")
+target_link_libraries(p710_native_team_slot_consumer_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+target_link_options(p710_native_team_slot_consumer_tests PRIVATE
+  "-Wl,--wrap=_Z10StatChangeP11SOLDIERTYPEhth")
+add_test(NAME tactical.original_hourly_drug_team_slots
+  COMMAND p710_native_team_slot_consumer_tests hourly-drug)
+add_test(NAME tactical.original_remove_militia_team_slots
+  COMMAND p710_native_team_slot_consumer_tests remove-militia)
+add_test(NAME tactical.original_free_team_slots
+  COMMAND p710_native_team_slot_consumer_tests free-slots)
+add_test(NAME strategic.original_militia_trainer_team_slots
+  COMMAND p710_native_team_slot_consumer_tests militia-trainers)
+add_test(NAME strategic.original_best_militia_leadership_team_slots
+  COMMAND p710_native_team_slot_consumer_tests best-militia-leadership)
+add_test(NAME strategic.original_hourly_information_team_slots
+  COMMAND p710_native_team_slot_consumer_tests hourly-information)
+add_test(NAME strategic.original_load_characters_team_slots
+  COMMAND p710_native_team_slot_consumer_tests load-characters)
+add_test(NAME tactical.original_battle_loss_team_slots
+  COMMAND p710_native_team_slot_consumer_tests battle-loss-check)
+add_test(NAME tactical.original_global_morale_team_slots
+  COMMAND p710_native_team_slot_consumer_tests morale-global)
+add_test(NAME tactical.original_specific_morale_owner
+  COMMAND p710_native_team_slot_consumer_tests morale-specific)
+add_test(NAME strategic.original_merc_daily_team_slots
+  COMMAND p710_native_team_slot_consumer_tests merc-daily)
+add_test(NAME tactical.original_is_merc_on_team_slots
+  COMMAND p710_native_team_slot_consumer_tests merc-on-team)
+add_test(NAME tactical.original_merc_id_team_slots
+  COMMAND p710_native_team_slot_consumer_tests merc-id)
+add_test(NAME strategic.original_natural_healing_team_slots
+  COMMAND p710_native_team_slot_consumer_tests natural-healing)
+add_test(NAME strategic.original_assignment_count_team_slots
+  COMMAND p710_native_team_slot_consumer_tests assignment-count)
+add_test(NAME strategic.original_doctors_in_sector_team_slots
+  COMMAND p710_native_team_slot_consumer_tests doctors-in-sector)
+add_test(NAME strategic.original_doctor_militia_team_slots
+  COMMAND p710_native_team_slot_consumer_tests doctor-militia)
+add_test(NAME strategic.original_patients_done_healing_team_slots
+  COMMAND p710_native_team_slot_consumer_tests patients-done-healing)
+add_test(NAME strategic.original_doctorable_count_team_slots
+  COMMAND p710_native_team_slot_consumer_tests doctorable-count)
+add_test(NAME strategic.original_doctor_lookup_team_slots
+  COMMAND p710_native_team_slot_consumer_tests doctor-lookup)
+add_test(NAME strategic.original_repairmen_in_sector_team_slots
+  COMMAND p710_native_team_slot_consumer_tests repairmen-in-sector)
+add_test(NAME strategic.original_robot_lookup_team_slots
+  COMMAND p710_native_team_slot_consumer_tests robot-lookup)
+add_test(NAME strategic.original_propaganda_block_team_slots
+  COMMAND p710_native_team_slot_consumer_tests propaganda-block)
+add_test(NAME strategic.original_disease_diagnosis_team_slots
+  COMMAND p710_native_team_slot_consumer_tests disease-diagnosis)
+add_test(NAME strategic.original_training_points_team_slots
+  COMMAND p710_native_team_slot_consumer_tests training-points)
+add_test(NAME strategic.original_sector_list_team_slots
+  COMMAND p710_native_team_slot_consumer_tests sector-list)
+add_test(NAME strategic.original_sam_operator_team_slots
+  COMMAND p710_native_team_slot_consumer_tests sam-operator)
+add_test(NAME strategic.original_fortification_team_slots
+  COMMAND p710_native_team_slot_consumer_tests fortification)
+add_test(NAME strategic.original_automatic_surgery_team_slots
+  COMMAND p710_native_team_slot_consumer_tests automatic-surgery)
+add_test(NAME strategic.original_militia_training_record_team_slots
+  COMMAND p710_native_team_slot_consumer_tests militia-training-record)
+add_test(NAME strategic.original_training_in_sector_team_slots
+  COMMAND p710_native_team_slot_consumer_tests training-in-sector)
+add_test(NAME strategic.original_smart_training_rest_team_slots
+  COMMAND p710_native_team_slot_consumer_tests smart-training-rest)
+add_test(NAME strategic.original_radio_scan_team_slots
+  COMMAND p710_native_team_slot_consumer_tests radio-scan)
+add_test(NAME strategic.original_strategic_disease_team_slots
+  COMMAND p710_native_team_slot_consumer_tests strategic-disease)
+add_test(NAME strategic.original_spreading_propaganda_team_slots
+  COMMAND p710_native_team_slot_consumer_tests spreading-propaganda)
+add_test(NAME strategic.original_prisoner_processing_team_slots
+  COMMAND p710_native_team_slot_consumer_tests prisoner-processing)
+add_test(NAME strategic.original_repair_peer_lookup_team_slots
+  COMMAND p710_native_team_slot_consumer_tests repair-peer-lookup)
+add_test(NAME tactical.original_post_attack_stats_team_slots
+  COMMAND p710_native_team_slot_consumer_tests post-attack-stats)
+add_test(NAME laptop.original_personnel_roster_team_slots
+  COMMAND p710_native_team_slot_consumer_tests personnel-roster)
+add_test(NAME tactical.original_obliterate_sector_team_slots
+  COMMAND p710_native_team_slot_consumer_tests obliterate-sector)
+add_executable(p710_native_tactical_team_last_slot_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_tactical_team_last_slot_tests.cpp")
+target_link_libraries(p710_native_tactical_team_last_slot_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+target_link_options(p710_native_tactical_team_last_slot_tests PRIVATE
+  "-Wl,--wrap=_Z19CreatePrisonerOfWarv")
+add_test(NAME tactical.original_team_last_slots
+  COMMAND p710_native_tactical_team_last_slot_tests)
+set(P710_COMBAT_CONFIG_ARITHMETIC_DIR
+  "${CMAKE_CURRENT_BINARY_DIR}/combat-config-arithmetic")
+set(P710_COMBAT_CONFIG_ARITHMETIC_INCLUDES
+  "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}/wound_ap_cost.inc"
+  "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}/base_shock_modifier.inc"
+  "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}/aim_shock_modifier.inc"
+  "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}/weapon_handling_difficulty.inc"
+  "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}/shock_level_percent.inc")
+add_custom_command(OUTPUT ${P710_COMBAT_CONFIG_ARITHMETIC_INCLUDES}
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_combat_config_arithmetic.py"
+    "${P710_ENGINE_ROOT}" "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}"
+  DEPENDS
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_combat_config_arithmetic.py"
+    "${P710_ENGINE_ROOT}/Tactical/Soldier Control.cpp"
+    "${P710_ENGINE_ROOT}/Tactical/Weapons.cpp"
+  VERBATIM)
+add_executable(p710_native_combat_config_arithmetic_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_combat_config_arithmetic_tests.cpp"
+  ${P710_COMBAT_CONFIG_ARITHMETIC_INCLUDES})
+target_include_directories(p710_native_combat_config_arithmetic_tests PRIVATE
+  "${P710_ENGINE_ROOT}/sgp" "${P710_COMBAT_CONFIG_ARITHMETIC_DIR}")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_combat_config_arithmetic_tests PRIVATE
+    -fsanitize=address,undefined,float-divide-by-zero
+    -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_combat_config_arithmetic_tests PRIVATE
+    -fsanitize=address,undefined,float-divide-by-zero
+    -fno-sanitize-recover=all)
+endif()
+add_test(NAME combat.original_wounded_ap_cost
+  COMMAND p710_native_combat_config_arithmetic_tests wound)
+add_test(NAME combat.original_shock_modifiers
+  COMMAND p710_native_combat_config_arithmetic_tests shock)
+add_test(NAME combat.original_handling_difficulty
+  COMMAND p710_native_combat_config_arithmetic_tests handling)
 add_test(NAME dialogue.original_npc_quote_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_npc_quote_guards.py"
     "${P710_ENGINE_ROOT}")
+add_executable(p710_native_npc_dialogue_chain_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_npc_dialogue_chain_tests.cpp")
+target_link_libraries(p710_native_npc_dialogue_chain_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME dialogue.original_npc_dialogue_chain
+  COMMAND p710_native_npc_dialogue_chain_tests)
 add_test(NAME runtime.original_division_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_runtime_division_guards.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME runtime.original_gameplay_precedence_and_strings
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_gameplay_precedence_and_strings.py"
     "${P710_ENGINE_ROOT}")
 add_test(NAME combat.original_weapon_entry_guards
   COMMAND "${Python3_EXECUTABLE}" -B
@@ -637,6 +887,10 @@ add_test(NAME saves.original_preflight_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_save_load_preflight_guards.py"
     "${P710_ENGINE_ROOT}")
+add_test(NAME saves.original_legacy_profile_record_alignment
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_profile_legacy_record_alignment.py"
+    "${P710_ENGINE_ROOT}")
 add_test(NAME runtime.original_loyalty_messagebox_state_guards
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_loyalty_messagebox_state_guards.py"
@@ -665,6 +919,58 @@ add_test(NAME rendering.original_tile_resource_ownership
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_tile_resource_ownership.py"
     "${P710_ENGINE_ROOT}")
+add_test(NAME rendering.original_tile_database_lifecycle
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_tile_database_lifecycle.py"
+    "${P710_ENGINE_ROOT}")
+add_executable(p710_native_tile_database_capacity_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_tile_database_capacity_tests.cpp")
+target_link_libraries(p710_native_tile_database_capacity_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME rendering.original_tile_database_capacity
+  COMMAND p710_native_tile_database_capacity_tests)
+add_test(NAME rendering.original_overhead_item_invalidation
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_overhead_item_invalidation.py"
+    "${P710_ENGINE_ROOT}")
+add_test(NAME strategic.original_path_construction_ownership
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_strategic_path_construction.py"
+    "${P710_ENGINE_ROOT}")
+set(P710_STRATEGIC_PATH_CONSTRUCTION_INCLUDE
+  "${CMAKE_CURRENT_BINARY_DIR}/strategic-path-construction/strategic_path_construction.inc")
+add_custom_command(OUTPUT "${P710_STRATEGIC_PATH_CONSTRUCTION_INCLUDE}"
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_strategic_path_construction.py"
+    "${P710_ENGINE_ROOT}" "${P710_STRATEGIC_PATH_CONSTRUCTION_INCLUDE}"
+  DEPENDS
+    "${P710_ENGINE_ROOT}/tests/native-core/extract_strategic_path_construction.py"
+    "${P710_ENGINE_ROOT}/Strategic/Strategic Pathing.cpp"
+  VERBATIM)
+add_executable(p710_native_strategic_path_construction_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_strategic_path_construction_tests.cpp"
+  "${P710_STRATEGIC_PATH_CONSTRUCTION_INCLUDE}")
+target_include_directories(p710_native_strategic_path_construction_tests PRIVATE
+  "${P710_ENGINE_ROOT}/sgp"
+  "${CMAKE_CURRENT_BINARY_DIR}/strategic-path-construction")
+if(P710_SANITIZERS)
+  target_compile_options(p710_native_strategic_path_construction_tests PRIVATE
+    -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_link_options(p710_native_strategic_path_construction_tests PRIVATE
+    -fsanitize=address,undefined -fno-sanitize-recover=all)
+endif()
+add_test(NAME strategic.original_path_construction_failure_rollback
+  COMMAND p710_native_strategic_path_construction_tests)
+add_executable(p710_native_intel_market_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_intel_market_tests.cpp")
+target_include_directories(p710_native_intel_market_tests PRIVATE
+  "${P710_ENGINE_ROOT}/Laptop")
+add_test(NAME laptop.original_intel_market_flags
+  COMMAND p710_native_intel_market_tests)
+add_test(NAME laptop.original_intel_market_flag_guards
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_intel_market_flags.py"
+    "${P710_ENGINE_ROOT}")
 add_test(NAME runtime.original_stream_loader_lifecycle
   COMMAND "${Python3_EXECUTABLE}" -B
     "${P710_ENGINE_ROOT}/tests/native-core/check_stream_loader_lifecycle.py"
@@ -689,6 +995,10 @@ add_executable(p710_native_item_ammo_callback_tests
 target_link_libraries(p710_native_item_ammo_callback_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME inventory.original_ammo_cursor_completion COMMAND p710_native_item_ammo_callback_tests)
+add_test(NAME inventory.original_direct_magazine_shortcut
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${P710_ENGINE_ROOT}/tests/native-core/check_direct_magazine_shortcut.py"
+    "${P710_ENGINE_ROOT}")
 add_executable(p710_native_recoil_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_recoil_tests.cpp")
 target_link_libraries(p710_native_recoil_tests PRIVATE
@@ -699,6 +1009,12 @@ add_executable(p710_native_world_node_tests
 target_link_libraries(p710_native_world_node_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME world.original_struct_node_lifetime COMMAND p710_native_world_node_tests)
+add_executable(p710_native_render_resource_guard_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_render_resource_guard_tests.cpp")
+target_link_libraries(p710_native_render_resource_guard_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME world.original_render_resource_guards
+  COMMAND p710_native_render_resource_guard_tests)
 add_executable(p710_native_dynamic_dialogue_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_dynamic_dialogue_tests.cpp")
 target_link_libraries(p710_native_dynamic_dialogue_tests PRIVATE

@@ -8,6 +8,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: tests/native-core/check_item_pickup_count_width.py
+# Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-18.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 
 from __future__ import annotations
 
@@ -128,6 +136,68 @@ def main() -> int:
             "cnt < gItemPickupMenu.ubTotalItems" in callback.group(1),
             "pickup selection scan no longer covers the full allocation",
         )
+        require(
+            callback.group(1).find("ItemPickupMenuCallbacksAreLive()")
+            < callback.group(1).find("gItemPickupMenu.pfSelectedArray"),
+            "pickup click callback reads selection storage before validating menu lifetime",
+        )
+
+    live_guard = re.search(
+        r"static\s+BOOLEAN\s+ItemPickupMenuCallbacksAreLive\s*\(\s*\)\s*\{(.*?)\n\}",
+        interface,
+        re.DOTALL,
+    )
+    require(live_guard is not None, "pickup callback lifetime guard is missing")
+    if live_guard is not None:
+        for required_state in (
+            "gfInItemPickupMenu",
+            "gItemPickupMenu.pSoldier != NULL",
+            "gItemPickupMenu.pItemPool != NULL",
+            "gItemPickupMenu.pfSelectedArray != NULL",
+        ):
+            require(
+                required_state in live_guard.group(1),
+                f"pickup callback lifetime guard omits {required_state}",
+            )
+
+    remove_menu = re.search(
+        r"void\s+RemoveItemPickupMenu\s*\([^)]*\)\s*\{(.*?)\n\}",
+        interface,
+        re.DOTALL,
+    )
+    require(remove_menu is not None, "pickup menu teardown is missing")
+    if remove_menu is not None:
+        retire_at = remove_menu.group(1).find("gfInItemPickupMenu = FALSE;")
+        free_at = remove_menu.group(1).find("MemFree( gItemPickupMenu.pfSelectedArray )")
+        require(
+            retire_at >= 0 and free_at >= 0 and retire_at < free_at,
+            "pickup menu teardown frees selection storage before retiring callbacks",
+        )
+
+    scroll_down = re.search(
+        r"void\s+ItemPickupScrollDown\s*\([^)]*\)\s*\{(.*?)\n\}",
+        interface,
+        re.DOTALL,
+    )
+    require(scroll_down is not None, "pickup scroll-down callback is missing")
+    if scroll_down is not None:
+        require(
+            scroll_down.group(1).count("SetupPickupPage( gItemPickupMenu.bScrollPage + 1 )") == 1,
+            "pickup scroll-down advances more than one page per click",
+        )
+        require(
+            "BeginItemPickupButtonCallback( btn, reason )" in scroll_down.group(1),
+            "pickup scroll-down accepts retired button events",
+        )
+
+    require(
+        bool(re.search(
+            r"while\s*\(\s*pTempItemPool\s*!=\s*NULL\s*&&\s*"
+            r"!ItemPoolOKForDisplay",
+            interface,
+        )),
+        "pickup page walks beyond the end of an inconsistent item pool",
+    )
 
     require(
         bool(re.search(

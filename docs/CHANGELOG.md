@@ -1,5 +1,14 @@
 # Changes for the native Linux source preview
 
+## November 18 native checkpoint
+
+- Skip empty soldier slots in tactical and strategic team scans.
+- Correct kit point use, attachment removal, and selected save and dialogue paths.
+- Add regression coverage for team slots, inventory, rendering, and strategic state.
+
+The development builds linked both game targets and passed 238 native and 240 strict sanitizer tests.
+The hosted checks cover source reconstruction and selected components.
+
 ## November 17 review corrections
 
 - Keep save-header requests page-relative while filenames retain their absolute slot.
