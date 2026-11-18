@@ -18,6 +18,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted ammo crate roster checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -25,15 +35,23 @@
 #include "Militia Control.h"
 #include "Map Screen Interface.h"
 #include "Morale.h"
+#include "PATHAI.H"
 #include "Queen Command.h"
 #include "Strategic Merc Handler.h"
 #include "Campaign Types.h"
 #include "Campaign.h"
 #include "Game Clock.h"
+#include "Items.h"
+#include "SaveLoadMap.h"
 #include "Soldier Add.h"
+#include "TileDat.h"
 #include "Vehicles.h"
+#include "Weapons.h"
+#include "World Items.h"
 #include "strategic.h"
 #include "strategicmap.h"
+#include "worlddef.h"
+#include "worldman.h"
 
 #include <cstring>
 #include <iostream>
@@ -70,6 +88,9 @@ extern INT32 GetAvgStatOfCurrentTeamStat(INT32 iStat);
 extern void ObliterateSector();
 extern void HandleFortification();
 extern INT16 MakeAutomaticSurgeryOnAllPatients(SOLDIERTYPE* pDoctor);
+extern void HandleTacticalAmmoCrates(UINT8 magType);
+extern BOOLEAN CreateLevelNode(LEVELNODE**);
+extern UINT32 guiLevelNodes;
 
 namespace {
 unsigned checks = 0;
@@ -665,6 +686,131 @@ void runVehicleRosterScenario()
 	pVehicleList = previousVehicles;
 }
 
+void runAmmoCrateRosterScenario()
+{
+	constexpr UINT16 looseAmmoItem = 500;
+	constexpr UINT16 crateItem = 501;
+
+	const INVTYPE previousLooseItem = Item[looseAmmoItem];
+	const INVTYPE previousCrateItem = Item[crateItem];
+	const MAGTYPE previousLooseMagazine = Magazine[looseAmmoItem];
+	const MAGTYPE previousCrateMagazine = Magazine[crateItem];
+	const UINT32 previousMaxItems = gMAXITEMS_READ;
+	const BOOLEAN previousEnemyInSector = gTacticalStatus.fEnemyInSector;
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	const UINT8 previousMaxVehicles =
+		gGameExternalOptions.ubGameMaximumNumberOfPlayerVehicles;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+	MAP_ELEMENT* const previousWorld = gpWorldLevelData;
+	const UINT32 previousLevelNodes = guiLevelNodes;
+	const UINT32 previousTileCount = giNumberOfTiles;
+	const UINT32 previousWorldItemCount = guiNumWorldItems;
+	std::vector<WORLDITEM> previousWorldItems;
+	previousWorldItems.swap(gWorldItems);
+
+	Item[looseAmmoItem] = {};
+	Item[looseAmmoItem].usItemClass = IC_AMMO;
+	Item[looseAmmoItem].ubClassIndex = looseAmmoItem;
+	Magazine[looseAmmoItem] = {};
+	Magazine[looseAmmoItem].ubCalibre = 1;
+	Magazine[looseAmmoItem].ubAmmoType = AMMO_REGULAR;
+	Magazine[looseAmmoItem].ubMagType = AMMO_MAGAZINE;
+	Magazine[looseAmmoItem].ubMagSize = 30;
+
+	Item[crateItem] = {};
+	Item[crateItem].usItemClass = IC_AMMO;
+	Item[crateItem].ubClassIndex = crateItem;
+	Magazine[crateItem] = {};
+	Magazine[crateItem].ubCalibre = 1;
+	Magazine[crateItem].ubAmmoType = AMMO_REGULAR;
+	Magazine[crateItem].ubMagType = AMMO_CRATE;
+	Magazine[crateItem].ubMagSize = 100;
+	gMAXITEMS_READ = crateItem + 1;
+
+	std::vector<MAP_ELEMENT> world(static_cast<std::size_t>(WORLD_MAX));
+	gpWorldLevelData = world.data();
+	guiLevelNodes = 0;
+	giNumberOfTiles = 0;
+	ApplyMapChangesToMapTempFile(FALSE);
+
+	gWorldItems.clear();
+	gWorldItems.resize(1);
+	WORLDITEM& worldItem = gWorldItems[0];
+	worldItem.fExists = TRUE;
+	worldItem.sGridNo = 0;
+	worldItem.ubLevel = 0;
+	worldItem.usFlags = WORLD_ITEM_REACHABLE;
+	worldItem.bVisible = TRUE;
+	check(CreateAmmo(looseAmmoItem, &worldItem.object, 30),
+	      "create loose ammunition for the production crate pass");
+	guiNumWorldItems = 1;
+
+	LEVELNODE* node = nullptr;
+	check(CreateLevelNode(&node) && node != nullptr,
+	      "create the production item-pool level node");
+	ITEM_POOL* pool = static_cast<ITEM_POOL*>(MemAlloc(sizeof(ITEM_POOL)));
+	check(pool != nullptr, "allocate the production item-pool record");
+	*pool = {};
+	pool->iItemIndex = 0;
+	pool->sGridNo = 0;
+	pool->ubLevel = 0;
+	pool->bVisible = TRUE;
+	pool->pLevelNode = node;
+	node->uiFlags = LEVELNODE_ITEM;
+	node->pItemPool = pool;
+	world[0].pStructHead = node;
+	world[0].uiFlags = MAPELEMENT_ITEMPOOL_PRESENT;
+
+	SOLDIERTYPE soldier;
+	soldier.initialize();
+	soldier.ubID = SoldierID(1);
+	soldier.bTeam = OUR_TEAM;
+	soldier.bActive = TRUE;
+	soldier.bInSector = TRUE;
+	check(CreateAmmo(crateItem, &soldier.inv[0], 1),
+	      "create the mercenary crate target");
+
+	gTacticalStatus.fEnemyInSector = FALSE;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(0);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(2);
+	gGameExternalOptions.ubGameMaximumNumberOfPlayerVehicles = 1;
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &soldier;
+
+	const BOOLEAN pathAIInitialized = InitPathAI();
+	check(pathAIInitialized == TRUE,
+	      "initialize pathfinding for the production post-merge sort pass");
+	if (pathAIInitialized)
+	{
+		HandleTacticalAmmoCrates(AMMO_CRATE);
+		ShutDownPathAI();
+	}
+	check(!gWorldItems[0].fExists,
+	      "the loose ammunition is consumed after the sparse roster scan");
+	check(world[0].pStructHead == nullptr,
+	      "the consumed world-item pool is removed");
+
+	MercPtrs[0] = previousOwner0;
+	MercPtrs[1] = previousOwner1;
+	gGameExternalOptions.ubGameMaximumNumberOfPlayerVehicles = previousMaxVehicles;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.fEnemyInSector = previousEnemyInSector;
+	gMAXITEMS_READ = previousMaxItems;
+	Item[looseAmmoItem] = previousLooseItem;
+	Item[crateItem] = previousCrateItem;
+	Magazine[looseAmmoItem] = previousLooseMagazine;
+	Magazine[crateItem] = previousCrateMagazine;
+	gWorldItems.clear();
+	previousWorldItems.swap(gWorldItems);
+	guiNumWorldItems = previousWorldItemCount;
+	gpWorldLevelData = previousWorld;
+	guiLevelNodes = previousLevelNodes;
+	giNumberOfTiles = previousTileCount;
+}
+
 }
 
 int main(int argc, char** argv)
@@ -757,6 +903,8 @@ int main(int argc, char** argv)
 		runObliterateSectorScenario();
 	else if (std::strcmp(argv[1], "vehicle-roster") == 0)
 		runVehicleRosterScenario();
+	else if (std::strcmp(argv[1], "ammo-crate-roster") == 0)
+		runAmmoCrateRosterScenario();
 	else
 	{
 		std::cerr << "unknown mode: " << argv[1] << '\n';

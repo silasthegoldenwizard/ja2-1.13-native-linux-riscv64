@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 ammo crate roster checkpoint
+
+Skip empty player roster slots when searching for a compatible ammo crate.
+Add a production-linked regression that checks the merge and world-item cleanup.
+
+Both development game targets linked. The development gates passed 240 native and 242 strict sanitizer tests.
+These results include 14 X11 contracts in each lane. Fresh Windows, RISC-V, and full campaign validation remain open.
+
 ## November 18 vehicle roster checkpoint
 
 Skip empty player roster slots when counting vehicles for admission.

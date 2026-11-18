@@ -1,8 +1,8 @@
 {
   "schema": 2,
-  "checkpoint": "native-vehicle-roster-20261118",
+  "checkpoint": "native-ammo-crate-roster-20261118",
   "preparation_date": "2026-11-18",
-  "status": "Native Linux source preview at the November 18 vehicle roster checkpoint.",
+  "status": "Native Linux source preview at the November 18 ammo crate roster checkpoint.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "previous_private_commit": "5c2ede3cb4245a842eca922be9abae4192fa8e20",
@@ -38,9 +38,9 @@
     "status": "Full engine builds need the separately published RakNet source companion from v0.1.0-alpha.1. Companion content is outside this PR."
   },
   "known_issue": "Broad campaign, full sound and device coverage, valid multiplayer gameplay, and native RISC-V execution remain incomplete.",
-  "verification": "Development suites passed 239 native and 241 strict sanitizer tests. Export reconstruction and CI have a separate scope.",
+  "verification": "Development suites passed 240 native and 242 strict sanitizer tests. Export reconstruction and CI have a separate scope.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms.",
-  "previous_public_commit": "9e55367609eac700a5fa2a55c3fd266c4e233a11",
-  "source_snapshot_sha256": "f17d93298ac61b7fedf27488ca071b6f20eb3e9ebba0a170ceff2ec47d2671e4",
-  "accepted_checkpoint_sha256": "f17d93298ac61b7fedf27488ca071b6f20eb3e9ebba0a170ceff2ec47d2671e4"
+  "previous_public_commit": "2276625068246d2cbb81ea9ca336a78c79c3653e",
+  "source_snapshot_sha256": "3ffc5829944f81a2b832b58d658093eaed72568f62d84d8c00e3e53be470109b",
+  "accepted_checkpoint_sha256": "3ffc5829944f81a2b832b58d658093eaed72568f62d84d8c00e3e53be470109b"
 }
