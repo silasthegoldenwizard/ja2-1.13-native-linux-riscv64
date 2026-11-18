@@ -24027,7 +24027,7 @@
  
 --- a/Tactical/Interface.cpp
 +++ b/Tactical/Interface.cpp
-@@ -1,3 +1,45 @@
+@@ -1,3 +1,55 @@
 +/*
 + * P710 native snapshot update: Tactical/Interface.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -24068,12 +24068,22 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Interface.cpp
++ * Native Linux source/build/test adaptations captured in the accepted panel and radio checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include "native_text_output.h"
 +#include "native_point.h"
  	#include <stdio.h>
  	#include <stdarg.h>
  	#include "sgp.h"
-@@ -246,14 +288,14 @@
+@@ -246,14 +298,14 @@
  UINT32 giDownArrowRect;
  
  // HEADROCK HAM 4: Rectangles for the various CTH displays.
@@ -24095,7 +24105,7 @@
  // HEADROCK HAM 4: Externed this value which tracks whether we've clicked out final aiming click yet.
  extern BOOLEAN gfDisplayFullCountRing;
  
-@@ -287,6 +329,7 @@
+@@ -287,6 +339,7 @@
  BOOLEAN InitializeFaceGearGraphics()
  {
  	VOBJECT_DESC	VObjectDesc;
@@ -24103,7 +24113,7 @@
  
  	char fileName[500];
  
-@@ -300,6 +343,8 @@
+@@ -300,6 +353,8 @@
  				strcat(fileName, SCSTI);
  				strcpy(VObjectDesc.ImageFile, fileName);
  				CHECKF(AddVideoObject(&VObjectDesc,&zNewFaceGear[iCounter2].uiIndex));
@@ -24112,7 +24122,7 @@
  			}
  
  			//IMP
-@@ -309,6 +354,8 @@
+@@ -309,6 +364,8 @@
  				strcat( fileName, SCSTI_IMP );
  				strcpy( VObjectDesc.ImageFile, fileName );
  				CHECKF( AddVideoObject( &VObjectDesc, &zNewFaceGearIMP[iCounter2].uiIndex ) );
@@ -24121,7 +24131,7 @@
  			}
  		}
  	}
-@@ -784,6 +831,18 @@
+@@ -784,6 +841,18 @@
  	CHAR16								zActionString[ 50 ];
  	BOOLEAN							fDisableAction = FALSE;
  
@@ -24140,7 +24150,7 @@
  	// Erase other menus....
  	EraseInterfaceMenus( TRUE );
  
-@@ -821,11 +880,6 @@
+@@ -821,11 +890,6 @@
  
  
  
@@ -24152,7 +24162,7 @@
  	// Blit background!
  	//BltVideoObjectFromIndex( FRAME_BUFFER, guiBUTTONBORDER, 0, iMenuAnchorX, iMenuAnchorY, VO_BLT_SRCTRANSPARENCY, NULL );
  
-@@ -842,7 +896,11 @@
+@@ -842,7 +906,11 @@
  	}
  	SetButtonFastHelpText( iActionIcons[ RUN_ICON ], pTacticalPopupButtonStrings[ RUN_ICON ] );
  	//SetButtonSavedRect( iActionIcons[ RUN_ICON ] );
@@ -24164,7 +24174,7 @@
  
  	if ( pSoldier->MercInWater( ) || ( pSoldier->flags.uiStatusFlags & SOLDIER_ROBOT ) )
  	{
-@@ -868,7 +926,11 @@
+@@ -868,7 +936,11 @@
  		SetButtonFastHelpText( iActionIcons[ WALK_ICON ], pTacticalPopupButtonStrings[ WALK_ICON ] );
  	}
  
@@ -24176,7 +24186,7 @@
  
  	if ( pSoldier->flags.uiStatusFlags & SOLDIER_ROBOT )
  	{
-@@ -889,7 +951,11 @@
+@@ -889,7 +961,11 @@
  	}
  	SetButtonFastHelpText( iActionIcons[ SNEAK_ICON ], pTacticalPopupButtonStrings[ SNEAK_ICON ] );
  	//SetButtonSavedRect( iActionIcons[ SNEAK_ICON ] );
@@ -24188,7 +24198,7 @@
  
  	// Check if this is a valid stance, diable if not!
  	if ( !IsValidStance( pSoldier, ANIM_CROUCH ) )
-@@ -907,7 +973,11 @@
+@@ -907,7 +983,11 @@
  	}
  	SetButtonFastHelpText( iActionIcons[ CRAWL_ICON ], pTacticalPopupButtonStrings[ CRAWL_ICON ] );
  	//SetButtonSavedRect( iActionIcons[ CRAWL_ICON ] );
@@ -24200,7 +24210,7 @@
  
  	// Check if this is a valid stance, diable if not!
  	if ( !IsValidStance( pSoldier, ANIM_PRONE ) )
-@@ -926,7 +996,11 @@
+@@ -926,7 +1006,11 @@
  	}
  	SetButtonFastHelpText( iActionIcons[ LOOK_ICON ], TacticalStr[ LOOK_CURSOR_POPUPTEXT ] );
  	//SetButtonSavedRect( iActionIcons[ LOOK_ICON ] );
@@ -24212,7 +24222,7 @@
  
  	if ( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE )
  	{
-@@ -1032,7 +1106,11 @@
+@@ -1032,7 +1116,11 @@
  	}
  	//SetButtonSavedRect( iActionIcons[ ACTIONC_ICON ] );
  	SetButtonFastHelpText( iActionIcons[ ACTIONC_ICON ], zActionString );
@@ -24224,7 +24234,7 @@
  
  	if ( fDisableAction )
  	{
-@@ -1050,7 +1128,11 @@
+@@ -1050,7 +1138,11 @@
  	}
  	//SetButtonSavedRect( iActionIcons[ TALK_ICON ] );
  	SetButtonFastHelpText( iActionIcons[ TALK_ICON ], pTacticalPopupButtonStrings[ TALK_ICON ] );
@@ -24236,7 +24246,7 @@
  
  	if ( AM_AN_EPC( pSoldier ) || ( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) )
  	{
-@@ -1068,7 +1150,11 @@
+@@ -1068,7 +1160,11 @@
  	}
  	//SetButtonSavedRect( iActionIcons[ HAND_ICON ] );
  	SetButtonFastHelpText( iActionIcons[ HAND_ICON ], pTacticalPopupButtonStrings[ HAND_ICON ] );
@@ -24248,7 +24258,7 @@
  
  	if ( AM_AN_EPC( pSoldier ) || ( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) )
  	{
-@@ -1085,7 +1171,11 @@
+@@ -1085,7 +1181,11 @@
  	}
  	//SetButtonSavedRect( iActionIcons[ CANCEL_ICON ] );
  	SetButtonFastHelpText( iActionIcons[ CANCEL_ICON ], pTacticalPopupButtonStrings[ CANCEL_ICON ] );
@@ -24260,7 +24270,7 @@
  
  	//LockTacticalInterface( );
  
-@@ -1517,7 +1607,7 @@
+@@ -1517,7 +1617,7 @@
  	}*/
  
  	// sevenfm: use max value so that animation and health string do not overlap
@@ -24269,7 +24279,7 @@
  
  	switch (ubAnimUseHeight)
  	{
-@@ -1809,7 +1899,7 @@
+@@ -1809,7 +1909,7 @@
  		}
  	}
  
@@ -24278,7 +24288,7 @@
  	{
  		ShowSoldierRoleSymbol(pSoldier);
  	}
-@@ -2621,9 +2711,13 @@
+@@ -2621,9 +2721,13 @@
  	INT16 sStartScreenX;
  	INT16 sStartScreenY;
  
@@ -24293,7 +24303,7 @@
  
  	sStartScreenX = (INT16)MousePos.x - 1;	// sevenfm: fix (-1) for cursor mismatch
  	sStartScreenY = (INT16)MousePos.y - 1;
-@@ -2869,7 +2963,7 @@
+@@ -2869,7 +2973,7 @@
  			UINT32 uiBulletsLeft = pSoldier->inv[ pSoldier->ubAttackingHand ][0]->data.gun.ubGunShotsLeft;
  			if (pSoldier->IsValidSecondHandBurst()) 
  			{
@@ -24302,7 +24312,7 @@
  			}
  
  			UINT32 uiCurBullet = uiBulletsLeft;
-@@ -3589,7 +3683,7 @@
+@@ -3589,7 +3693,7 @@
  	// draw suppression shock bar
  	if( gGameExternalOptions.ubShowHealthBarsOnHead > 1 )
  	{
@@ -24311,7 +24321,18 @@
  		dWidth		=	dPercentage * sWidth;
  		DrawBar( sXPos+3, sYPos+1+2*interval, (INT32)dWidth, sHeight, COLOR_ORANGE, Get16BPPColor( FROMRGB( 220, 140, 0 ) ), pDestBuf );
  	}
-@@ -5941,8 +6035,13 @@
+@@ -3706,7 +3810,9 @@
+ void DirtyMercPanelInterface( SOLDIERTYPE *pSoldier, UINT8 ubDirtyLevel )
+ {
+ 	DebugMsg(TOPIC_JA2,DBG_LEVEL_3,String("DirtyMercPanelInterface"));
+-	if ( pSoldier->bTeam == gbPlayerNum )
++	// Some roster-independent transitions have no mercenary owner.  They still
++	// need to invalidate the player panel, while non-player owners must not.
++	if ( pSoldier == NULL || pSoldier->bTeam == gbPlayerNum )
+ 	{
+ 		// ONly set to a higher level!
+ 		if ( fInterfacePanelDirty < ubDirtyLevel )
+@@ -5941,8 +6047,13 @@
  	}
  }
  
@@ -24326,7 +24347,7 @@
  	UINT16 usItemID;
  
  	// if ALT pressed - show armour instead of weapon
-@@ -5971,23 +6070,23 @@
+@@ -5971,23 +6082,23 @@
  		{
  			if( showExactInfo && gGameExternalOptions.fShowEnemyExtendedInfo )
  			{	// in range, show exact armour name
@@ -24357,7 +24378,7 @@
  					break;
  				}								
  			}
-@@ -6004,30 +6103,30 @@
+@@ -6004,30 +6115,30 @@
  			{
  				if(gGameExternalOptions.fShowEnemyExtendedInfo)
  				{	// show exact name
@@ -24395,7 +24416,7 @@
  				}
  			}
  		}
-@@ -6039,7 +6138,7 @@
+@@ -6039,7 +6150,7 @@
  			{
  				if ( showExactInfo )
  				{
@@ -24404,7 +24425,7 @@
  				}
  				else
  				{
-@@ -6047,25 +6146,25 @@
+@@ -6047,25 +6158,25 @@
  					switch( Weapon[pTargetSoldier->inv[ HANDPOS ].usItem].ubWeaponClass )
  					{
  					case HANDGUNCLASS:
@@ -24437,7 +24458,7 @@
  						break;
  					}
  				}
-@@ -6075,16 +6174,16 @@
+@@ -6075,16 +6186,16 @@
  				if( showExactInfo )
  				{							
  					if( pTargetSoldier->inv[ HANDPOS ].usItem )
@@ -36628,7 +36649,7 @@
  BOOLEAN InitTalkingMenu( UINT8 ubCharacterNum, INT32 sGridNo );
 --- a/Tactical/opplist.cpp
 +++ b/Tactical/opplist.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Tactical/opplist.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -36639,11 +36660,21 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/opplist.cpp
++ * Native Linux source/build/test adaptations captured in the accepted panel and radio checkpoint dated 2026-11-18.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-18.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <math.h>
  	#include "sgp.h"
  	#include "Isometric Utils.h"
  	#include "Overhead.h"
-@@ -336,7 +347,7 @@
+@@ -336,7 +357,7 @@
  
  		FLOAT appliedpenalty = 1.0f;
  		if ( HAS_SKILL_TRAIT( pSoldier, SURVIVAL_NT ) && (gGameOptions.fNewTraitSystem) )
@@ -36652,7 +36683,7 @@
  
  		sNewDist -= (INT16)(sNewDist * weatherpenalty * appliedpenalty);
  
-@@ -1608,7 +1619,7 @@
+@@ -1608,7 +1629,7 @@
  		// Added a feature to reduce rain effect on regaining breath with Ranger trait - SANDRO
  		FLOAT appliedpenalty = 1.0f;
  		if ( HAS_SKILL_TRAIT( pSoldier, SURVIVAL_NT ) && gGameOptions.fNewTraitSystem )
@@ -36661,7 +36692,7 @@
  
  		bHearing -= (INT16)(bHearing * weatherpenalty * appliedpenalty);
  	}
-@@ -3112,8 +3123,8 @@
+@@ -3112,8 +3133,8 @@
  	INT8* pbPublOL = &(gbPublicOpplist[ubTeam][ubID]);
  
  	// if new opplist is more up-to-date, or we are just wiping it for some reason
@@ -36672,7 +36703,21 @@
  	{
  		// if this team is becoming aware of a soldier it wasn't previously aware of
  		if ((bNewOpplist != NOT_HEARD_OR_SEEN) && (*pbPublOL == NOT_HEARD_OR_SEEN))
-@@ -5437,11 +5448,11 @@
+@@ -3801,13 +3822,6 @@
+ 							// chalk up another "revealed" enemy
+ 							++revealedEnemies;
+ 							fContactSeen = TRUE;
+-						}
+-						else
+-						{
+-							if ( MercPtrs[0]->stats.bLife < 10 )
+-							{
+-								//int breakpoint = 0;
+-							}
+ 						}
+ 					}
+ 
+@@ -5437,11 +5451,11 @@
  	// sevenfm: if dragging something, add dragging sound volume
  	if(pSoldier->IsDragging())
  	{
@@ -36689,7 +36734,7 @@
  
  	return (UINT8)sVolume;
  }
-@@ -6498,7 +6509,7 @@
+@@ -6498,7 +6512,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
@@ -36698,7 +36743,7 @@
  			}
  
  		}
-@@ -6547,7 +6558,7 @@
+@@ -6547,7 +6561,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
@@ -36707,7 +36752,7 @@
  
  				SetNewSituation( pSoldier );	// force a fresh AI decision to be made
  			}
-@@ -6655,7 +6666,7 @@
+@@ -6655,7 +6669,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
@@ -36716,7 +36761,7 @@
  
  				SetNewSituation( pSoldier );	// force a fresh AI decision to be made
  			}
-@@ -6672,7 +6683,7 @@
+@@ -6672,7 +6686,7 @@
  				pSoldier->bNoiseLevel = bLevel;
  
  				// no matter how loud noise was, don't remember it for more than 12 turns!
