@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 18 panel and radio checkpoint
+
+Protect player panel updates and radio sightings when roster slots are empty.
+Add production-linked tests for both missing-owner paths.
+
+Both development game targets linked. The development gates passed 244 native and 246 strict sanitizer tests.
+These results include 14 X11 contracts in each lane. Fresh Windows, RISC-V, and full campaign validation remain open.
+
 ## November 18 laptop roster checkpoint
 
 Skip empty slots when counting the laptop team and opening Personnel.
