@@ -58,6 +58,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted UpdatePublic checkpoint dated 2026-11-18.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-18.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -860,6 +870,45 @@ void runRadioSightingsAllSparseRosterScenario()
 	gbPlayerNum = previousPlayer;
 }
 
+void runUpdatePublicSparseRosterScenario()
+{
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+	const INT8 previousPublicKnowledge = gbPublicOpplist[OUR_TEAM][20];
+	const INT32 previousPublicLocation = gsPublicLastKnownOppLoc[OUR_TEAM][20];
+	const INT8 previousPublicLevel = gbPublicLastKnownOppLevel[OUR_TEAM][20];
+
+	SOLDIERTYPE observer;
+	observer.initialize();
+	observer.ubID = SoldierID(1);
+	observer.bTeam = OUR_TEAM;
+	observer.bActive = TRUE;
+	observer.bInSector = TRUE;
+	observer.stats.bLife = 100;
+	observer.aiData.bOppList[20] = SEEN_CURRENTLY;
+
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(0);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(1);
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &observer;
+	gbPublicOpplist[OUR_TEAM][20] = NOT_HEARD_OR_SEEN;
+	UpdatePublic(OUR_TEAM, SoldierID(20), SEEN_CURRENTLY, 1234, 0);
+	check(gbPublicOpplist[OUR_TEAM][20] == SEEN_CURRENTLY,
+	      "public knowledge updates across an empty runtime slot");
+	check(gsPublicLastKnownOppLoc[OUR_TEAM][20] == 1234,
+	      "public knowledge retains the reported opponent location");
+
+	gbPublicLastKnownOppLevel[OUR_TEAM][20] = previousPublicLevel;
+	gsPublicLastKnownOppLoc[OUR_TEAM][20] = previousPublicLocation;
+	gbPublicOpplist[OUR_TEAM][20] = previousPublicKnowledge;
+	MercPtrs[1] = previousOwner1;
+	MercPtrs[0] = previousOwner0;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+}
+
 void runObliterateSectorScenario()
 {
 	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
@@ -1121,6 +1170,8 @@ int main(int argc, char** argv)
 		runRadioSightingsSparseRosterScenario();
 	else if (std::strcmp(argv[1], "radio-sightings-all-sparse-roster") == 0)
 		runRadioSightingsAllSparseRosterScenario();
+	else if (std::strcmp(argv[1], "update-public-sparse-roster") == 0)
+		runUpdatePublicSparseRosterScenario();
 	else if (std::strcmp(argv[1], "obliterate-sector") == 0)
 		runObliterateSectorScenario();
 	else if (std::strcmp(argv[1], "vehicle-roster") == 0)
