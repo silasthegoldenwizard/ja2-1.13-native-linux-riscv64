@@ -4,7 +4,7 @@ This test covers the cursor-completion guard already published in `v0.1.0-alpha.
 It adds test code and CI integration. It does not change production code.
 
 The accepted test contains 24 authored cases.
-Its exact SHA-256 is `fa6dd03bf2669db4101d46a5547da746f437569b54d9ccea35006a4416461777`.
+Its exact SHA-256 is `4f53eada53daeab500a699bd36ddad1cd19862898624c35ca6b163501f9241f3`.
 The accepted review record has SHA-256 `964c37f680ceaab9cd77cff55de2f13d037efc7ab90da63feeb81b01bf3baeb0`.
 JA2 Owner selected this test for the public PR on November 15, 2026.
 

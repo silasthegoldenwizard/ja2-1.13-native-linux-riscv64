@@ -10,10 +10,10 @@ It does not provide a complete game installation.
 
 ### Current status
 
-- Current release: [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1), a source preview released on November 15, 2026.
-- `main` contains later accepted source updates. See the [status and validation limits](docs/STATUS.md) for their scope.
-- The repository does not include original game assets, private profiles, save files, or prebuilt game binaries.
-- Full gameplay, full runtime coverage, and RISC-V hardware acceptance remain incomplete.
+- The downloadable release is [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1), a source preview from November 15, 2026.
+- The [November 19 source checkpoint](docs/CHANGELOG.md#november-19-source-checkpoints) on `main` handles empty roster slots at battle end and during world teardown.
+- The usable-mercenary scan and pre-battle wake-up include the final configured player slot. The scripted SDL/X11 button viewer drains stray input before each step.
+- Original game assets, private profiles, saves, and prebuilt game binaries are separate from this source preview.
 
 ### What this repository is useful for
 
@@ -27,6 +27,15 @@ You can use this repository to:
 
 This preview does not provide an immediate game launch or a complete end-user Linux installation.
 Do not treat the current port as proven gameplay-complete.
+
+### What the tests cover
+
+The latest published source checkpoint passed 268 native tests and 270 strict sanitizer tests in development.
+The suites ran serially on a real X11 display. The strict build used AddressSanitizer, UndefinedBehaviorSanitizer, and LeakSanitizer.
+
+Focused synthetic tests use controlled inputs and test doubles. Production-linked regressions run selected engine paths with controlled state.
+The [hosted checks](docs/CI.md) cover source reconstruction, selected native components, source checks, and the attachment fixture.
+Live strategic gameplay, full campaign testing, Windows, and native RISC-V validation remain open. See the [validation status](docs/STATUS.md#validation).
 
 ### Prerequisites
 
