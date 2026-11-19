@@ -1,10 +1,10 @@
 {
   "schema": 2,
-  "checkpoint": "native-multiplayer-roster-20261118",
+  "checkpoint": "native-multiplayer-interrupt-legacy-local-source-only-20261119",
   "base_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
-  "accepted_source_pin_sha256": "465287fbb2e6a58ca803ea6fd55f79165f37cf8e0e2068f4e2859502f58508cb",
+  "accepted_source_pin_sha256": "6ac3e5b65027b5ba372a236370338d3b379665153a9a602474f13512c1d95bb4",
   "reconstructed_files": 1625,
-  "reconstructed_git_tree_sha1": "49597f2485885b01d98b8277b5169c57c9a10246",
+  "reconstructed_git_tree_sha1": "4350e439869ff48e10596e93acdf3b12d20db9b8",
   "records": [
     {
       "path": "Editor/Button Defines.h",
@@ -5164,23 +5164,23 @@
     },
     {
       "path": "Multiplayer/client.cpp",
-      "snapshot_sha256": "a3fe8b89f67fea20389d561fe9448ebc98c6d7eab0685d488ffb4933bad72eed",
-      "snapshot_bytes": 175910,
-      "snapshot_git_blob_sha1": "d80928cd704182eafd4534d2f2acb17a21eab1b3",
+      "snapshot_sha256": "affcbf3b0735162729b99e2f9d848dada1ec18014b54cc56a2ab4020df926405",
+      "snapshot_bytes": 178219,
+      "snapshot_git_blob_sha1": "1bd6f161956f8d5be8540de04c5fa352e67c1a8c",
       "upstream_repository": "https://github.com/1dot13/source",
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
       "upstream_path": "Multiplayer/client.cpp",
       "upstream_blob_sha1": "f5fc13d4f0ab1dfeb0e74bbb147c7ed7688e113f",
-      "reconstructed_sha256": "2d113ba900ffe3e4b699e12929148594e2f90542f93a86232b9a9d1fd21ee593",
-      "reconstructed_bytes": 172543,
+      "reconstructed_sha256": "dd8e95fac0fcca6fcf86610412da2394a4c38032a5c1e71b2ac7a7c11d632aa4",
+      "reconstructed_bytes": 175443,
       "notice": {
         "insertion_offset": 0,
-        "insertion_base64": "LyoKICogUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiBNdWx0aXBsYXllci9jbGllbnQuY3BwCiAqIE5hdGl2ZSBMaW51eCBzb3VyY2UvYnVpbGQvdGVzdCBhZGFwdGF0aW9ucyBjYXB0dXJlZCBpbiB0aGUgdGVzdGVkIGV4cGVyaW1lbnRhbCBzb3VyY2Ugc25hcHNob3QgZGF0ZWQgMjAyNi0xMS0xNS4KICogVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCiAqIEVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgogKiBVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE1LgogKiBUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCiAqIEV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgogKi8KCi8qCiAqIFA3MTAgbmF0aXZlIHNuYXBzaG90IHVwZGF0ZTogTXVsdGlwbGF5ZXIvY2xpZW50LmNwcAogKiBOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIG5hdGl2ZSBjcmFzaC1oYXJkZW5pbmcgY2hlY2twb2ludCBkYXRlZCAyMDI2LTExLTE3LgogKiBUaGlzIGZpbGUgaXMgaW5oZXJpdGVkL2FkYXB0ZWQgb3IgcHJvamVjdC1hZGRlZCBtYXRlcmlhbDsgYSBuZXcgcGF0aCBkb2VzIG5vdCBlc3RhYmxpc2ggaW5kZXBlbmRlbnQgYXV0aG9yc2hpcC4KICogRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCiAqIFVwZGF0ZSBub3RpY2UgaW5zZXJ0ZWQgZHVyaW5nIHNvdXJjZS1vbmx5IHBhY2thZ2UgcHJlcGFyYXRpb246IDIwMjYtMTEtMTcuCiAqIFRoaXMgcmVjb3JkcyB0aGUgc25hcHNob3QvcHJlcGFyYXRpb24gZGF0ZSwgbm90IGFuIGFzc2VydGVkIGZpcnN0LWVkaXQgZGF0ZS4gRXhpc3Rpbmcgbm90aWNlcyByZXRhaW5lZC4KICogRXhhY3Qgb3JpZ2luYWwgYnl0ZXMsIG9yaWdpbnMgYW5kIHJldmVyc2libGUgbm90aWNlIGNoYW5nZXMgYXJlIHJlY29yZGVkIGluIFJFQ09OU1RSVUNUSU9OLU1BTklGRVNULmpzb24uCiAqLwoKLyoKICogUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiBNdWx0aXBsYXllci9jbGllbnQuY3BwCiAqIE5hdGl2ZSBMaW51eCBzb3VyY2UvYnVpbGQvdGVzdCBhZGFwdGF0aW9ucyBjYXB0dXJlZCBpbiB0aGUgYWNjZXB0ZWQgbXVsdGlwbGF5ZXIgcm9zdGVyIGNoZWNrcG9pbnQgZGF0ZWQgMjAyNi0xMS0xOC4KICogVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCiAqIEVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgogKiBVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE4LgogKiBUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCiAqIEV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgogKi8KCg==",
+        "insertion_base64": "LyoKICogUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiBNdWx0aXBsYXllci9jbGllbnQuY3BwCiAqIE5hdGl2ZSBMaW51eCBzb3VyY2UvYnVpbGQvdGVzdCBhZGFwdGF0aW9ucyBjYXB0dXJlZCBpbiB0aGUgdGVzdGVkIGV4cGVyaW1lbnRhbCBzb3VyY2Ugc25hcHNob3QgZGF0ZWQgMjAyNi0xMS0xNS4KICogVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCiAqIEVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgogKiBVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE1LgogKiBUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCiAqIEV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgogKi8KCi8qCiAqIFA3MTAgbmF0aXZlIHNuYXBzaG90IHVwZGF0ZTogTXVsdGlwbGF5ZXIvY2xpZW50LmNwcAogKiBOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIG5hdGl2ZSBjcmFzaC1oYXJkZW5pbmcgY2hlY2twb2ludCBkYXRlZCAyMDI2LTExLTE3LgogKiBUaGlzIGZpbGUgaXMgaW5oZXJpdGVkL2FkYXB0ZWQgb3IgcHJvamVjdC1hZGRlZCBtYXRlcmlhbDsgYSBuZXcgcGF0aCBkb2VzIG5vdCBlc3RhYmxpc2ggaW5kZXBlbmRlbnQgYXV0aG9yc2hpcC4KICogRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCiAqIFVwZGF0ZSBub3RpY2UgaW5zZXJ0ZWQgZHVyaW5nIHNvdXJjZS1vbmx5IHBhY2thZ2UgcHJlcGFyYXRpb246IDIwMjYtMTEtMTcuCiAqIFRoaXMgcmVjb3JkcyB0aGUgc25hcHNob3QvcHJlcGFyYXRpb24gZGF0ZSwgbm90IGFuIGFzc2VydGVkIGZpcnN0LWVkaXQgZGF0ZS4gRXhpc3Rpbmcgbm90aWNlcyByZXRhaW5lZC4KICogRXhhY3Qgb3JpZ2luYWwgYnl0ZXMsIG9yaWdpbnMgYW5kIHJldmVyc2libGUgbm90aWNlIGNoYW5nZXMgYXJlIHJlY29yZGVkIGluIFJFQ09OU1RSVUNUSU9OLU1BTklGRVNULmpzb24uCiAqLwoKLyoKICogUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiBNdWx0aXBsYXllci9jbGllbnQuY3BwCiAqIE5hdGl2ZSBMaW51eCBzb3VyY2UvYnVpbGQvdGVzdCBhZGFwdGF0aW9ucyBjYXB0dXJlZCBpbiB0aGUgYWNjZXB0ZWQgbXVsdGlwbGF5ZXIgcm9zdGVyIGNoZWNrcG9pbnQgZGF0ZWQgMjAyNi0xMS0xOC4KICogVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCiAqIEVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgogKiBVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE4LgogKiBUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCiAqIEV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgogKi8KCi8qCiAqIFA3MTAgbmF0aXZlIHNuYXBzaG90IHVwZGF0ZTogTXVsdGlwbGF5ZXIvY2xpZW50LmNwcAogKiBOYXRpdmUgTGludXggc291cmNlL2J1aWxkL3Rlc3QgYWRhcHRhdGlvbnMgY2FwdHVyZWQgaW4gdGhlIGFjY2VwdGVkIG11bHRpcGxheWVyIGludGVycnVwdCBsZWdhY3ktbG9jYWwgY29ycmVjdGlvbiBkYXRlZCAyMDI2LTExLTE5LgogKiBUaGlzIGZpbGUgaXMgaW5oZXJpdGVkL2FkYXB0ZWQgb3IgcHJvamVjdC1hZGRlZCBtYXRlcmlhbDsgYSBuZXcgcGF0aCBkb2VzIG5vdCBlc3RhYmxpc2ggaW5kZXBlbmRlbnQgYXV0aG9yc2hpcC4KICogRW5naW5lIGJhc2VsaW5lOiAxZG90MTMvc291cmNlQDMzOTQ2OTVhMzg3YTE0Yzc4ZTkyYjE1OGNmZGNmNTBlNDA2OGM5NmIuCiAqIFVwZGF0ZSBub3RpY2UgaW5zZXJ0ZWQgZHVyaW5nIHNvdXJjZS1vbmx5IHBhY2thZ2UgcHJlcGFyYXRpb246IDIwMjYtMTEtMTkuCiAqIFRoaXMgcmVjb3JkcyB0aGUgc25hcHNob3QvcHJlcGFyYXRpb24gZGF0ZSwgbm90IGFuIGFzc2VydGVkIGZpcnN0LWVkaXQgZGF0ZS4gRXhpc3Rpbmcgbm90aWNlcyByZXRhaW5lZC4KICogRXhhY3Qgb3JpZ2luYWwgYnl0ZXMsIG9yaWdpbnMgYW5kIHJldmVyc2libGUgbm90aWNlIGNoYW5nZXMgYXJlIHJlY29yZGVkIGluIFJFQ09OU1RSVUNUSU9OLU1BTklGRVNULmpzb24uCiAqLwoK",
         "reused_notice_date": null,
         "reused_notice_sha256": null,
-        "notice_date": "2026-11-18",
+        "notice_date": "2026-11-19",
         "lf_normalized": true,
-        "retained_prior_notice_sha256": "c4163375109ace1053c59bf63f5951721b0a92737d3244e2427fbff9396f1122"
+        "retained_prior_notice_sha256": "d5568d5ec7d36a4e7d3e74a3013dc64d3d7c805088d19777904b30328011d264"
       },
       "classification": "modified inherited file",
       "base_sha256": "6e91f6c9dcfe6f3e74f6017774e5cb734f7796bba587b4b49c5fe06af8fdb559",
@@ -5192,14 +5192,31 @@
     },
     {
       "path": "Multiplayer/connect.h",
+      "snapshot_sha256": "e852f71956117e20e2bcfc9c0810819c21df535fb986183864a838f5da89ecaf",
+      "snapshot_bytes": 7206,
+      "snapshot_git_blob_sha1": "80b07bccc1b57667cea87c7ff315b76ec1301e5d",
       "upstream_repository": "https://github.com/1dot13/source",
       "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
+      "upstream_path": "Multiplayer/connect.h",
       "upstream_blob_sha1": "3f0da50c4d9e86f1abdb60308a9e934d23eba7ab",
+      "reconstructed_sha256": "0b3165cc7bd0d466fdc583da10a6900ccdde7e3be57facf94b70be0d67adf6b4",
+      "reconstructed_bytes": 7656,
+      "notice": {
+        "insertion_offset": 0,
+        "insertion_base64": "LyoKICogUDcxMCBuYXRpdmUgc25hcHNob3QgdXBkYXRlOiBNdWx0aXBsYXllci9jb25uZWN0LmgKICogTmF0aXZlIExpbnV4IHNvdXJjZS9idWlsZC90ZXN0IGFkYXB0YXRpb25zIGNhcHR1cmVkIGluIHRoZSBhY2NlcHRlZCBtdWx0aXBsYXllciBpbnRlcnJ1cHQgbGVnYWN5LWxvY2FsIGNvcnJlY3Rpb24gZGF0ZWQgMjAyNi0xMS0xOS4KICogVGhpcyBmaWxlIGlzIGluaGVyaXRlZC9hZGFwdGVkIG9yIHByb2plY3QtYWRkZWQgbWF0ZXJpYWw7IGEgbmV3IHBhdGggZG9lcyBub3QgZXN0YWJsaXNoIGluZGVwZW5kZW50IGF1dGhvcnNoaXAuCiAqIEVuZ2luZSBiYXNlbGluZTogMWRvdDEzL3NvdXJjZUAzMzk0Njk1YTM4N2ExNGM3OGU5MmIxNThjZmRjZjUwZTQwNjhjOTZiLgogKiBVcGRhdGUgbm90aWNlIGluc2VydGVkIGR1cmluZyBzb3VyY2Utb25seSBwYWNrYWdlIHByZXBhcmF0aW9uOiAyMDI2LTExLTE5LgogKiBUaGlzIHJlY29yZHMgdGhlIHNuYXBzaG90L3ByZXBhcmF0aW9uIGRhdGUsIG5vdCBhbiBhc3NlcnRlZCBmaXJzdC1lZGl0IGRhdGUuIEV4aXN0aW5nIG5vdGljZXMgcmV0YWluZWQuCiAqIEV4YWN0IG9yaWdpbmFsIGJ5dGVzLCBvcmlnaW5zIGFuZCByZXZlcnNpYmxlIG5vdGljZSBjaGFuZ2VzIGFyZSByZWNvcmRlZCBpbiBSRUNPTlNUUlVDVElPTi1NQU5JRkVTVC5qc29uLgogKi8KCg==",
+        "reused_notice_date": null,
+        "reused_notice_sha256": null,
+        "notice_date": "2026-11-19",
+        "lf_normalized": true,
+        "retained_prior_notice_sha256": null
+      },
+      "classification": "modified inherited file",
       "base_sha256": "b54b7597e8249d5ea451e732ca52e6b235660f2d6568f3d4ac692eb371c5d8c0",
       "base_bytes": 7050,
-      "reconstructed_sha256": "b54b7597e8249d5ea451e732ca52e6b235660f2d6568f3d4ac692eb371c5d8c0",
-      "reconstructed_bytes": 7050,
-      "classification": "unchanged upstream source/build/license, separately obtained; not uploaded"
+      "baseline_object_store": "retained pinned public source",
+      "canonical_base_sha256": "c5b4d11e7edc3d0a4a293669fe9c97475ee8a9939e5bcb4072a4f8bdbc1cda4b",
+      "base_append_final_newline": false,
+      "payload_path": "patches/native-base.patch"
     },
     {
       "path": "Multiplayer/fresh_header.h",
@@ -28179,8 +28196,8 @@
     "Multiplayer/raknet/RakMemoryOverride.h"
   ],
   "scope": "Source/build/license closure selected by exact roots/extensions; not the full upstream tree. RakNet component absent; full engine cannot build from this proposed upload alone.",
-  "preparation_date": "2026-11-18",
-  "previous_public_commit": "76e3c68ae3b01c6bd1127ee09b1171a83f7e721b",
+  "preparation_date": "2026-11-19",
+  "previous_public_commit": "4c6f4e0e2f5ffb22afb17bd496d271a8c8a10298",
   "retained_editorial_documents": [
     "tests/native-core/BUTTON_FIXTURES.md",
     "tests/native-core/IMAGE_FIXTURES.md",
@@ -28192,5 +28209,5 @@
     "tests/native-core/VFS_FIXTURES.md",
     "tests/native-core/VIDEO_FIXTURES.md"
   ],
-  "development_evidence": "Development gates passed 250 native and 252 strict sanitizer tests. Export validation has a separate scope."
+  "development_evidence": "Development gates passed 263 native and 265 strict sanitizer tests. Export validation has a separate scope."
 }

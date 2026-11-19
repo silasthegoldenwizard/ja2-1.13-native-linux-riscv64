@@ -83,6 +83,7 @@ Laptop/personnel.cpp
 Laptop/personnel.h
 ModularizedTacticalAI/src/PlanFactoryLibrary.cpp
 Multiplayer/client.cpp
+Multiplayer/connect.h
 Multiplayer/network.h
 Multiplayer/server.cpp
 Strategic/ASD.cpp
