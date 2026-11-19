@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 19 world-teardown roster checkpoint
+
+Resolve soldiers by runtime ID during world teardown. Skip empty and inactive slots.
+Preserve player soldier objects and remove non-player soldiers through the existing tactical removal path.
+
+Both development game targets linked. The development suites passed 266 native and 268 strict sanitizer tests, including local multiplayer tests.
+Live sector transitions, Windows, RISC-V, and full campaign validation remain open for this checkpoint.
+
 ## November 19 battle-end roster checkpoint
 
 Skip empty team slots during battle-end updates. Continue processing later live owners.
