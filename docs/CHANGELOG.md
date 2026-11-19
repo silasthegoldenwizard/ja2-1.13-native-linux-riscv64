@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 19 strategic final-slot checkpoint
+
+Include the final configured player slot in the usable-mercenary scan and pre-battle wake-up.
+Stabilize the scripted SDL button viewer by draining ambient input before each scripted step.
+
+The development suites passed 268 native and 270 strict sanitizer tests in serial on a real X11 display.
+Live strategic gameplay, Windows, RISC-V, and full campaign validation remain open for this checkpoint.
+
 ## November 19 world-teardown roster checkpoint
 
 Resolve soldiers by runtime ID during world teardown. Skip empty and inactive slots.

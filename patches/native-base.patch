@@ -11524,7 +11524,7 @@
  		gMercProfiles[ SKYRIDER ].iBalance += iPayAmount;
 --- a/Strategic/Map Screen Interface Bottom.cpp
 +++ b/Strategic/Map Screen Interface Bottom.cpp
-@@ -1,3 +1,14 @@
+@@ -1,3 +1,24 @@
 +/*
 + * P710 native snapshot update: Strategic/Map Screen Interface Bottom.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -11535,11 +11535,21 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Map Screen Interface Bottom.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic final-slot checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include "native_point.h"
  	#include "Map Screen Interface Bottom.h"
  	#include "Map Screen Interface Border.h"
  	#include "types.h"
-@@ -1129,7 +1140,7 @@
+@@ -1129,7 +1150,7 @@
  
  void MapScreenMessageScrollBarCallBack( MOUSE_REGION *pRegion, INT32 iReason )
  {
@@ -11548,7 +11558,7 @@
  	UINT8 ubMouseYOffset;
  	UINT8	ubDesiredSliderOffset;
  	UINT8 ubDesiredMessageIndex;
-@@ -1151,8 +1162,14 @@
+@@ -1151,8 +1172,14 @@
  		if ( ubNumMessages > MAX_MESSAGES_ON_MAP_BOTTOM )
  		{
  			// where is the mouse?
@@ -11563,7 +11573,34 @@
  
  			ubMouseYOffset = (UINT8) MousePos.y - MESSAGE_SCROLL_AREA_START_Y;
  
-@@ -2094,7 +2111,7 @@
+@@ -1782,17 +1809,17 @@
+ BOOLEAN AnyUsableRealMercenariesOnTeam( void )
+ {
+ 	SOLDIERTYPE *pSoldier = NULL;
+-	INT32 iCounter = 0, iNumberOnTeam = 0;
+-
+-	// this is for speed, this runs once/frame
+-	iNumberOnTeam = gTacticalStatus.Team[ OUR_TEAM ].bLastID;
+ 
+ 	// get number of mercs on team who are not vehicles or robot, POWs or EPCs
+-	for( iCounter = 0; iCounter < iNumberOnTeam; iCounter++ )
+-	{
+-		pSoldier = &Menptr[ iCounter ];
+-
+-		if( ( pSoldier->bActive ) && ( pSoldier->stats.bLife > 0 ) &&
++	for( SoldierID soldierID = gTacticalStatus.Team[ OUR_TEAM ].bFirstID;
++		 soldierID <= gTacticalStatus.Team[ OUR_TEAM ].bLastID; ++soldierID )
++	{
++		if( !GetSoldier( &pSoldier, soldierID ) )
++		{
++			continue;
++		}
++
++		if( ( pSoldier->stats.bLife > 0 ) &&
+ 				!( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) && !AM_A_ROBOT( pSoldier ) &&
+ 				( pSoldier->bAssignment != ASSIGNMENT_POW ) &&
+ 				( pSoldier->bAssignment != ASSIGNMENT_DEAD ) &&
+@@ -2094,7 +2121,7 @@
  	// check if we can go that far, only go as far as we can
  	if ( ( gubFirstMapscreenMessageIndex + MAX_MESSAGES_ON_MAP_BOTTOM + ubLinesDown ) > ubNumMessages )
  	{
@@ -11572,7 +11609,7 @@
  	}
  
  	if ( ubLinesDown > 0 )
-@@ -2131,7 +2148,7 @@
+@@ -2131,7 +2158,7 @@
  
  	ubNumMessages = GetRangeOfMapScreenMessages();
  
@@ -11581,7 +11618,7 @@
  	ChangeCurrentMapscreenMessageIndex( ubDesiredMessageIndex );
  }
  
-@@ -2139,7 +2156,7 @@
+@@ -2139,7 +2166,7 @@
  
  void ChangeCurrentMapscreenMessageIndex( UINT8 ubNewMessageIndex )
  {
@@ -13686,7 +13723,7 @@
  	ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, L"%s", w_str );
 --- a/Strategic/PreBattle Interface.cpp
 +++ b/Strategic/PreBattle Interface.cpp
-@@ -1,4 +1,18 @@
+@@ -1,4 +1,28 @@
 -	#include <stdio.h>
 +/*
 + * P710 native snapshot update: Strategic/PreBattle Interface.cpp
@@ -13694,6 +13731,16 @@
 + * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
 + * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
 + * Update notice inserted during source-only package preparation: 2026-11-15.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
++/*
++ * P710 native snapshot update: Strategic/PreBattle Interface.cpp
++ * Native Linux source/build/test adaptations captured in the accepted strategic final-slot checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
 + * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
@@ -13706,7 +13753,7 @@
  	#include "PreBattle Interface.h"
  	#include "Button System.h"
  	#include "mousesystem.h"
-@@ -121,7 +135,8 @@
+@@ -121,7 +145,8 @@
  void GoToSectorCallback( GUI_BUTTON *btn, INT32 reason );
  void RetreatMercsCallback( GUI_BUTTON *btn, INT32 reason );
  
@@ -13716,7 +13763,7 @@
  
  void CheckForRobotAndIfItsControlled( void );
  
-@@ -224,10 +239,12 @@
+@@ -224,10 +249,12 @@
  
  extern void CalculateGroupRetreatSector( GROUP *pGroup );
  
@@ -13729,7 +13776,7 @@
  
  
  
-@@ -664,9 +681,9 @@
+@@ -664,9 +691,9 @@
  					deploymentleadership += 30;
  				}
  
@@ -13742,7 +13789,7 @@
  
  				// Flugente: if a merc is inserted from concealed state, retreat is forbidden, as at least this merc will have to extract manually
  				if ( pSoldier->usSoldierFlagMask2 & SOLDIER_CONCEALINSERTION )
-@@ -1169,7 +1186,7 @@
+@@ -1169,7 +1196,7 @@
  	{
  		uiCurrTime = GetJA2Clock();
  		iPercentage = (uiCurrTime-uiStartTime) * 100 / uiTimeRange;
@@ -13751,7 +13798,7 @@
  
  		//Factor the percentage so that it is modified by a gravity falling acceleration effect.
  		iFactor = (iPercentage - 50) * 2;
-@@ -1179,9 +1196,9 @@
+@@ -1179,9 +1206,9 @@
  			iPercentage = (UINT32)(iPercentage + (100 - iPercentage) * iFactor * 0.01 + 0.05);
  
  		DstRect.iLeft = sStartLeft + (sEndLeft - sStartLeft) * iPercentage / 100;
@@ -13763,7 +13810,7 @@
  
  		BltStretchVideoSurface( FRAME_BUFFER, guiSAVEBUFFER, 0, 0, 0, &PBIRect, &DstRect );
  
-@@ -1209,11 +1226,11 @@
+@@ -1209,11 +1236,11 @@
  
  	if ( fUp )
  	{
@@ -13777,7 +13824,7 @@
  	}
  	gfRenderPBInterface = TRUE;
  }
-@@ -1494,7 +1511,7 @@
+@@ -1494,7 +1521,7 @@
  		mprintf( 224 + xOffset - width , 38 + yOffset, str );
  
  		ubDesiredParticipantsListHeight = guiNumInvolved * ROW_HEIGHT;
@@ -13786,7 +13833,7 @@
  
  		ubDesiredListHeight = ubDesiredParticipantsListHeight + ubDesiredUninvolvedListHeight;
  
-@@ -1877,7 +1894,8 @@
+@@ -1877,7 +1904,8 @@
  	COND_DEAD
  };
  
@@ -13796,6 +13843,35 @@
  {
  	Assert( pSoldier );
  	*pubHPPercent = (UINT8)(pSoldier->stats.bLife * 100 / pSoldier->stats.bLifeMax);
+@@ -2277,19 +2305,18 @@
+ 
+ void WakeUpAllMercsInSectorUnderAttack( void )
+ {
+-	INT32 iCounter = 0, iNumberOfMercsOnTeam = 0;
+ 	SOLDIERTYPE *pSoldier = NULL;
+ 
+-
+-	// get number of possible grunts on team
+-	iNumberOfMercsOnTeam = gTacticalStatus.Team[ OUR_TEAM ].bLastID;
+-
+ 	// any mercs not on duty should be added to the first avail squad
+-	for( iCounter = 0; iCounter < iNumberOfMercsOnTeam; iCounter++ )
+-	{
+-		pSoldier = &( Menptr[ iCounter ] );
+-
+-		if ( pSoldier->bActive && pSoldier->stats.bLife && !( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) )
++	for( SoldierID soldierID = gTacticalStatus.Team[ OUR_TEAM ].bFirstID;
++		 soldierID <= gTacticalStatus.Team[ OUR_TEAM ].bLastID; ++soldierID )
++	{
++		if( !GetSoldier( &pSoldier, soldierID ) )
++		{
++			continue;
++		}
++
++		if ( pSoldier->stats.bLife && !( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) )
+ 		{
+ 			// if involved, but asleep
+ 			if ( PlayerMercInvolvedInThisCombat( pSoldier ) && ( pSoldier->flags.fMercAsleep == TRUE ) )
 --- a/Strategic/Queen Command.cpp
 +++ b/Strategic/Queen Command.cpp
 @@ -1,3 +1,33 @@

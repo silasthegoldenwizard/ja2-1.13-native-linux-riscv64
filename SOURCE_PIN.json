@@ -1,8 +1,8 @@
 {
   "schema": 2,
-  "checkpoint": "native-world-teardown-roster-20261119",
+  "checkpoint": "native-strategic-final-slot-20261119",
   "preparation_date": "2026-11-19",
-  "status": "Native Linux source preview at the November 19 world-teardown roster checkpoint.",
+  "status": "Native Linux source preview at the November 19 strategic final-slot checkpoint.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "previous_private_commit": "5c2ede3cb4245a842eca922be9abae4192fa8e20",
@@ -38,9 +38,9 @@
     "status": "Full engine builds need the separately published RakNet source companion from v0.1.0-alpha.1. Companion content is outside this PR."
   },
   "known_issue": "Broad campaign, full sound and device coverage, valid multiplayer gameplay, and native RISC-V execution remain incomplete.",
-  "verification": "Development suites passed 266 native and 268 strict sanitizer tests. Export reconstruction and CI have a separate scope.",
+  "verification": "Development suites passed 268 native and 270 strict sanitizer tests. Export reconstruction and CI have a separate scope.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms.",
-  "previous_public_commit": "8d994f6d08b5dbaab51c7023997a10268899d6c8",
-  "source_snapshot_sha256": "1e201cc766302104890d17290738d159de1dd12a5d6be952d82b3ebc7067ee3b",
-  "accepted_checkpoint_sha256": "1e201cc766302104890d17290738d159de1dd12a5d6be952d82b3ebc7067ee3b"
+  "previous_public_commit": "7a303d9a69531a75c33fe17e3c9b43df7fc4eb07",
+  "source_snapshot_sha256": "d38e351a27ef44f1bf0549ee13519cc124ca7169f5287fcf5d7857890578111c",
+  "accepted_checkpoint_sha256": "d38e351a27ef44f1bf0549ee13519cc124ca7169f5287fcf5d7857890578111c"
 }
