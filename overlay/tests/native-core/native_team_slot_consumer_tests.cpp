@@ -78,6 +78,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted battle-end roster checkpoint dated 2026-11-19.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-19.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -315,6 +325,137 @@ void runBattleLossCheckScenario()
 	gbPlayerNum = OUR_TEAM;
 	check(CheckForLosingEndOfBattle() == TRUE,
 	      "an empty player and militia roster has no capable combatant");
+	gbPlayerNum = previousPlayer;
+}
+
+void runBattleAITurnCleanupSparseRosterScenario()
+{
+	const UINT8 previousPlayer = gbPlayerNum;
+	const UINT8 previousCurrentTeam = gTacticalStatus.ubCurrentTeam;
+	const SoldierID previousFirst = gTacticalStatus.Team[ENEMY_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[ENEMY_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner20 = MercPtrs[20];
+	SOLDIERTYPE* const previousOwner21 = MercPtrs[21];
+	const UINT8 previousInterruptCount = gubOutOfTurnPersons;
+
+	SOLDIERTYPE enemy;
+	enemy.initialize();
+	enemy.ubID = SoldierID(21);
+	enemy.bTeam = ENEMY_TEAM;
+	enemy.bActive = TRUE;
+	enemy.stats.bLife = 100;
+	enemy.aiData.bMoved = FALSE;
+	enemy.flags.uiStatusFlags |= SOLDIER_UNDERAICONTROL;
+
+	gbPlayerNum = OUR_TEAM;
+	gTacticalStatus.ubCurrentTeam = ENEMY_TEAM;
+	gTacticalStatus.Team[ENEMY_TEAM].bFirstID = SoldierID(20);
+	gTacticalStatus.Team[ENEMY_TEAM].bLastID = SoldierID(21);
+	MercPtrs[20] = nullptr;
+	MercPtrs[21] = &enemy;
+	gubOutOfTurnPersons = 0;
+
+	EndAllAITurns();
+
+	check(enemy.aiData.bMoved,
+	      "AI turn cleanup reaches a live owner after an empty team slot");
+	check((enemy.flags.uiStatusFlags & SOLDIER_UNDERAICONTROL) == 0,
+	      "AI turn cleanup releases the later live owner");
+	check(gTacticalStatus.ubCurrentTeam == gbPlayerNum,
+	      "AI turn cleanup returns control to the player team");
+
+	gubOutOfTurnPersons = previousInterruptCount;
+	MercPtrs[21] = previousOwner21;
+	MercPtrs[20] = previousOwner20;
+	gTacticalStatus.Team[ENEMY_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[ENEMY_TEAM].bFirstID = previousFirst;
+	gTacticalStatus.ubCurrentTeam = previousCurrentTeam;
+	gbPlayerNum = previousPlayer;
+}
+
+void runBattleVictorySparseRosterScenario()
+{
+	const UINT8 previousPlayer = gbPlayerNum;
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner5 = MercPtrs[5];
+	SOLDIERTYPE* const previousOwner6 = MercPtrs[6];
+	SOLDIERTYPE* const previousOwner7 = MercPtrs[7];
+	const BOOLEAN previousStandUp = gGameExternalOptions.fStandUpAfterBattle;
+	const BOOLEAN previousStanceDifferent = gfUIStanceDifferent;
+	const BOOLEAN previousPanelDirty = fInterfacePanelDirty;
+	const UINT16 previousBattles0 = gMercProfiles[0].records.usBattlesTactical;
+	const UINT16 previousLargest0 = gMercProfiles[0].records.usLargestBattleFought;
+	const UINT16 previousBattles1 = gMercProfiles[1].records.usBattlesTactical;
+	const UINT16 previousLargest1 = gMercProfiles[1].records.usLargestBattleFought;
+
+	SOLDIERTYPE inRange;
+	inRange.initialize();
+	inRange.ubID = SoldierID(6);
+	inRange.ubProfile = 0;
+	inRange.bTeam = OUR_TEAM;
+	inRange.bActive = TRUE;
+	inRange.bInSector = TRUE;
+	inRange.stats.bLife = 100;
+	inRange.bAssignment = 0;
+	inRange.bCollapsed = FALSE;
+	inRange.bStealthMode = TRUE;
+	inRange.usQuoteSaidExtFlags =
+		SOLDIER_QUOTE_SAID_BUDDY_1_WITNESSED |
+		SOLDIER_QUOTE_SAID_BUDDY_2_WITNESSED |
+		SOLDIER_QUOTE_SAID_BUDDY_3_WITNESSED |
+		SOLDIER_QUOTE_SAID_BUDDY_4_WITNESSED |
+		SOLDIER_QUOTE_SAID_BUDDY_5_WITNESSED |
+		SOLDIER_QUOTE_SAID_BUDDY_6_WITNESSED;
+
+	SOLDIERTYPE outsideRange;
+	outsideRange.initialize();
+	outsideRange.ubID = SoldierID(7);
+	outsideRange.ubProfile = 1;
+	outsideRange.bTeam = OUR_TEAM;
+	outsideRange.bActive = TRUE;
+	outsideRange.bInSector = TRUE;
+	outsideRange.stats.bLife = 100;
+	outsideRange.bAssignment = 0;
+	outsideRange.bStealthMode = TRUE;
+
+	gbPlayerNum = OUR_TEAM;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(5);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(6);
+	MercPtrs[5] = nullptr;
+	MercPtrs[6] = &inRange;
+	MercPtrs[7] = &outsideRange;
+	gGameExternalOptions.fStandUpAfterBattle = FALSE;
+	gMercProfiles[0].records.usBattlesTactical = 7;
+	gMercProfiles[0].records.usLargestBattleFought = 2;
+	gMercProfiles[1].records.usBattlesTactical = 11;
+	gMercProfiles[1].records.usLargestBattleFought = 9;
+
+	UpdatePlayerTeamAfterBattleVictory(4);
+
+	check(gMercProfiles[0].records.usBattlesTactical == 8,
+	      "battle victory records the live final in-range mercenary");
+	check(gMercProfiles[0].records.usLargestBattleFought == 4,
+	      "battle victory records the current opponent count");
+	check(!inRange.bStealthMode && inRange.usQuoteSaidExtFlags == 0,
+	      "battle victory resets the live mercenary combat presentation state");
+	check(gMercProfiles[1].records.usBattlesTactical == 11 &&
+	      gMercProfiles[1].records.usLargestBattleFought == 9 &&
+	      outsideRange.bStealthMode,
+	      "battle victory does not update a live owner beyond the team range");
+
+	gMercProfiles[1].records.usLargestBattleFought = previousLargest1;
+	gMercProfiles[1].records.usBattlesTactical = previousBattles1;
+	gMercProfiles[0].records.usLargestBattleFought = previousLargest0;
+	gMercProfiles[0].records.usBattlesTactical = previousBattles0;
+	fInterfacePanelDirty = previousPanelDirty;
+	gfUIStanceDifferent = previousStanceDifferent;
+	gGameExternalOptions.fStandUpAfterBattle = previousStandUp;
+	MercPtrs[7] = previousOwner7;
+	MercPtrs[6] = previousOwner6;
+	MercPtrs[5] = previousOwner5;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
 	gbPlayerNum = previousPlayer;
 }
 
@@ -1262,6 +1403,10 @@ int main(int argc, char** argv)
 		runLoadCharactersScenario();
 	else if (std::strcmp(argv[1], "battle-loss-check") == 0)
 		runBattleLossCheckScenario();
+	else if (std::strcmp(argv[1], "battle-ai-turn-cleanup") == 0)
+		runBattleAITurnCleanupSparseRosterScenario();
+	else if (std::strcmp(argv[1], "battle-victory-roster") == 0)
+		runBattleVictorySparseRosterScenario();
 	else if (std::strcmp(argv[1], "morale-global") == 0)
 		runGlobalMoraleScenario();
 	else if (std::strcmp(argv[1], "morale-specific") == 0)

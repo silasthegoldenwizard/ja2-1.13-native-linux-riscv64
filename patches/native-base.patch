@@ -19333,7 +19333,7 @@
  }
 --- a/Tactical/Dialogue Control.cpp
 +++ b/Tactical/Dialogue Control.cpp
-@@ -1,4 +1,35 @@
+@@ -1,4 +1,45 @@
 -	#include "sgp.h"
 +/*
 + * P710 native snapshot update: Tactical/Dialogue Control.cpp
@@ -19365,12 +19365,22 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Dialogue Control.cpp
++ * Native Linux source/build/test adaptations captured in the accepted battle-end roster checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +	#include <cstddef>
 +#include "sgp.h"
  	#include "Encrypted File.h"
  	#include "faces.h"
  	#include "WCheck.h"
-@@ -99,14 +130,24 @@
+@@ -99,14 +140,24 @@
  	INT32		iFaceIndex;
  	INT32		iTimeStamp;
  	UINT32	uiSpecialEventFlag;
@@ -19399,7 +19409,7 @@
  
  extern INT32 giMapInvPrev;
  extern INT32 giMapInvNext;
-@@ -646,7 +687,7 @@
+@@ -646,7 +697,7 @@
  			if ( gpCurrentTalkingFace->uiFlags & FACE_TRIGGER_PREBATTLE_INT )
  			{
  				UnLockPauseState();
@@ -19408,7 +19418,7 @@
  				//Reset flag!
  				gpCurrentTalkingFace->uiFlags &= (~FACE_TRIGGER_PREBATTLE_INT );
  			}
-@@ -764,8 +805,11 @@
+@@ -764,8 +815,11 @@
  	// If here, pick current one from queue and play
  
  	// Get new one
@@ -19422,7 +19432,7 @@
  	
  	// If we are in auto bandage, ignore any quotes!
  	if ( gTacticalStatus.fAutoBandageMode )
-@@ -954,26 +998,30 @@
+@@ -954,26 +1008,30 @@
  
  			gubCurrentTalkingID	= QItem.ubCharacterNum;
  
@@ -19469,7 +19479,7 @@
  		}
  		else if ( QItem.uiSpecialEventFlag & DIALOGUE_SPECIAL_EVENT_DO_BATTLE_SND )
  		{
-@@ -1019,7 +1067,7 @@
+@@ -1019,7 +1077,7 @@
  
  			// Flugente: what hideous idiocy is this? We cast a UINT32 as GROUP*? This is likely to return garbage.
  			// Why the hell not use the id instead?
@@ -19478,7 +19488,7 @@
  
  			/*GROUP* pGroup = GetGroup( (UINT8)QItem.uiSpecialEventData );
  			if ( pGroup )
-@@ -1060,12 +1108,13 @@
+@@ -1060,12 +1118,13 @@
  
  			gubCurrentTalkingID	= QItem.ubCharacterNum;
  
@@ -19498,7 +19508,7 @@
  		}
  
  		if ( QItem.uiSpecialEventFlag & DIALOGUE_SPECIAL_EVENT_SHOPKEEPER )
-@@ -1210,7 +1259,7 @@
+@@ -1210,7 +1269,7 @@
  		{
  			if ( QItem.bUIHandlerID == DIALOGUE_NPC_UI )
  			{
@@ -19507,7 +19517,7 @@
  			}
  		}
  		else if ( QItem.uiSpecialEventFlag & DIALOGUE_SPECIAL_EVENT_TRIGGER_NPC )
-@@ -1445,9 +1494,11 @@
+@@ -1445,9 +1504,11 @@
  	}
  }
  
@@ -19522,7 +19532,7 @@
  
  BOOLEAN DelayedTacticalCharacterDialogue( SOLDIERTYPE *pSoldier, UINT16 usQuoteNum )
  {
-@@ -1482,7 +1533,7 @@
+@@ -1482,7 +1543,7 @@
  }
  
  
@@ -19531,7 +19541,7 @@
  {
  	if ( pSoldier->ubProfile == NO_PROFILE )
  	{
-@@ -1504,7 +1555,7 @@
+@@ -1504,7 +1565,7 @@
  	return( CharacterDialogueWithSpecialEvent( pSoldier->ubProfile, usQuoteNum, pSoldier->iFaceIndex, DIALOGUE_TACTICAL_UI, TRUE, FALSE, uiFlag, uiData1, uiData2 ) );
  }
  
@@ -19540,7 +19550,7 @@
  {
  	if ( pSoldier->ubProfile == NO_PROFILE )
  	{
-@@ -1809,7 +1860,7 @@
+@@ -1809,7 +1870,7 @@
  // NB;				The queued system is not yet implemented, but will be transpatent to the caller....
  
  
@@ -19549,7 +19559,7 @@
  {
  	DIALOGUE_Q_STRUCT QItem{};
  	QItem.ubCharacterNum = ubCharacterNum;
-@@ -1843,7 +1894,7 @@
+@@ -1843,7 +1904,7 @@
  	return( TRUE );
  }
  
@@ -19558,7 +19568,7 @@
  {
  	DIALOGUE_Q_STRUCT QItem{};
  	QItem.ubCharacterNum = ubCharacterNum;
-@@ -1920,8 +1971,8 @@
+@@ -1920,8 +1981,8 @@
  }
  
  BOOLEAN SnitchCharacterDialogue( UINT8 ubCharacterNum, UINT16 usQuoteNum, INT32 iFaceIndex,
@@ -19569,7 +19579,7 @@
  	UINT8 bUIHandlerID, BOOLEAN fFromSoldier, BOOLEAN fDelayed )
  {
  	DIALOGUE_Q_STRUCT QItem{};
-@@ -1953,7 +2004,7 @@
+@@ -1953,7 +2014,7 @@
  }
  
  
@@ -19578,7 +19588,7 @@
  {
  	DIALOGUE_Q_STRUCT QItem{};
  	QItem.uiSpecialEventFlag	= uiSpecialEventFlag;
-@@ -1978,7 +2029,7 @@
+@@ -1978,7 +2039,7 @@
  	return( TRUE );
  }
  
@@ -19587,7 +19597,7 @@
  {
  	DIALOGUE_Q_STRUCT QItem{};
  	QItem.uiSpecialEventFlag	= uiSpecialEventFlag;
-@@ -2506,7 +2557,8 @@
+@@ -2506,7 +2567,8 @@
  	return( FileExists( pFilename ) );
  }
  
@@ -19597,7 +19607,7 @@
  {
  	STR8 pFilename;
  	BOOLEAN fTextAvailable = FALSE;
-@@ -2644,7 +2696,8 @@
+@@ -2644,7 +2706,8 @@
  }
  
  // anv: special version of GetDialogue, message is put together from parts
@@ -19607,7 +19617,7 @@
  {
  	STR8 pFilename1;
  	//STR8 pFilename2;
-@@ -3121,10 +3174,14 @@
+@@ -3121,10 +3184,14 @@
  								// select random enemy, who we see, who sees us and isn't deaf
  								for( SoldierID cnt = gTacticalStatus.Team[ ENEMY_TEAM ].bFirstID; cnt <= gTacticalStatus.Team[ ENEMY_TEAM ].bLastID ; ++cnt )
  								{
@@ -19625,6 +19635,17 @@
  										ubSeenEnemiesCnt++;
  									}
  								}
+@@ -3303,7 +3370,9 @@
+ 	// run through list
+ 	for ( ; id <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++id )
+ 	{
+-		pTeamSoldier = id;
++		if ( !GetSoldier( &pTeamSoldier, id ) )
++			continue;
++
+ 		// Add guy if he's a candidate...
+ 		if ( OK_INSECTOR_MERC( pTeamSoldier ) && !AM_AN_EPC( pTeamSoldier ) && !( pTeamSoldier->flags.uiStatusFlags & SOLDIER_GASSED ) && !(AM_A_ROBOT( pTeamSoldier )) && !pTeamSoldier->flags.fMercAsleep )
+ 		{
 --- a/Tactical/Dialogue Control.h
 +++ b/Tactical/Dialogue Control.h
 @@ -1,6 +1,17 @@
@@ -28160,7 +28181,7 @@
  		i++;
 --- a/Tactical/Overhead.cpp
 +++ b/Tactical/Overhead.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Tactical/Overhead.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -28181,10 +28202,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Overhead.cpp
++ * Native Linux source/build/test adaptations captured in the accepted battle-end roster checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include <cstdio>
  #include <string.h>
  #include <random>
-@@ -594,7 +614,13 @@
+@@ -594,7 +624,13 @@
  
  	// anv: externalised locks and keys
  	//WriteLocks("WriteLocks.xml");
@@ -28198,7 +28229,7 @@
  	strcpy(fileName, TABLEDATA_DIRECTORY);
  	strcat(fileName, LOCKSFILENAME);
  	if ( FileExists(fileName) )
-@@ -744,7 +770,9 @@
+@@ -744,7 +780,9 @@
          // set team values in soldier structures for all who are on this team
          for (SoldierID cnt2 = gTacticalStatus.Team[ cnt ].bFirstID; cnt2 <= gTacticalStatus.Team[ cnt ].bLastID; ++cnt2 )
          {
@@ -28209,7 +28240,7 @@
          }
      }
  
-@@ -806,6 +834,11 @@
+@@ -806,6 +844,11 @@
  
  BOOLEAN GetSoldier( SOLDIERTYPE **ppSoldier, SoldierID usSoldierIndex )
  {
@@ -28221,7 +28252,7 @@
      // Check range of index given
      *ppSoldier = NULL;
      if ( usSoldierIndex >= NOBODY )
-@@ -813,12 +846,14 @@
+@@ -813,12 +856,14 @@
          // Set debug message
          return( FALSE );
      }
@@ -28240,7 +28271,7 @@
          return( TRUE);
      }
      else
-@@ -826,6 +861,29 @@
+@@ -826,6 +871,29 @@
          return( FALSE );
      }
  
@@ -28270,7 +28301,7 @@
  }
  
  static BOOLEAN NextAIToHandle( UINT32 uiCurrAISlot )
-@@ -1345,7 +1403,7 @@
+@@ -1345,7 +1413,7 @@
                                      else if ( pSoldier->ubWaitActionToDo == 1 )
                                      {
                                          pSoldier->ubWaitActionToDo = 0;
@@ -28279,7 +28310,7 @@
                                          pSoldier->SoldierGotoStationaryStance( );
                                          // If we are at an exit-grid, make disappear.....
                                          if ( gubWaitingForAllMercsToExitCode == WAIT_FOR_MERCS_TO_WALK_TO_GRIDNO )
-@@ -2247,10 +2305,10 @@
+@@ -2247,10 +2315,10 @@
                  SoldierID id = gTacticalStatus.Team[gbPlayerNum].bFirstID;
  
                  // look for all mercs on the same team,
@@ -28294,7 +28325,7 @@
                      {
                          pSoldier2->EVENT_StopMerc(pSoldier2->sGridNo, pSoldier2->ubDirection);
                      }
-@@ -2544,13 +2602,13 @@
+@@ -2544,13 +2612,13 @@
  									sPassengerAPCost = sAPCost;
  									break;
  								case 2:
@@ -28312,7 +28343,7 @@
  									else
  										sPassengerAPCost = 0;
  									break;
-@@ -2953,10 +3011,10 @@
+@@ -2953,10 +3021,10 @@
                  SoldierID cnt2 = gTacticalStatus.Team[ gbPlayerNum ].bFirstID;
  
                  // look for all mercs on the same team,
@@ -28327,7 +28358,7 @@
                      {
                          pSoldier2->EVENT_StopMerc(pSoldier2->sGridNo, pSoldier2->ubDirection);
                      }
-@@ -4214,20 +4272,35 @@
+@@ -4214,20 +4282,35 @@
  
  SoldierID LastActiveTeamMember( UINT16 ubTeam )
  {
@@ -28372,7 +28403,7 @@
  }
  
  void CheckForPotentialAddToBattleIncrement( SOLDIERTYPE *pSoldier )
-@@ -4726,12 +4799,20 @@
+@@ -4726,12 +4809,20 @@
  {
      SOLDIERTYPE *pSoldier;
      UINT16 ubCount = 0;
@@ -28394,7 +28425,7 @@
          if ( OK_CONTROLLABLE_MERC( pSoldier) )
          {
              ubCount++;
-@@ -4751,7 +4832,11 @@
+@@ -4751,7 +4842,11 @@
      // look for all mercs on the same team,
      for ( ; cnt <= bLastTeamID; ++cnt )
      {
@@ -28407,7 +28438,7 @@
          if ( fOnlyRegularMercs )
          {
              if ( pTeamSoldier->bActive && ( AM_AN_EPC( pTeamSoldier ) || AM_A_ROBOT( pTeamSoldier ) ) )
-@@ -4783,7 +4868,11 @@
+@@ -4783,7 +4878,11 @@
  
      for ( ; cnt <= bLastTeamID; ++cnt )
      {
@@ -28420,7 +28451,7 @@
          if ( fOnlyRegularMercs )
          {
              if ( pTeamSoldier->bActive && ( AM_AN_EPC( pTeamSoldier ) || AM_A_ROBOT( pTeamSoldier ) ) )
-@@ -4870,7 +4959,11 @@
+@@ -4870,7 +4969,11 @@
              continue;
          }
  
@@ -28433,7 +28464,7 @@
          if ( fOnlyRegularMercs )
          {
              if ( AM_AN_EPC( pTeamSoldier ) || AM_A_ROBOT( pTeamSoldier ) )
-@@ -4914,7 +5007,11 @@
+@@ -4914,7 +5017,11 @@
      // look for all mercs on the same team,
      for ( ; cnt <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++cnt )
      {
@@ -28446,7 +28477,7 @@
          if ( pSoldier->bActive && pSoldier->stats.bLife >= OKLIFE )
          {
              if ( pSoldier->flags.fInMissionExitNode )
-@@ -5362,10 +5459,18 @@
+@@ -5362,10 +5469,18 @@
  BOOLEAN TeamMemberNear( INT8 bTeam, INT32 sGridNo, INT32 iRange )
  {
  	SOLDIERTYPE *pSoldier;
@@ -28466,7 +28497,7 @@
  		if ( pSoldier->bActive && pSoldier->bInSector && (pSoldier->stats.bLife >= OKLIFE) && !(pSoldier->flags.uiStatusFlags & SOLDIER_GASSED) )
  		{
  			if ( PythSpacesAway( pSoldier->sGridNo, sGridNo ) <= iRange )
-@@ -6144,13 +6249,22 @@
+@@ -6144,13 +6259,22 @@
      INT8         bSlot;
      BOOLEAN      fDone;
  
@@ -28490,7 +28521,18 @@
          if ( pTeamSoldier->stats.bLife >= OKLIFE && pTeamSoldier->bActive && pTeamSoldier->bInSector )
          {
              fDone = FALSE;
-@@ -7226,9 +7340,9 @@
+@@ -6812,7 +6936,9 @@
+     // run through list
+     for ( ; cnt <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++cnt )
+     {
+-        pTeamSoldier = cnt;
++		if ( !GetSoldier( &pTeamSoldier, cnt ) )
++			continue;
++
+         // Add guy if he's a candidate...
+         if ( OK_INSECTOR_MERC( pTeamSoldier ) && !AM_AN_EPC( pTeamSoldier ) && !( pTeamSoldier->flags.uiStatusFlags & SOLDIER_GASSED ) && !(AM_A_ROBOT( pTeamSoldier )) && !pTeamSoldier->flags.fMercAsleep )
+         {
+@@ -7226,9 +7352,9 @@
  											// silversurfer: externalized this
  											//(*pObj)[0]->data.objectStatus -= (gGameOptions.ubDifficultyLevel - 1) * Random( 20 );
  											(*pObj)[0]->data.objectStatus -= Random( zDiffSetting[gGameOptions.ubDifficultyLevel].usLootStatusModifier );
@@ -28503,7 +28545,182 @@
  										}
  									}
  
-@@ -8105,7 +8219,11 @@
+@@ -7357,6 +7483,55 @@
+ 	}
+ }
+ 
++void UpdatePlayerTeamAfterBattleVictory( UINT16 usOpponentsFought )
++{
++	for ( SoldierID id = gTacticalStatus.Team[ gbPlayerNum ].bFirstID;
++	      id <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++id )
++	{
++		SOLDIERTYPE *pTeamSoldier = NULL;
++		if ( !GetSoldier( &pTeamSoldier, id ) )
++			continue;
++
++		if ( !pTeamSoldier->bInSector || pTeamSoldier->bTeam != gbPlayerNum )
++			continue;
++
++		if ( pTeamSoldier->bAssignment != ASSIGNMENT_POW )
++		{
++			gMercProfiles[ pTeamSoldier->ubProfile ].records.usBattlesTactical++;
++			if ( gMercProfiles[ pTeamSoldier->ubProfile ].records.usLargestBattleFought < usOpponentsFought )
++				gMercProfiles[ pTeamSoldier->ubProfile ].records.usLargestBattleFought = usOpponentsFought;
++		}
++
++		if ( pTeamSoldier->stats.bLife < OKLIFE || pTeamSoldier->bCollapsed ||
++		     pTeamSoldier->bAssignment >= ON_DUTY )
++			continue;
++
++		pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_1_WITNESSED);
++		pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_2_WITNESSED);
++		pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_3_WITNESSED);
++		pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_4_WITNESSED);
++		pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_5_WITNESSED);
++		pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_6_WITNESSED);
++
++		gfUIStanceDifferent = TRUE;
++		pTeamSoldier->bStealthMode = FALSE;
++		fInterfacePanelDirty = DIRTYLEVEL2;
++		if ( !gGameExternalOptions.fStandUpAfterBattle )
++			continue;
++
++		if ( gAnimControl[ pTeamSoldier->usAnimState ].ubHeight != ANIM_STAND )
++		{
++			pTeamSoldier->ChangeSoldierStance( ANIM_STAND );
++		}
++		else
++		{
++			const UINT16 usAnimState = PickSoldierReadyAnimation( pTeamSoldier, TRUE, FALSE );
++			if ( usAnimState != INVALID_ANIMATION )
++				pTeamSoldier->EVENT_InitNewSoldierAnim( usAnimState, 0, FALSE );
++		}
++	}
++}
++
+ //!!!!
+ //IMPORTANT NEW NOTE:
+ //Whenever returning TRUE, make sure you clear gfBlitBattleSectorLocator;
+@@ -7365,8 +7540,6 @@
+     SOLDIERTYPE *pTeamSoldier;
+     BOOLEAN		fBattleWon = TRUE;
+     BOOLEAN		fBattleLost = FALSE;
+-    INT32		cnt = 0;
+-    UINT16		usAnimState;
+ 	UINT16		usMapSector = gWorldSectorX + (gWorldSectorY * MAP_WORLD_X);
+ 
+     if ( gTacticalStatus.bBoxingState == BOXING )
+@@ -7455,7 +7628,9 @@
+ 		BOOLEAN fFoundDeadMerc = FALSE;
+ 		for (; ubLoop <= gTacticalStatus.Team[gbPlayerNum].bLastID; ++ubLoop )
+ 		{
+-            pTeamSoldier = ubLoop;
++			if ( !GetSoldier( &pTeamSoldier, ubLoop ) )
++				continue;
++
+ 			if (pTeamSoldier->bActive)
+ 			{
+ 				if (pTeamSoldier->bInSector ||
+@@ -7625,70 +7800,14 @@
+         if ( gTacticalStatus.bBoxingState == NOT_BOXING ) // if boxing don't do any of this stuff
+         {
+             // Only do some stuff if we actually fought a battle
+-            if ( gTacticalStatus.bNumFoughtInBattle[ ENEMY_TEAM ] + gTacticalStatus.bNumFoughtInBattle[ CREATURE_TEAM ] + gTacticalStatus.bNumFoughtInBattle[ CIV_TEAM ] > 0 )
++			const UINT16 usOpponentsFought =
++				gTacticalStatus.bNumFoughtInBattle[ ENEMY_TEAM ] +
++				gTacticalStatus.bNumFoughtInBattle[ CREATURE_TEAM ] +
++				gTacticalStatus.bNumFoughtInBattle[ CIV_TEAM ];
++			if ( usOpponentsFought > 0 )
+                 //if ( gTacticalStatus.bNumEnemiesFoughtInBattle > 0 )
+             {
+-                // Loop through all mercs and make go
+-                for ( pTeamSoldier = MercPtrs[ gTacticalStatus.Team[ gbPlayerNum ].bFirstID ]; cnt <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; cnt++,pTeamSoldier++)
+-                {
+-                    if ( pTeamSoldier->bActive )
+-                    {
+-                        if ( pTeamSoldier->bInSector )
+-                        {
+-                            if( pTeamSoldier->bTeam == gbPlayerNum )
+-                            {
+-								if (pTeamSoldier->bAssignment != ASSIGNMENT_POW)
+-								{
+-									// SANDRO - records - num tactical battles
+-									gMercProfiles[pTeamSoldier->ubProfile].records.usBattlesTactical++;
+-									// largest battle experienced
+-									if (gMercProfiles[pTeamSoldier->ubProfile].records.usLargestBattleFought < (gTacticalStatus.bNumFoughtInBattle[ENEMY_TEAM] + gTacticalStatus.bNumFoughtInBattle[CREATURE_TEAM] + gTacticalStatus.bNumFoughtInBattle[CIV_TEAM]))
+-									{
+-										gMercProfiles[pTeamSoldier->ubProfile].records.usLargestBattleFought = (gTacticalStatus.bNumFoughtInBattle[ENEMY_TEAM] + gTacticalStatus.bNumFoughtInBattle[CREATURE_TEAM] + gTacticalStatus.bNumFoughtInBattle[CIV_TEAM]);
+-									}
+-								}
+-
+-                                // If this guy is OKLIFE & not standing, make stand....
+-                                if ( pTeamSoldier->stats.bLife >= OKLIFE && !pTeamSoldier->bCollapsed )
+-                                {
+-                                    if ( pTeamSoldier->bAssignment < ON_DUTY )
+-                                    {
+-                                        // Reset some quote flags....
+-                                        pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_1_WITNESSED);
+-                                        pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_2_WITNESSED);
+-                                        pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_3_WITNESSED);
+-                                        pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_4_WITNESSED);
+-                                        pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_5_WITNESSED);
+-                                        pTeamSoldier->usQuoteSaidExtFlags &= (~SOLDIER_QUOTE_SAID_BUDDY_6_WITNESSED);
+-
+-                                        // toggle stealth mode....
+-                                        gfUIStanceDifferent = TRUE;
+-                                        pTeamSoldier->bStealthMode = FALSE;
+-                                        fInterfacePanelDirty = DIRTYLEVEL2;
+-                                        //DBrot: Stance change
+-                                        if (gGameExternalOptions.fStandUpAfterBattle)
+-										{
+-                                            if ( gAnimControl[ pTeamSoldier->usAnimState ].ubHeight != ANIM_STAND )
+-                                            {
+-                                                pTeamSoldier->ChangeSoldierStance( ANIM_STAND );
+-                                            }
+-                                            else
+-                                            {
+-                                                // If they are aiming, end aim!
+-                                                usAnimState = PickSoldierReadyAnimation( pTeamSoldier, TRUE, FALSE );
+-
+-                                                if ( usAnimState != INVALID_ANIMATION )
+-                                                {
+-                                                    pTeamSoldier->EVENT_InitNewSoldierAnim( usAnimState, 0, FALSE );
+-                                                }
+-                                            }
+-                                        }
+-                                    }
+-                                }
+-                            }
+-                        }
+-                    }
+-                }
++				UpdatePlayerTeamAfterBattleVictory( usOpponentsFought );
+ 
+                 HandleMoraleEvent( NULL, MORALE_BATTLE_WON, gWorldSectorX, gWorldSectorY, gbWorldSectorZ );
+                 HandleGlobalLoyaltyEvent( GLOBAL_LOYALTY_BATTLE_WON, gWorldSectorX, gWorldSectorY, gbWorldSectorZ );
+@@ -7772,7 +7891,9 @@
+             SoldierID cnt = gTacticalStatus.Team[ MILITIA_TEAM ].bFirstID;
+             for ( ; cnt <= gTacticalStatus.Team[ MILITIA_TEAM ].bLastID; ++cnt )
+             {
+-                pTeamSoldier = cnt;
++	                if ( !GetSoldier( &pTeamSoldier, cnt ) )
++	                    continue;
++
+                 if ( pTeamSoldier->bActive && pTeamSoldier->bInSector )
+                 {
+                     pTeamSoldier->aiData.bAlertStatus = STATUS_GREEN;
+@@ -7804,7 +7925,9 @@
+             cnt = gTacticalStatus.Team[ CIV_TEAM ].bFirstID;
+             for ( ; cnt <= gTacticalStatus.Team[ CIV_TEAM ].bLastID; ++cnt )
+             {
+-                pTeamSoldier = cnt;
++	                if ( !GetSoldier( &pTeamSoldier, cnt ) )
++	                    continue;
++
+                 if ( pTeamSoldier->bActive && pTeamSoldier->bInSector )
+                 {
+                     pTeamSoldier->aiData.bAlertStatus = STATUS_GREEN;
+@@ -8105,7 +8228,11 @@
  
      for ( SoldierID cnt = gTacticalStatus.Team[ gbPlayerNum ].bFirstID; cnt <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++cnt )
      {
@@ -28516,7 +28733,7 @@
          if ( pSoldier->bActive && !(pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) )
          {
              bNumber++;
-@@ -8353,7 +8471,10 @@
+@@ -8353,7 +8480,10 @@
      SoldierID cnt = gTacticalStatus.Team[ MILITIA_TEAM ].bFirstID;
      for ( ; cnt <= gTacticalStatus.Team[ MILITIA_TEAM ].bLastID; ++cnt )
      {
@@ -28528,7 +28745,7 @@
          if ( pTeamSoldier->bActive && pTeamSoldier->bInSector && pTeamSoldier->bSide == gbPlayerNum )
          {
              if ( pTeamSoldier->stats.bLife >= OKLIFE )
-@@ -8372,7 +8493,10 @@
+@@ -8372,7 +8502,10 @@
      // look for all mercs on the same team,
      for ( ; cnt <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++cnt )
      {
@@ -28540,7 +28757,7 @@
          // Are we active and in sector.....
          if ( pTeamSoldier->bActive && pTeamSoldier->bInSector && !( pTeamSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE ) )
          {
-@@ -8459,7 +8583,10 @@
+@@ -8459,7 +8592,10 @@
  
              for ( ; cnt <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++cnt )
              {
@@ -28552,7 +28769,7 @@
                  // Are we active and in sector.....
                  if ( pTeamSoldier->bActive && pTeamSoldier->bInSector )
                  {
-@@ -8682,21 +8809,21 @@
+@@ -8682,21 +8818,21 @@
          {
              // Flugente: This seems wrong. gSkillTraitValues.ubSLMaxBonuses should be the upper, not lower bound of squadleasders...
              //ubNumberOfSL = max( gSkillTraitValues.ubSLMaxBonuses, (ubNumberOfSL + NUM_SKILL_TRAITS( pSoldier, SQUADLEADER_NT )) );
@@ -28578,7 +28795,7 @@
  
      return( bTolerance );
  }
-@@ -8746,7 +8873,7 @@
+@@ -8746,7 +8882,7 @@
  		// sevenfm: for shotgun, modify damage for pellets
  		if (ubBullets > 1)
  		{
@@ -28587,7 +28804,7 @@
  		}
  
          // +1% per point above 20 impact
-@@ -8821,7 +8948,7 @@
+@@ -8821,7 +8957,7 @@
  			// sevenfm: alert enemy team
  			if (pSoldier->bTeam == ENEMY_TEAM)
  			{
@@ -28596,7 +28813,7 @@
  				//CheckForChangingOrders(pSoldier);
  			}
  
-@@ -8884,13 +9011,13 @@
+@@ -8884,13 +9020,13 @@
  
                      // The amount of shock received depends on how many APs we've lost - Every AP lost will cause one 
                      // point of shock. This is then divided by 4 if using the 100AP system.
@@ -28612,7 +28829,7 @@
  					}
  					// Else, original shock was already over the limit. No more shock is added.
  
-@@ -8939,7 +9066,7 @@
+@@ -8939,7 +9075,7 @@
  					{
  						if (IS_MERC_BODY_TYPE(pSoldier))
  						{
@@ -28621,7 +28838,7 @@
  						}
  					}
  					else
-@@ -9536,9 +9663,10 @@
+@@ -9536,9 +9672,10 @@
                  id <= gTacticalStatus.Team[ gTacticalStatus.ubCurrentTeam ].bLastID;
                  ++id)
          {
@@ -28635,7 +28852,7 @@
                  break;
              }
          }
-@@ -10262,7 +10390,11 @@
+@@ -10262,7 +10399,11 @@
      // put on a squad if available
      for ( SoldierID iLoop = gTacticalStatus.Team[ gbPlayerNum ].bFirstID; iLoop <= gTacticalStatus.Team[ gbPlayerNum ].bLastID; ++iLoop )
      {
@@ -28648,7 +28865,7 @@
  
          if ( pSoldier->bActive && pSoldier->bInSector && pSoldier->bAssignment == ASSIGNMENT_POW )
          {
-@@ -10638,12 +10770,12 @@
+@@ -10638,12 +10779,12 @@
      {
          // Add his leadership bonus, minus the point we got for him before. He'll give at least one
          // point, like anybody else.
@@ -28664,7 +28881,7 @@
  
  	return sFriendBonus;
  }
-@@ -10692,15 +10824,15 @@
+@@ -10692,15 +10833,15 @@
  			}
  
  			// modifier depends on distance
@@ -28683,7 +28900,7 @@
  
  	return (INT8)iFriendBonus;
  }
-@@ -10864,14 +10996,14 @@
+@@ -10864,14 +11005,14 @@
  	// use up resources spent, regardless of whether or not we were successful
  	if ( approachselected == 3 )
  	{
@@ -28700,7 +28917,7 @@
  
  		AddIntel( -intelbribeneeded, TRUE );
  	}
-@@ -10913,7 +11045,7 @@
+@@ -10913,7 +11054,7 @@
  
  		++cnt;
  		INT32 balance = GetCurrentBalance();
@@ -28709,7 +28926,7 @@
  		if ( bribeamount <= balance )
  		{
  			chance = gusSelectedSoldier->GetTurncoatConvinctionChance( prisonerdialoguetargetID, cnt );
-@@ -10923,7 +11055,7 @@
+@@ -10923,7 +11064,7 @@
  
  		++cnt;
  		FLOAT intelreserve = GetIntel();
@@ -28718,7 +28935,7 @@
  		if ( intelbribeneeded <= intelreserve )
  		{
  			chance = gusSelectedSoldier->GetTurncoatConvinctionChance( prisonerdialoguetargetID, cnt );
-@@ -11513,7 +11645,7 @@
+@@ -11513,7 +11654,7 @@
  		return;
  
  	for ( int i = PRISONER_ADMIN; i < PRISONER_MAX; ++i )
@@ -28727,7 +28944,7 @@
  }
  
  void ChangeNumberOfPrisoners( UNDERGROUND_SECTORINFO *pSectorInfo, INT16 aPrisoners[] )
-@@ -11522,7 +11654,7 @@
+@@ -11522,7 +11663,7 @@
  		return;
  
  	for ( int i = PRISONER_ADMIN; i < PRISONER_MAX; ++i )
@@ -28736,7 +28953,7 @@
  }
  
  void DeleteAllPrisoners( SECTORINFO *pSectorInfo )
-@@ -11603,7 +11735,7 @@
+@@ -11603,7 +11744,7 @@
  			if ( (pSoldier->usSoldierFlagMask & SOLDIER_ENEMY_OFFICER) && !(pSoldier->usSoldierFlagMask & SOLDIER_POW) )
              {
  				// officers with double squadleader trait are captains, otherwise lieutnant
@@ -28745,7 +28962,7 @@
  
  				++num;
  			}
-@@ -11868,7 +12000,7 @@
+@@ -11868,7 +12009,7 @@
  		StrategicMap[SECTOR( sMapX, sMapY )].usFlags &= ~(ENEMY_VIP_PRESENT | ENEMY_VIP_PRESENT_KNOWN);
  	}
  
@@ -28756,7 +28973,7 @@
  void VIPFleesToMeduna()
 --- a/Tactical/Overhead.h
 +++ b/Tactical/Overhead.h
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: Tactical/Overhead.h
 + * Native Linux source/build/test adaptations captured in the accepted native checkpoint dated 2026-11-18.
@@ -28767,10 +28984,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Overhead.h
++ * Native Linux source/build/test adaptations captured in the accepted battle-end roster checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #ifndef __OVERHEAD_H
  #define __OVERHEAD_H
  
-@@ -205,6 +215,7 @@
+@@ -205,6 +225,7 @@
  BOOLEAN InitOverhead( );
  BOOLEAN ShutdownOverhead( );
  BOOLEAN GetSoldier( SOLDIERTYPE **ppSoldier, SoldierID usSoldierIndex );
@@ -28778,6 +29005,14 @@
  
  UINT32 CountNonVehiclesOnPlayerTeam( );
  
+@@ -297,6 +318,7 @@
+ void CheckForPotentialAddToBattleIncrement( SOLDIERTYPE *pSoldier );
+ void CencelAllActionsForTimeCompression( );
+ BOOLEAN CheckForEndOfBattle( BOOLEAN fAnEnemyRetreated );
++void UpdatePlayerTeamAfterBattleVictory( UINT16 usOpponentsFought );
+ void AddManToTeam( INT8 bTeam );
+ void RemoveManFromTeam( INT8 bTeam );
+ void RemoveSoldierFromTacticalSector( SOLDIERTYPE *pSoldier, BOOLEAN fAdjustSelected );
 --- a/Tactical/PATHAI.cpp
 +++ b/Tactical/PATHAI.cpp
 @@ -1,3 +1,13 @@
@@ -33078,7 +33313,7 @@
  	GetMapFileName( sMapX,sMapY, bMapZ, zTempName, FALSE, FALSE );
 --- a/Tactical/TeamTurns.cpp
 +++ b/Tactical/TeamTurns.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Tactical/TeamTurns.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -33099,10 +33334,44 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/TeamTurns.cpp
++ * Native Linux source/build/test adaptations captured in the accepted battle-end roster checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "types.h"
  	#include "Overhead.h"
  	#include "Animation Control.h"
-@@ -874,7 +894,7 @@
+@@ -424,15 +454,14 @@
+ 		SoldierID id = gTacticalStatus.Team[ gTacticalStatus.ubCurrentTeam ].bFirstID;
+ 		for ( ; id <= gTacticalStatus.Team[ gTacticalStatus.ubCurrentTeam ].bLastID; ++id )
+ 		{
+-			pSoldier = id;
+-			if ( pSoldier->bActive )
+-			{
+-				pSoldier->aiData.bMoved = TRUE;
+-				pSoldier->flags.uiStatusFlags &= (~SOLDIER_UNDERAICONTROL);
+-				// record old life value... for creature AI; the human AI might
+-				// want to use this too at some point
+-				pSoldier->bOldLife = pSoldier->stats.bLife;
+-			}
++			if ( !GetSoldier( &pSoldier, id ) )
++				continue;
++
++			pSoldier->aiData.bMoved = TRUE;
++			pSoldier->flags.uiStatusFlags &= (~SOLDIER_UNDERAICONTROL);
++			// record old life value... for creature AI; the human AI might
++			// want to use this too at some point
++			pSoldier->bOldLife = pSoldier->stats.bLife;
+ 		}
+ 
+ 		gTacticalStatus.ubCurrentTeam = gbPlayerNum;
+@@ -874,7 +903,7 @@
  		// Theoretically ubInterrupter is enemy causing interrupt
  
  
@@ -33111,7 +33380,7 @@
  		if (ubInterrupter != NOBODY)
  		{
  			handleInterrupt = FALSE;
-@@ -1091,13 +1111,13 @@
+@@ -1091,13 +1120,13 @@
  	if ( !gfHiddenInterrupt )
  	{
  		// Stop this guy....
@@ -33129,7 +33398,7 @@
  		}
  	}
  
-@@ -2511,11 +2531,12 @@
+@@ -2511,11 +2540,12 @@
  				// their AI control flag and put them on the queue instead of this guy
  				for ( SoldierID id = gTacticalStatus.Team[ gTacticalStatus.ubCurrentTeam ].bFirstID; id <= gTacticalStatus.Team[ gTacticalStatus.ubCurrentTeam ].bLastID; ++id)
  				{
