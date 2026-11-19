@@ -98,14 +98,26 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted strategic final-slot checkpoint dated 2026-11-19.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-19.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
 #include "Drugs And Alcohol.h"
 #include "Militia Control.h"
+#include "Map Screen Interface Bottom.h"
 #include "Map Screen Interface.h"
 #include "Merc Hiring.h"
 #include "Morale.h"
+#include "PreBattle Interface.h"
 #include "personnel.h"
 #include "PATHAI.H"
 #include "Queen Command.h"
@@ -495,6 +507,103 @@ void runWorldTeardownSparseRosterScenario()
 	MercPtrs[1] = previousOwner1;
 	MercPtrs[0] = previousOwner0;
 	gbPlayerNum = previousPlayer;
+}
+
+void runAnyUsableMercFinalSlotScenario()
+{
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner5 = MercPtrs[5];
+	SOLDIERTYPE* const previousOwner6 = MercPtrs[6];
+	BOOLEAN previousRawActive[6];
+	for (UINT16 slot = 0; slot < 6; ++slot)
+	{
+		previousRawActive[slot] = Menptr[slot].bActive;
+		Menptr[slot].bActive = FALSE;
+	}
+
+	SOLDIERTYPE merc;
+	merc.initialize();
+	merc.ubID = SoldierID(6);
+	merc.ubProfile = 0;
+	merc.bTeam = OUR_TEAM;
+	merc.bActive = TRUE;
+	merc.stats.bLife = 100;
+	merc.bAssignment = 0;
+	merc.ubWhatKindOfMercAmI = MERC_TYPE__AIM_MERC;
+
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(5);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(6);
+	MercPtrs[5] = nullptr;
+	MercPtrs[6] = &merc;
+
+	check(AnyUsableRealMercenariesOnTeam() == TRUE,
+	      "usable-merc scan reaches the configured final player slot");
+
+	MercPtrs[6] = previousOwner6;
+	MercPtrs[5] = previousOwner5;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+	for (UINT16 slot = 0; slot < 6; ++slot)
+		Menptr[slot].bActive = previousRawActive[slot];
+}
+
+void runWakeFinalMercScenario()
+{
+	const SoldierID previousFirst = gTacticalStatus.Team[OUR_TEAM].bFirstID;
+	const SoldierID previousLast = gTacticalStatus.Team[OUR_TEAM].bLastID;
+	SOLDIERTYPE* const previousOwner5 = MercPtrs[5];
+	SOLDIERTYPE* const previousOwner6 = MercPtrs[6];
+	const BOOLEAN previousPreBattleActive = IsPreBattleInterfaceActive();
+	const UINT8 previousSectorX = gubPBSectorX;
+	const UINT8 previousSectorY = gubPBSectorY;
+	const UINT8 previousSectorZ = gubPBSectorZ;
+	BOOLEAN previousRawActive[6];
+	for (UINT16 slot = 0; slot < 6; ++slot)
+	{
+		previousRawActive[slot] = Menptr[slot].bActive;
+		Menptr[slot].bActive = FALSE;
+	}
+
+	SOLDIERTYPE merc;
+	merc.initialize();
+	merc.ubID = SoldierID(6);
+	merc.ubProfile = 0;
+	merc.bTeam = OUR_TEAM;
+	merc.bActive = TRUE;
+	merc.stats.bLife = 100;
+	merc.bAssignment = 0;
+	merc.bInSector = FALSE;
+	merc.sSectorX = 9;
+	merc.sSectorY = 1;
+	merc.bSectorZ = 0;
+	merc.bBreathMax = 100;
+	merc.flags.fBetweenSectors = FALSE;
+	merc.flags.fMercAsleep = TRUE;
+
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = SoldierID(5);
+	gTacticalStatus.Team[OUR_TEAM].bLastID = SoldierID(6);
+	MercPtrs[5] = nullptr;
+	MercPtrs[6] = &merc;
+	gubPBSectorX = 9;
+	gubPBSectorY = 1;
+	gubPBSectorZ = 0;
+	SetPreBattleInterfaceActive(TRUE);
+
+	WakeUpAllMercsInSectorUnderAttack();
+	check(merc.flags.fMercAsleep == FALSE,
+	      "pre-battle wake-up reaches the configured final player slot");
+
+	SetPreBattleInterfaceActive(previousPreBattleActive);
+	gubPBSectorZ = previousSectorZ;
+	gubPBSectorY = previousSectorY;
+	gubPBSectorX = previousSectorX;
+	MercPtrs[6] = previousOwner6;
+	MercPtrs[5] = previousOwner5;
+	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
+	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+	for (UINT16 slot = 0; slot < 6; ++slot)
+		Menptr[slot].bActive = previousRawActive[slot];
 }
 
 void runGlobalMoraleScenario()
@@ -1447,6 +1556,10 @@ int main(int argc, char** argv)
 		runBattleVictorySparseRosterScenario();
 	else if (std::strcmp(argv[1], "world-teardown-roster") == 0)
 		runWorldTeardownSparseRosterScenario();
+	else if (std::strcmp(argv[1], "usable-merc-final-slot") == 0)
+		runAnyUsableMercFinalSlotScenario();
+	else if (std::strcmp(argv[1], "wake-final-merc") == 0)
+		runWakeFinalMercScenario();
 	else if (std::strcmp(argv[1], "morale-global") == 0)
 		runGlobalMoraleScenario();
 	else if (std::strcmp(argv[1], "morale-specific") == 0)
