@@ -158,6 +158,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the accepted battle-end roster checkpoint dated 2026-11-19.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-19.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -825,6 +833,10 @@ add_test(NAME tactical.original_radio_sightings_sparse_roster
   COMMAND p710_native_team_slot_consumer_tests radio-sightings-sparse-roster)
 add_test(NAME tactical.original_radio_sightings_all_sparse_roster
   COMMAND p710_native_team_slot_consumer_tests radio-sightings-all-sparse-roster)
+add_test(NAME tactical.original_battle_ai_turn_cleanup_team_slots
+  COMMAND p710_native_team_slot_consumer_tests battle-ai-turn-cleanup)
+add_test(NAME tactical.original_battle_victory_sparse_roster
+  COMMAND p710_native_team_slot_consumer_tests battle-victory-roster)
 add_test(NAME tactical.original_update_public_sparse_roster
   COMMAND p710_native_team_slot_consumer_tests update-public-sparse-roster)
 add_test(NAME multiplayer.original_enemy_count_sparse_roster

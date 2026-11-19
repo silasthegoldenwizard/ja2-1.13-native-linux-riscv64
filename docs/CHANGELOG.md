@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 19 battle-end roster checkpoint
+
+Skip empty team slots during battle-end updates. Continue processing later live owners.
+Use the configured ID range for player updates after a victory.
+
+Both development game targets linked. The development suites passed 265 native and 267 strict sanitizer tests, including local multiplayer tests.
+Live battle-end gameplay, Windows, RISC-V, and full campaign validation remain open for this checkpoint.
+
 ## November 19 multiplayer interrupt legacy-local correction
 
 Validate the incoming interrupt queue before changing game state.
