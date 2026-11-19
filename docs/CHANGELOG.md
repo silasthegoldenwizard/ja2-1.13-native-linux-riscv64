@@ -1,6 +1,10 @@
 # Changes for the native Linux source preview
 
-## November 19 strategic final-slot checkpoint
+## November 19 source checkpoints
+
+These entries cover the latest strategic slot handling, world teardown, battle-end roster updates, and multiplayer interrupt handling. Each entry gives the development result for that checkpoint.
+
+### November 19 strategic final-slot checkpoint
 
 Include the final configured player slot in the usable-mercenary scan and pre-battle wake-up.
 Stabilize the scripted SDL button viewer by draining ambient input before each scripted step.
@@ -8,7 +12,7 @@ Stabilize the scripted SDL button viewer by draining ambient input before each s
 The development suites passed 268 native and 270 strict sanitizer tests in serial on a real X11 display.
 Live strategic gameplay, Windows, RISC-V, and full campaign validation remain open for this checkpoint.
 
-## November 19 world-teardown roster checkpoint
+### November 19 world-teardown roster checkpoint
 
 Resolve soldiers by runtime ID during world teardown. Skip empty and inactive slots.
 Preserve player soldier objects and remove non-player soldiers through the existing tactical removal path.
@@ -16,7 +20,7 @@ Preserve player soldier objects and remove non-player soldiers through the exist
 Both development game targets linked. The development suites passed 266 native and 268 strict sanitizer tests, including local multiplayer tests.
 Live sector transitions, Windows, RISC-V, and full campaign validation remain open for this checkpoint.
 
-## November 19 battle-end roster checkpoint
+### November 19 battle-end roster checkpoint
 
 Skip empty team slots during battle-end updates. Continue processing later live owners.
 Use the configured ID range for player updates after a victory.
@@ -24,7 +28,7 @@ Use the configured ID range for player updates after a victory.
 Both development game targets linked. The development suites passed 265 native and 267 strict sanitizer tests, including local multiplayer tests.
 Live battle-end gameplay, Windows, RISC-V, and full campaign validation remain open for this checkpoint.
 
-## November 19 multiplayer interrupt legacy-local correction
+### November 19 multiplayer interrupt legacy-local correction
 
 Validate the incoming interrupt queue before changing game state.
 Use the same local-team decision for queue updates and interrupt startup in both game modes.
