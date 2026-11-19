@@ -1,5 +1,13 @@
 # Changes for the native Linux source preview
 
+## November 19 multiplayer interrupt legacy-local correction
+
+Validate the incoming interrupt queue before changing game state.
+Use the same local-team decision for queue updates and interrupt startup in both game modes.
+
+Both development game targets linked. The development gates passed 263 native and 265 strict sanitizer tests.
+Live networked multiplayer, the inactive alternate receiver, Windows, RISC-V, MSVC, and clang-cl remain unverified.
+
 ## November 18 multiplayer roster checkpoint
 
 Skip empty roster slots when counting enemies and selecting a soldier for battle start and server override.

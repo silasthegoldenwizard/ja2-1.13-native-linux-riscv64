@@ -7972,7 +7972,7 @@
                      ai_index_to_factory_mapping_.back()->initialize();
 --- a/Multiplayer/client.cpp
 +++ b/Multiplayer/client.cpp
-@@ -1,3 +1,33 @@
+@@ -1,3 +1,43 @@
 +/*
 + * P710 native snapshot update: Multiplayer/client.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -8003,10 +8003,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Multiplayer/client.cpp
++ * Native Linux source/build/test adaptations captured in the accepted multiplayer interrupt legacy-local correction dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "Bullets.h"
  	#include <stdio.h>
  	#include <string.h>
-@@ -110,7 +140,11 @@
+@@ -110,7 +150,11 @@
  #include "transfer_rules.h"
  
  #include "Keys.h"
@@ -8018,7 +8028,7 @@
  #include "types.h"
  #include "connect.h"
  #include "message.h"
-@@ -520,6 +554,14 @@
+@@ -520,6 +564,14 @@
  	UINT32 uiPreRandomIndex; // send out our current pre-random index
  } disarm_struct;
  
@@ -8033,7 +8043,7 @@
  typedef struct
  {
  	INT32 sGridNo;
-@@ -538,7 +580,11 @@
+@@ -538,7 +590,11 @@
  	SoldierID	ubSoldierID;
  	UINT16		usExplosiveClassID;
  	INT16		sSubsequent;
@@ -8045,7 +8055,7 @@
  	INT16		sWoundAmt;
  	INT16		sBreathAmt;
  	SoldierID	ubAttackerID;
-@@ -547,6 +593,10 @@
+@@ -547,6 +603,10 @@
  	UINT32		uiDist;
  	UINT32		uiPreRandomIndex;
  } explosiondamage_struct;
@@ -8056,7 +8066,7 @@
  
  bullets_table bTable[11][50];
  
-@@ -1260,6 +1310,11 @@
+@@ -1260,6 +1320,11 @@
  	for ( cnt=120 ; cnt <= 155; cnt++ )
  	{
  		pSoldier = MercPtrs[cnt];
@@ -8068,7 +8078,7 @@
  		if ( pSoldier->bActive && pSoldier->bInSector && pSoldier->stats.bLife > 0 )
  		{
  			if ( !pSoldier->aiData.bNeutral && (pSoldier->bSide != 0 ) )
-@@ -1714,22 +1769,29 @@
+@@ -1714,22 +1779,29 @@
  			numready=0;
  
  			// Find first active soldier. This is needed, because if the soldier is dismissed it does not belong to any group
@@ -8105,7 +8115,7 @@
  			gpBattleGroup = pGroup;
  			gubPBSectorX = gpBattleGroup->ubSectorX;
  			gubPBSectorY = gpBattleGroup->ubSectorY;
-@@ -1742,11 +1804,12 @@
+@@ -1742,11 +1814,12 @@
  			UINT32	i;
  			for(i=0; i<4;i++)
  			{	
@@ -8121,7 +8131,261 @@
  					// OJW - 20090318 - fixed name copying bug with multiple games
  					CHAR16 full[255];
  					memset(full,0,sizeof(CHAR16)*255);
-@@ -2125,7 +2188,22 @@
+@@ -1906,6 +1979,12 @@
+ 
+ void send_interrupt (SOLDIERTYPE *pSoldier)
+ {
++	if ( pSoldier == NULL || gubOutOfTurnPersons >= MAXMERCS ||
++		gusSelectedSoldier.i >= MP_LOCAL_SOLDIER_SLOTS )
++	{
++		return;
++	}
++
+ 	INT_STRUCT INT;
+ 
+ 	INT.ubID = pSoldier->ubID;
+@@ -1913,19 +1992,28 @@
+ 	memcpy(INT.gubOutOfTurnOrder, gubOutOfTurnOrder, sizeof(UINT16) * MAXMERCS);
+ 	INT.gubOutOfTurnPersons = gubOutOfTurnPersons;
+ 	
+-	INT.Interrupted = gusSelectedSoldier + ubID_prefix;
++	INT.Interrupted = MPEncodeSoldierID( gusSelectedSoldier );
+ 
+ 	if(INT.bTeam==0)
+ 	{
++		if ( INT.ubID.i >= MP_LOCAL_SOLDIER_SLOTS )
++		{
++			return;
++		}
+ 		INT.bTeam=netbTeam;
+-		INT.ubID=INT.ubID+ubID_prefix;
++		INT.ubID=MPEncodeSoldierID( INT.ubID );
+ 	}
+ 
+ 	for(int i=0; i <= INT.gubOutOfTurnPersons; i++)
+ 	{
+ 		if(INT.gubOutOfTurnOrder[i] < 20)
+ 		{
+-			INT.gubOutOfTurnOrder[i]=INT.gubOutOfTurnOrder[i]+ubID_prefix;
++			if ( INT.gubOutOfTurnOrder[i] >= MP_LOCAL_SOLDIER_SLOTS )
++			{
++				return;
++			}
++			INT.gubOutOfTurnOrder[i] = MPEncodeSoldierID(
++				SoldierID{ INT.gubOutOfTurnOrder[i] } ).i;
+ 		}
+ 	}
+ 	
+@@ -1938,18 +2026,120 @@
+ #ifdef INTERRUPT_MP_DEADLOCK_FIX
+ 	void recieveINTERRUPT (RPCParameters *rpcParameters)
+ 	{
++		if ( rpcParameters == NULL || rpcParameters->input == NULL ||
++			rpcParameters->numberOfBitsOfData < sizeof( INT_STRUCT ) * 8 )
++		{
++			return;
++		}
++
++		INT_STRUCT interrupt;
++		memcpy( &interrupt, rpcParameters->input, sizeof( interrupt ) );
++		INT_STRUCT* INT = &interrupt;
++		const UINT8 teamNameCount = sizeof( TeamNameStrings ) / sizeof( TeamNameStrings[0] );
++		if ( INT->gubOutOfTurnPersons >= MAXMERCS || INT->bTeam < 0 ||
++			static_cast<UINT8>( INT->bTeam ) >= teamNameCount )
++		{
++			return;
++		}
++
++		SOLDIERTYPE* pOpponent = ResolveMultiplayerSoldier( INT->Interrupted );
++		if ( pOpponent == NULL || pOpponent->bTeam < 0 ||
++			static_cast<UINT8>( pOpponent->bTeam ) >= teamNameCount )
++		{
++			return;
++		}
++		if ( INT->bTeam == netbTeam )
++		{
++			if ( INT->ubID.i < ubID_prefix ||
++				INT->ubID.i >= ubID_prefix + MP_LOCAL_SOLDIER_SLOTS )
++			{
++				return;
++			}
++			INT->ubID = MPDecodeSoldierID( INT->ubID );
++		}
++		SOLDIERTYPE* pInterruptOwner = ResolveMultiplayerSoldier( INT->ubID );
++		if ( pInterruptOwner == NULL )
++		{
++			return;
++		}
++		UINT16 validatedOrder[MAXMERCS] = {};
++		INT8 validatedTeams[MAXMERCS] = {};
++		SOLDIERTYPE* pLatestOrderSoldier = NULL;
++		for ( UINT16 i = 1; i <= INT->gubOutOfTurnPersons; ++i )
++		{
++			UINT16 orderID = 0;
++			memcpy( &orderID, &INT->gubOutOfTurnOrder[i], sizeof( orderID ) );
++			if ( orderID >= ubID_prefix &&
++				orderID < ubID_prefix + MP_LOCAL_SOLDIER_SLOTS )
++			{
++				orderID -= ubID_prefix;
++			}
++
++			SOLDIERTYPE* pOrderSoldier = ResolveMultiplayerSoldier( SoldierID{ orderID } );
++			if ( pOrderSoldier == NULL || pOrderSoldier->bTeam < 0 ||
++				static_cast<UINT8>( pOrderSoldier->bTeam ) >= teamNameCount )
++			{
++				return;
++			}
++			validatedOrder[i] = orderID;
++			validatedTeams[i] = pOrderSoldier->bTeam;
++			pLatestOrderSoldier = pOrderSoldier;
++		}
++
++		if ( INT->gubOutOfTurnPersons > 0 )
++		{
++			// StartInterrupt removes the newest team until an older team can resume.
++			// Reject incomplete queues before they can underflow into the sentinel.
++			if ( INT->gubOutOfTurnPersons < 2 ||
++				pLatestOrderSoldier != pInterruptOwner )
++			{
++				return;
++			}
++
++			BOOLEAN fHasResumeTeam = FALSE;
++			for ( UINT16 i = 1; i < INT->gubOutOfTurnPersons; ++i )
++			{
++				if ( validatedTeams[i] != pLatestOrderSoldier->bTeam )
++				{
++					fHasResumeTeam = TRUE;
++					break;
++				}
++			}
++			if ( !fHasResumeTeam )
++			{
++				return;
++			}
++
++		}
++
++		// These are exactly the branches below that execute an interrupt locally.
++		// Team zero is the legacy local-player marker in both game modes; a
++		// cooperative server also executes interrupts for the AI it controls.
++		const BOOLEAN fHandlesInterruptLocally =
++			INT->bTeam == netbTeam || INT->bTeam == 0 ||
++			( cGameType == MP_TYPE_COOP && is_server );
++		if ( fHandlesInterruptLocally )
++		{
++			if ( INT->gubOutOfTurnPersons > 0 )
++			{
++				memcpy( &gubOutOfTurnOrder[1], &validatedOrder[1],
++					INT->gubOutOfTurnPersons * sizeof( validatedOrder[0] ) );
++			}
++			// Slot zero is the engine-owned END_OF_INTERRUPTS sentinel.  Never
++			// accept its value from the network packet.
++			// An addressed empty order clears a completed local interrupt without
++			// publishing packet-owned queue entries.
++			gubOutOfTurnPersons = INT->gubOutOfTurnPersons;
++		}
++
+ 		if (cGameType == MP_TYPE_COOP)
+ 		{
+-			INT_STRUCT* INT = (INT_STRUCT*)rpcParameters->input;
+-			SOLDIERTYPE* pOpponent = INT->Interrupted;
+-
+ 			if( INT->bTeam == netbTeam || is_server)//its for us or we are server and its for AI which we control
+ 			{
+ 				if(INT->bTeam == netbTeam)
+ 				{
+ 					//for me
+ 					INT->bTeam=0;
+-					INT->ubID=INT->ubID - ubID_prefix;
+ 					AddTopMessage( PLAYER_INTERRUPT_MESSAGE, TeamTurnString[ INT->bTeam ] );
+ 				}
+ 				else
+@@ -1959,25 +2149,17 @@
+ 					AddTopMessage( COMPUTER_INTERRUPT_MESSAGE, TeamTurnString[ INT->bTeam ] );
+ 				}
+ 
+-				for(int i=0; i <= INT->gubOutOfTurnPersons; i++)//this loop translates soldier id's from what they are in someone else's game to what they are locally
+-				{
+-					if((INT->gubOutOfTurnOrder[i] >= ubID_prefix) && (INT->gubOutOfTurnOrder[i] < (ubID_prefix+6)))
+-					{
+-						INT->gubOutOfTurnOrder[i]=INT->gubOutOfTurnOrder[i]-ubID_prefix;
+-					}
+-				}
+-				memcpy(gubOutOfTurnOrder,INT->gubOutOfTurnOrder, sizeof(UINT16) * MAXMERCS);
+-				gubOutOfTurnPersons = INT->gubOutOfTurnPersons;
+-
+ 				if(INT->bTeam==netbTeam)//for us
+ 					AddTopMessage( PLAYER_INTERRUPT_MESSAGE, TeamTurnString[ INT->bTeam ] );
+ 
+ 				ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, L"Recieved interrupt between %s and %s.", TeamNameStrings[pOpponent->bTeam], TeamNameStrings[INT->bTeam] );
+ 
+ 				 //start interrupt turn //real interrupt code
+-				SOLDIERTYPE* pSoldier = INT->ubID;
+-				ManSeesMan(pSoldier,pOpponent,pOpponent->sGridNo,pOpponent->pathing.bLevel,2,1);
+-				StartInterrupt();
++				if ( INT->gubOutOfTurnPersons > 0 )
++				{
++					ManSeesMan(pInterruptOwner,pOpponent,pOpponent->sGridNo,pOpponent->pathing.bLevel,2,1);
++					StartInterrupt();
++				}
+ 			}
+ 			// It is our team
+ 			else if(INT->bTeam == 0)
+@@ -1991,31 +2173,16 @@
+ 				{
+ 					ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, L"Interrupt of %s awarded to you.", TeamNameStrings[pOpponent->bTeam] );//was MPClientMessage[37], can be reconnected if text updated and translated
+ 
+-					SOLDIERTYPE* pSoldier = INT->ubID;
+-					ManSeesMan(pSoldier,pOpponent,pOpponent->sGridNo,pOpponent->pathing.bLevel,2,1);
++					ManSeesMan(pInterruptOwner,pOpponent,pOpponent->sGridNo,pOpponent->pathing.bLevel,2,1);
+ 					StartInterrupt();
+ 				}
+ 			}
+ 		}
+ 		else
+ 		{
+-			INT_STRUCT* INT = (INT_STRUCT*)rpcParameters->input;
+-			SOLDIERTYPE* pOpponent = INT->Interrupted;
+-
+ 			if(INT->bTeam==netbTeam)//for us
+ 			{
+ 				INT->bTeam=0;
+-				INT->ubID=INT->ubID - ubID_prefix;
+-
+-				for(int i=0; i <= INT->gubOutOfTurnPersons; i++)//this loop translates soldier id's from what they are in someone else's game to what they are locally
+-				{
+-					if((INT->gubOutOfTurnOrder[i] >= ubID_prefix) && (INT->gubOutOfTurnOrder[i] < (ubID_prefix+6)))
+-					{
+-						INT->gubOutOfTurnOrder[i]=INT->gubOutOfTurnOrder[i]-ubID_prefix;
+-					}
+-				}
+-				memcpy(gubOutOfTurnOrder,INT->gubOutOfTurnOrder, sizeof(UINT16) * MAXMERCS);
+-				gubOutOfTurnPersons = INT->gubOutOfTurnPersons;
+ 
+ 				AddTopMessage( PLAYER_INTERRUPT_MESSAGE, TeamTurnString[ INT->bTeam ] );
+ 				ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, L"Interrupt of %s awarded to %s.", TeamNameStrings[pOpponent->bTeam], TeamNameStrings[INT->bTeam] );
+@@ -2025,8 +2192,7 @@
+ 			if(	INT->bTeam != 0)//not for our team - hayden
+ 			{
+ 				//stop moving merc who was interrupted and init UI bar
+-				SOLDIERTYPE* pMerc = INT->ubID;
+-				pMerc->HaultSoldierFromSighting(TRUE);
++				pInterruptOwner->HaultSoldierFromSighting(TRUE);
+ 				FreezeInterfaceForEnemyTurn();
+ 				InitEnemyUIBar( 0, 0 );
+ 				fInterfacePanelDirty = DIRTYLEVEL2;
+@@ -2046,8 +2212,7 @@
+ 				{
+ 					ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, L"Interrupt of %s awarded to you.", TeamNameStrings[pOpponent->bTeam] );//was MPClientMessage[37], can be reconnected if text updated and translated
+ 
+-					SOLDIERTYPE* pSoldier = INT->ubID;
+-					ManSeesMan(pSoldier,pOpponent,pOpponent->sGridNo,pOpponent->pathing.bLevel,2,1);
++					ManSeesMan(pInterruptOwner,pOpponent,pOpponent->sGridNo,pOpponent->pathing.bLevel,2,1);
+ 					StartInterrupt();
+ 				}
+ 			}
+@@ -2125,7 +2290,22 @@
  
  void end_interrupt ( BOOLEAN fMarkInterruptOccurred )
  {
@@ -8145,7 +8409,7 @@
  
  	INT_STRUCT INT;
  	INT.ubID = pSoldier->ubID;
-@@ -2210,11 +2288,26 @@
+@@ -2210,11 +2390,26 @@
  			goahead=0;
  			status=0;//reset
  			numready=0;
@@ -8173,7 +8437,7 @@
  			gpBattleGroup = pGroup;
  			gubPBSectorX = gpBattleGroup->ubSectorX;
  			gubPBSectorY = gpBattleGroup->ubSectorY;
-@@ -3236,7 +3329,7 @@
+@@ -3236,7 +3431,7 @@
  		if ((pSoldier->bTeam == 1 && is_server) || IsOurSoldier(pSoldier))
  		{
  			// find the appropriate world bomb for the world item
@@ -8182,7 +8446,7 @@
  			UINT32 uiCount;
  			for(uiCount=0; uiCount < guiNumWorldBombs; uiCount++)
  			{
-@@ -3247,7 +3340,7 @@
+@@ -3247,7 +3442,7 @@
  				}
  			}
  
@@ -8191,7 +8455,7 @@
  			{
  				detonate_struct det;
  				det.ubID = ubID;
-@@ -3289,11 +3382,14 @@
+@@ -3289,11 +3484,14 @@
  
  void recieveDETONATEEXPLOSIVE (RPCParameters *rpcParameters)
  {
@@ -8207,7 +8471,7 @@
  	if (pSoldier != NULL)
  	{
  		// if explosive detonation didnt originate from this client then its need to be performed here
-@@ -3350,7 +3446,7 @@
+@@ -3350,7 +3548,7 @@
  		if ((pSoldier->bTeam == 1 && is_server) || IsOurSoldier(pSoldier))
  		{
  			// find the appropriate world bomb for the world item
@@ -8216,7 +8480,7 @@
  			UINT32 uiCount;
  			for(uiCount=0; uiCount < guiNumWorldBombs; uiCount++)
  			{
-@@ -3361,7 +3457,7 @@
+@@ -3361,7 +3559,7 @@
  				}
  			}
  
@@ -8225,7 +8489,7 @@
  			{
  				disarm_struct disarm;
  				disarm.ubID = ubID;
-@@ -3402,11 +3498,14 @@
+@@ -3402,11 +3600,14 @@
  
  void recieveDISARMEXPLOSIVE (RPCParameters *rpcParameters)
  {
@@ -8241,7 +8505,7 @@
  	if (pSoldier != NULL)
  	{
  		// if explosive disarm didnt originate from this client then its need to be performed here
-@@ -3735,14 +3834,15 @@
+@@ -3735,14 +3936,15 @@
  
  	BULLET * pBullet;
  
@@ -8261,7 +8525,7 @@
  
  	//add bullet to bullet table for translation
  	bTable[bTeam][net_iBullet].remote_id = net_iBullet;
-@@ -3770,7 +3870,7 @@
+@@ -3770,7 +3972,7 @@
  	pBullet->bEndCubesAboveLevelZ=netb->net_bullet.bEndCubesAboveLevelZ;
  	pBullet->iDistanceLimit=netb->net_bullet.iDistanceLimit;
  
@@ -8270,7 +8534,7 @@
  }
  
  void send_changestate (EV_S_CHANGESTATE * SChangeState)
-@@ -3944,10 +4044,23 @@
+@@ -3944,10 +4146,23 @@
  #endif
  }
  
@@ -8295,7 +8559,7 @@
  
  	SoldierID ubAttackerID;
  	if((nDeath->attacker_id >= ubID_prefix) && (nDeath->attacker_id < (ubID_prefix+6)))
-@@ -3955,11 +4068,11 @@
+@@ -3955,11 +4170,11 @@
  	else
  		ubAttackerID = nDeath->attacker_id;
  
@@ -8312,7 +8576,7 @@
  
  	if(pAttacker)
  	{
-@@ -3972,16 +4085,12 @@
+@@ -3972,16 +4187,12 @@
  			pA_bTeam=CLIENT_NUM;
  	}
  
@@ -8335,7 +8599,7 @@
  			
  	if(pSoldier->bActive)
  	{
-@@ -4002,8 +4111,8 @@
+@@ -4002,8 +4213,8 @@
  
  		if (pSoldier->bTeam==1)  
  			ScreenMsg( FONT_YELLOW, MSG_MPSYSTEM, MPClientMessage[67]);	
@@ -8346,7 +8610,7 @@
  	}
  	else
  	{
-@@ -4023,12 +4132,14 @@
+@@ -4023,12 +4234,14 @@
  	WideCharToMultiByte(CP_UTF8,0,pS_name,-1, s_name,10,NULL,NULL);
  	WideCharToMultiByte(CP_UTF8,0,pA_name,-1, a_name,10,NULL,NULL);
  	
@@ -8366,7 +8630,7 @@
  #endif
  }
  
-@@ -5120,13 +5231,25 @@
+@@ -5120,13 +5333,25 @@
  // Otherwise we want the 1st byte
  unsigned char GetPacketIdentifier(Packet *p)
  {
@@ -8392,6 +8656,46 @@
  	}
  	else
  		return (unsigned char) p->data[0];
+--- a/Multiplayer/connect.h
++++ b/Multiplayer/connect.h
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: Multiplayer/connect.h
++ * Native Linux source/build/test adaptations captured in the accepted multiplayer interrupt legacy-local correction dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ #pragma once
+ 
+ 
+@@ -199,10 +209,13 @@
+ // OJW - 2009128 - inline funcs for working with soldiers and teams
+ // sick of confusing myself :)
+ 
++// Multiplayer reserves seven soldier slots for each LAN team.
++static const UINT16 MP_LOCAL_SOLDIER_SLOTS = 7;
++
+ // this one should be called before passing an ID off the client
+ inline SoldierID MPEncodeSoldierID( SoldierID ubID )
+ {
+-	if ( ubID < 20 )
++	if ( ubID < MP_LOCAL_SOLDIER_SLOTS )
+ 		return ubID + ubID_prefix; // soldier is ours
+ 	else
+ 		return ubID; // soldier is another teams, dont touch its ID
+@@ -211,7 +224,7 @@
+ // this one can be called anywhere, even if the ID was not "encoded"
+ inline SoldierID MPDecodeSoldierID( SoldierID ubID )
+ {
+-	if ( ubID >= ubID_prefix && ubID < (ubID_prefix + 7) )
++	if ( ubID >= ubID_prefix && ubID < (ubID_prefix + MP_LOCAL_SOLDIER_SLOTS) )
+ 		return ubID - ubID_prefix; // soldier is ours
+ 	else
+ 		return ubID; // soldier is another teams, dont touch its ID
 --- a/Multiplayer/network.h
 +++ b/Multiplayer/network.h
 @@ -1,3 +1,14 @@
