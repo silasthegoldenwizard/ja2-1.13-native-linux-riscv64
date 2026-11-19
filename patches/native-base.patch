@@ -41694,7 +41694,7 @@
  void FreeAnimTileData( TILE_ELEMENT *pTileElem );
 --- a/TileEngine/worlddef.cpp
 +++ b/TileEngine/worlddef.cpp
-@@ -1,3 +1,38 @@
+@@ -1,3 +1,48 @@
 +/*
 + * P710 native snapshot update: TileEngine/worlddef.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -41725,6 +41725,16 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: TileEngine/worlddef.cpp
++ * Native Linux source/build/test adaptations captured in the accepted world-teardown roster checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#if !defined(_WIN32)
 +#include <vfs/Tools/vfs_property_container.h>
 +#include <vfs/Core/vfs.h>
@@ -41733,7 +41743,7 @@
  
  	#include "worlddef.h"
  	#include "WorldDat.h"
-@@ -354,6 +389,7 @@
+@@ -354,6 +399,7 @@
  	UINT32					uiPercentage;
  	//UINT32					uiLength;
  	//UINT16					uiFillColor;
@@ -41741,7 +41751,7 @@
  	STRING512				ExeDir;
  	STRING512				INIFile;
  
-@@ -368,6 +404,25 @@
+@@ -368,6 +414,25 @@
  		// USE PER TILESET BASIS
  		sprintf( INIFile, "%s\\engine%d.ini", ExeDir, ubTilesetID );
  	}
@@ -41767,7 +41777,7 @@
  
  	// If no Tileset filenames are given, return error
  	if (ppTileSurfaceFilenames == NULL)
-@@ -421,7 +476,11 @@
+@@ -421,7 +486,11 @@
  		// almost completely identical functions
  		if (ppTileSurfaceFilenames == NULL)
  		{
@@ -41779,7 +41789,7 @@
  			if (*cTemp != '\0')
  			{
  				strcpy( TileSurfaceFilenames[uiLoop], cTemp );
-@@ -445,7 +504,11 @@
+@@ -445,7 +514,11 @@
  		}
  		else
  		{
@@ -41791,7 +41801,7 @@
  			if (*cTemp != '\0')
  			{
  				strcpy( TileSurfaceFilenames[uiLoop], cTemp );
-@@ -767,6 +830,13 @@
+@@ -767,6 +840,13 @@
  			gTileSurfaceArray[ uiLoop ] = NULL;
  		}
  	}
@@ -41805,7 +41815,7 @@
  }
  
  static void CompileWorldTerrainIDs( void )
-@@ -2805,6 +2875,9 @@
+@@ -2805,6 +2885,9 @@
  
  extern UINT8 GetCurrentSummaryVersion();
  extern void LoadShadeTablesFromTextFile();
@@ -41815,7 +41825,7 @@
  BOOLEAN LoadWorld(const STR8 puiFilename, FLOAT* pMajorMapVersion, UINT8* pMinorMapVersion)//dnl ch44 290909
  {
  	HWFILE					hfile;
-@@ -2958,7 +3031,13 @@
+@@ -2958,7 +3041,13 @@
  #ifdef JA2TESTVERSION
  	uiStartTime = GetJA2Clock();
  #endif
@@ -41830,7 +41840,7 @@
  #ifdef JA2TESTVERSION
  	uiLoadMapTilesetTime = GetJA2Clock() - uiStartTime;
  #endif
-@@ -3228,7 +3307,24 @@
+@@ -3228,7 +3317,24 @@
  	{
  		SetRelativeStartAndEndPercentage(0, 86, 87, L"Loading placements...");
  		RenderProgressBar(0, 0);
@@ -41855,7 +41865,7 @@
  	}
  	if(uiFlags & MAP_EXITGRIDS_SAVED)
  	{
-@@ -3261,7 +3357,21 @@
+@@ -3261,7 +3367,21 @@
  	{
  		SetRelativeStartAndEndPercentage(0, 91, 92, L"Loading NPC schedules...");
  		RenderProgressBar(0, 0);
@@ -41877,10 +41887,34 @@
  	}
  
  	ValidateAndUpdateMapVersionIfNecessary();
-@@ -3636,7 +3746,11 @@
+@@ -3636,7 +3756,35 @@
  }
  
  
++void TrashWorldSoldiers( void )
++{
++	for ( INT32 cnt = 0; cnt < MAX_NUM_SOLDIERS; ++cnt )
++	{
++		SOLDIERTYPE* const pSoldier = MercPtrs[ cnt ];
++		if ( pSoldier == NULL || !pSoldier->bActive )
++		{
++			continue;
++		}
++
++		if ( pSoldier->bTeam == gbPlayerNum )
++		{
++			// Just delete levelnode
++			pSoldier->pLevelNode = NULL;
++		}
++		else
++		{
++			// Delete from world
++			TacticalRemoveSoldier( (UINT16)cnt );
++		}
++	}
++}
++
++
 +#if defined(_WIN32)
  void TrashWorld( void )
 +#else
@@ -41889,10 +41923,13 @@
  {
  	MAP_ELEMENT		*pMapTile;
  	LEVELNODE			*pLandNode;
-@@ -3651,8 +3765,10 @@
+@@ -3649,10 +3797,11 @@
+ 	LEVELNODE			*pTopmostNode;
+ //	STRUCTURE			*pStructureNode;
  	INT32					cnt;
- 	SOLDIERTYPE		*pSoldier;
- 
+-	SOLDIERTYPE		*pSoldier;
+-
++
 +#if defined(_WIN32)
  	if( !gfWorldLoaded )
  		return;
@@ -41900,7 +41937,33 @@
  
  
  	// REMOVE ALL ITEMS FROM WORLD
-@@ -3817,6 +3933,14 @@
+@@ -3670,24 +3819,7 @@
+ 	// Set soldiers to not active!
+ 	//ATE: FOR NOW, ONLY TRASH FROM NPC UP!!!!
+ 	//cnt = gTacticalStatus.Team[ gbPlayerNum ].bLastID + 1;
+-	cnt = 0;
+-
+-	for ( pSoldier = MercPtrs[ cnt ]; cnt < MAX_NUM_SOLDIERS; pSoldier++, cnt++ )
+-	{
+-		if ( pSoldier->bActive )
+-		{
+-			if ( pSoldier->bTeam == gbPlayerNum )
+-			{
+-				// Just delete levelnode
+-				pSoldier->pLevelNode = NULL;
+-			}
+-			else
+-			{
+-				// Delete from world
+-				TacticalRemoveSoldier( (UINT16)cnt );
+-			}
+-		}
+-	}
++	TrashWorldSoldiers();
+ 
+ 	// Reset attack busy since a militia might have been in the middle of radioing
+ 	gTacticalStatus.ubAttackBusyCount = 0;
+@@ -3817,6 +3949,14 @@
  
  
  
@@ -41915,7 +41978,7 @@
  void TrashMapTile(INT32 MapTile)
  {
  	MAP_ELEMENT		*pMapTile;
-@@ -3928,16 +4052,27 @@
+@@ -3928,16 +4068,27 @@
  	// Init tile surface used values
  	memset( gbNewTileSurfaceLoaded, 0, sizeof( gbNewTileSurfaceLoaded ) );
  
@@ -41945,7 +42008,7 @@
  
  	// SET TERRAIN COSTS
  	if ( gTilesets[ iTilesetID ].MovementCostFnc != NULL )
-@@ -3953,7 +4088,11 @@
+@@ -3953,7 +4104,11 @@
  	// RESET TILE DATABASE
  	DeallocateTileDatabase( );
  
@@ -41958,6 +42021,30 @@
  
  	// SET GLOBAL ID FOR TILESET ( FOR SAVING! )
  	giCurrentTilesetID = iTilesetID;
+--- a/TileEngine/worlddef.h
++++ b/TileEngine/worlddef.h
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: TileEngine/worlddef.h
++ * Native Linux source/build/test adaptations captured in the accepted world-teardown roster checkpoint dated 2026-11-19.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-19.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ #ifndef __WORLDDEF_H
+ #define __WORLDDEF_H
+ 
+@@ -326,6 +336,7 @@
+ 
+ 
+ void TrashWorld(void);
++void TrashWorldSoldiers(void);
+ void TrashMapTile(INT32 MapTile);
+ BOOLEAN NewWorld( INT32 nMapRows,  INT32 nMapCols );
+ 
 --- a/TileEngine/worldman.cpp
 +++ b/TileEngine/worldman.cpp
 @@ -1,3 +1,23 @@

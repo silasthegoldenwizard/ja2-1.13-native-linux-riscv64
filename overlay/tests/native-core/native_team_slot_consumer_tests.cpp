@@ -88,6 +88,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux source/build/test adaptations captured in the accepted world-teardown roster checkpoint dated 2026-11-19.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-19.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
@@ -456,6 +466,34 @@ void runBattleVictorySparseRosterScenario()
 	MercPtrs[5] = previousOwner5;
 	gTacticalStatus.Team[OUR_TEAM].bLastID = previousLast;
 	gTacticalStatus.Team[OUR_TEAM].bFirstID = previousFirst;
+	gbPlayerNum = previousPlayer;
+}
+
+void runWorldTeardownSparseRosterScenario()
+{
+	const UINT8 previousPlayer = gbPlayerNum;
+	SOLDIERTYPE* const previousOwner0 = MercPtrs[0];
+	SOLDIERTYPE* const previousOwner1 = MercPtrs[1];
+
+	LEVELNODE playerNode = {};
+	SOLDIERTYPE player;
+	player.initialize();
+	player.ubID = SoldierID(1);
+	player.bTeam = OUR_TEAM;
+	player.bActive = TRUE;
+	player.pLevelNode = &playerNode;
+
+	gbPlayerNum = OUR_TEAM;
+	MercPtrs[0] = nullptr;
+	MercPtrs[1] = &player;
+
+	TrashWorldSoldiers();
+
+	check(player.pLevelNode == nullptr,
+	      "world teardown reaches a live player after an empty runtime slot");
+
+	MercPtrs[1] = previousOwner1;
+	MercPtrs[0] = previousOwner0;
 	gbPlayerNum = previousPlayer;
 }
 
@@ -1407,6 +1445,8 @@ int main(int argc, char** argv)
 		runBattleAITurnCleanupSparseRosterScenario();
 	else if (std::strcmp(argv[1], "battle-victory-roster") == 0)
 		runBattleVictorySparseRosterScenario();
+	else if (std::strcmp(argv[1], "world-teardown-roster") == 0)
+		runWorldTeardownSparseRosterScenario();
 	else if (std::strcmp(argv[1], "morale-global") == 0)
 		runGlobalMoraleScenario();
 	else if (std::strcmp(argv[1], "morale-specific") == 0)
