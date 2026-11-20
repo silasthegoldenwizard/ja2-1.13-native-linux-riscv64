@@ -1,112 +1,84 @@
 # Jagged Alliance 2 v1.13 for native Linux
 
-An experimental native Linux port of [1dot13's](https://github.com/1dot13) [JA2 v1.13](https://github.com/1dot13/source) engine.
-The goal is to preserve v1.13 gameplay and support Linux x86-64, followed by RISC-V64.
+This project ports the [JA2 v1.13 engine](https://github.com/1dot13/source) to
+native Linux. The first target is Linux x86-64. RISC-V64 support is planned.
 
-## For testers
+## Can I play it now?
 
-Use this source preview for technical validation, source reconstruction, and native component tests.
-It does not provide a complete game installation.
+**Development builds can run the game on Linux x86-64, but this repository does
+not yet offer a ready-to-run public game download.**
 
-### Current status
+The reviewed source package for the next public release is
+`v0.1.0-alpha.2`. It is for developers and experienced testers. A prebuilt
+player package is on hold while we resolve its redistribution terms.
 
-- The downloadable release is [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1), a source preview from November 15, 2026.
-- The [November 19 source checkpoint](docs/CHANGELOG.md#november-19-source-checkpoints) on `main` handles empty roster slots at battle end and during world teardown.
-- The usable-mercenary scan and pre-battle wake-up include the final configured player slot. The scripted SDL/X11 button viewer drains stray input before each step.
-- Original game assets, private profiles, saves, and prebuilt game binaries are separate from this source preview.
+| Item | Current state |
+| --- | --- |
+| Native Linux x86-64 | Runs in development |
+| Ready-to-run public package | Not available yet |
+| Single-player | Main development target |
+| Multiplayer | Disabled in the current source package |
+| RISC-V64 | Planned; not validated on hardware |
+| Original JA2 game data | Not included |
 
-### What this repository is useful for
+## What do players need?
 
-You can use this repository to:
+- A legally obtained copy of Jagged Alliance 2 with the required v1.13 data.
+- A recent x86-64 Linux system with X11 or XWayland.
+- Patience with an alpha port. Crashes and gameplay defects are still possible.
 
-- Rebuild the native Linux source from the pinned public base and overlay.
-- Verify source reconstruction and package integrity.
-- Run native component tests.
-- Inspect sanitizer and regression coverage for selected subsystems.
-- Evaluate the port before broader gameplay testing.
+Keep your game data, profiles, and saved games private. This repository does
+not contain or redistribute them.
 
-This preview does not provide an immediate game launch or a complete end-user Linux installation.
-Do not treat the current port as proven gameplay-complete.
+## Where do I start?
 
-### What the tests cover
+If you want a simple installation, wait for a player-package release and watch
+the [Releases](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases)
+page.
 
-The latest published source checkpoint passed 268 native tests and 270 strict sanitizer tests in development.
-The suites ran serially on a real X11 display. The strict build used AddressSanitizer, UndefinedBehaviorSanitizer, and LeakSanitizer.
+If you can build C++ software:
 
-Focused synthetic tests use controlled inputs and test doubles. Production-linked regressions run selected engine paths with controlled state.
-The [hosted checks](docs/CI.md) cover source reconstruction, selected native components, source checks, and the attachment fixture.
-Live strategic gameplay, full campaign testing, Windows, and native RISC-V validation remain open. See the [validation status](docs/STATUS.md#validation).
+1. Open the Releases page and select `v0.1.0-alpha.2`. If it is not listed yet,
+   publication is still in progress.
+2. Verify the archive with the attached `SHA256SUMS` file.
+3. Extract the archive.
+4. Follow its `BUILD-AND-RELINK.md` instructions.
+5. Supply your own JA2 v1.13 game data when you run the built engine.
 
-### Prerequisites
+The alpha.2 source packet is single-player and excludes RakNet. It pins the
+tested dependency versions and includes the license, provenance, integrity, and
+relinking material needed for that snapshot.
 
-For the documented development build, use:
+## What works today?
 
-- A recent Linux environment.
-- Git, Python 3, and 7z/7zz.
-- A C++17 toolchain with Clang/Clang++ 19.
-- CMake 3.20+ and Make.
-- zlib, Expat, pthread, and X11 development dependencies.
-- SDL3, FFmpeg, and FreeType development SDKs with the versions and configurations in the selected snapshot's [source pins](SOURCE_PIN.json).
-- The separately published RakNet 3.401 source companion.
+The native port has reached real Linux gameplay testing. Development work has
+covered startup, rendering, input, audio, saves, sector transitions, tactical
+combat, strategic inventory, and several crash families. This does not mean
+that the full campaign is complete or stable.
 
-The overlay does not include an installer or dependency binaries.
-Obtain original JA2 game data separately before runtime or gameplay testing.
-Keep game data, private profiles, and saves private.
+Automated native and sanitizer tests cover selected engine boundaries. They do
+not replace normal gameplay testing.
 
-### Setup and build
+## Help test the port
 
-Use one engine snapshot throughout reconstruction and compilation.
-Replace the example paths below with your local paths.
+Useful reports include:
 
-1. Select the engine overlay from the release or this repository at a fixed commit.
-   Download the RakNet 3.401 companion from the [release](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1).
-   Verify release archives against the release's `SHA256SUMS`.
-   Use the reconstruction files and build guide from your selected engine snapshot.
+- The exact action that caused a crash or visual defect.
+- The game screen and sector.
+- The selected game options.
+- Whether the problem occurs again after loading the same save.
+- A screenshot or local crash report, when available.
 
-2. Get the public upstream Git objects and reconstruct the engine into a new, absent directory.
-   The helper verifies the pinned inputs and reconstructed file hashes.
-   It does not download missing objects or game data.
+Do not upload proprietary game data. Share a minimal saved game privately only
+if a maintainer requests it and you agree.
 
-   ```sh
-   git clone --bare https://github.com/1dot13/source /path/to/ja2-base.git
-   python3 /path/to/engine-overlay/reconstruct.py \
-     --base-repo /path/to/ja2-base.git --output /path/to/new-engine
-   ```
+## Technical information
 
-3. Copy the companion's `game-headers/` contents into the reconstructed engine's `Multiplayer/raknet/` directory.
+- [November 19 repository validation checkpoint](docs/STATUS.md)
+- [Change history](docs/CHANGELOG.md)
+- [Continuous-integration scope](docs/CI.md)
+- [Alpha.1 component terms and distribution limits](docs/PUBLICATION-LIMITS.md)
+- [Third-party notices](notices/)
 
-4. Follow the companion README to verify its source and build `libraknet3401.a`.
-   Keep its required `sdk/packaging-notices.json` with `sdk/prepare.py`.
-   Use the SDK build directory as `P710_RAKNET_ROOT`.
-
-5. Configure and build from the reconstructed engine directory.
-   Specify the matching local dependency prefixes.
-
-   ```sh
-   cd /path/to/new-engine
-   cmake -S platform/linux -B /path/to/new-build -G 'Unix Makefiles' \
-     -DCMAKE_C_COMPILER=clang-19 -DCMAKE_CXX_COMPILER=clang++-19 \
-     -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/path/to/pinned-sdl-prefix \
-     -DP710_FFMPEG_ROOT=/path/to/pinned-ffmpeg-prefix \
-     -DP710_FREETYPE_ROOT=/path/to/pinned-freetype-prefix \
-     -DP710_RAKNET_ROOT=/path/to/reviewed-native-raknet-build
-
-   cmake --build /path/to/new-build --target p710_native_game --parallel 2
-   cmake --build /path/to/new-build --parallel 2
-   cmake --build /path/to/new-build --target p710_native_profile101_tests --parallel 2
-   ctest --test-dir /path/to/new-build --output-on-failure
-   ```
-
-Display tests need an X11 environment.
-Use a separate test display to avoid interference with a desktop game.
-See the [Linux build guide](docs/BUILD-LINUX.md) for dependency pins, sanitizer setup, and exact validation limits.
-The build and test commands do not install or configure original game data.
-
-## Project information
-
-- [Release status, known issues, and validation cutoffs](docs/STATUS.md)
-- [Changes](docs/CHANGELOG.md)
-- [Component terms](docs/PUBLICATION-LIMITS.md) and [notices](notices/)
-
-The engine and third-party components retain their individual terms.
-Read the component terms before reuse or redistribution.
+The original engine and all third-party components keep their own license
+terms. Read the included notices before reuse or redistribution.
