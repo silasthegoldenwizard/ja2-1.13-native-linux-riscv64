@@ -1,0 +1,113 @@
+name: JA2 CI tool trial
+
+on:
+  push:
+    branches: [codex/p710-ci-tool-trial]
+    paths: [.github/workflows/ci-tools-trial.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  workflow-lint:
+    name: Workflow lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Lint the JA2 workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        with:
+          version: '1.7.12'
+          cache: false
+      - name: Create an invalid sample on the runner
+        run: |
+          cat > .github/workflows/lint-negative.yml <<'YAML'
+          name: Invalid sample
+          on: push
+          jobs:
+            example:
+              runs-onn: ubuntu-24.04
+              steps:
+                - run: echo trial
+          YAML
+      - name: Check that actionlint catches the invalid key
+        id: negative
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        with:
+          version: '1.7.12'
+          files: .github/workflows/lint-negative.yml
+          cache: false
+          matcher: false
+          fail-on-error: false
+      - name: Verify the negative result
+        env:
+          LINT_EXIT: ${{ steps.negative.outputs.exit-code }}
+        run: test "$LINT_EXIT" = 1
+
+  ctest-summary:
+    name: CTest summary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Download the PR's native CTest reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ctest-native-attempt-1
+          path: ${{ runner.temp }}/p710-native
+          run-id: 44871818399
+          github-token: ${{ github.token }}
+      - name: Download the PR's sanitizer CTest reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ctest-sanitizer-attempt-1
+          path: ${{ runner.temp }}/p710-sanitizer
+          run-id: 44871818399
+          github-token: ${{ github.token }}
+      - name: Render native CTest results
+        uses: test-summary/action@37b508cfee6d4d080eedd00b5bb240a6a784a6a5 # v2.6
+        with:
+          paths: |
+            ${{ runner.temp }}/p710-native/build-debug/ctest.xml
+            ${{ runner.temp }}/p710-native/attachment-debug/ctest.xml
+          output: ${{ runner.temp }}/p710-native.md
+      - name: Render sanitizer CTest results
+        uses: test-summary/action@37b508cfee6d4d080eedd00b5bb240a6a784a6a5 # v2.6
+        with:
+          paths: |
+            ${{ runner.temp }}/p710-sanitizer/build-sanitized/ctest.xml
+            ${{ runner.temp }}/p710-sanitizer/attachment-sanitized/ctest.xml
+          output: ${{ runner.temp }}/p710-sanitizer.md
+      - name: Publish both summaries
+        run: |
+          test -s "$RUNNER_TEMP/p710-native.md"
+          test -s "$RUNNER_TEMP/p710-sanitizer.md"
+          {
+            printf '## Native CTest\n\n'
+            cat "$RUNNER_TEMP/p710-native.md"
+            printf '\n\n## Sanitizer CTest\n\n'
+            cat "$RUNNER_TEMP/p710-sanitizer.md"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  external-links:
+    name: External links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Report external links in public docs
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --no-progress --scheme https --scheme http
+            --max-concurrency 8 --max-retries 1 --timeout 10
+            './README.md' './docs/**/*.md'
+          fail: false
+          jobSummary: true
