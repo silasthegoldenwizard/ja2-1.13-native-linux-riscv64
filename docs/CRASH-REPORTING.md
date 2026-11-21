@@ -1,8 +1,8 @@
 # Native Linux crash reports
 
-Some native Linux development builds include a local crash reporter. It helps
-maintainers identify the exact executable and failure without automatically
-sending any data.
+The current native Linux source includes a local crash reporter. It helps
+maintainers identify the exact executable and failure. Reports stay on the
+machine that runs the game.
 
 ## Find a report
 
@@ -50,8 +50,7 @@ when available.
 
 ## Current limits
 
-- This is a development capability, not a promise that every public source or
-  binary snapshot contains the reporter.
+- Report availability depends on the source revision used for the build.
 - Fatal-signal reports contain signal-safe essential context. Controlled
   failures and assertions can include a fuller stack trace.
 - Sanitizer builds leave fatal-signal handling to the sanitizer runtime.

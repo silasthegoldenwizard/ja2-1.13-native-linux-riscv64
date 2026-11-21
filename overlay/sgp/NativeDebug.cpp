@@ -8,8 +8,19 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: sgp/NativeDebug.cpp
+ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Native implementation of the original SGP debug interface. No Win32 shim.
 #include "native_debug.h"
+#include "native_crash_report.h"
 #include <vfs/Aspects/vfs_settings.h>
 #include <vfs/Core/vfs_debug.h>
 #include <vfs/Core/vfs_string.h>
@@ -233,6 +244,7 @@ void _DebugRecordToDebugger(BOOLEAN state)
     std::fprintf(stderr, "Assertion Failure [Line %u in function %s in file %s]: %s\n",
         line, safe(function), safe(file), safe(message));
     std::fflush(stderr);
+    sgp::WriteNativeAssertionFailure(line, function, file, message);
     std::abort();
 }
 [[noreturn]] void NativeDebugBreakpoint()

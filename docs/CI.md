@@ -31,7 +31,7 @@ Release tags, release notes, and release assets use a separate publication step.
 
 ## Native component checks
 
-The `native` job reconstructs the 1625 declared source files from the pinned public base and this overlay.
+The `native` job reconstructs the 1632 declared source files from the pinned public base and this overlay.
 The existing CMake/CTest component lane builds production code with C++17 and Clang on Ubuntu 24.04.
 It runs seven normal tests and nine sanitizer tests, including the existing sanitizer diagnostic probes.
 VFS, image, SDL, FFmpeg, FreeType, RakNet, and full-game integration are outside this component lane.
@@ -49,7 +49,21 @@ Future source changes that affect the frozen regression bindings need a reviewed
 ## Source-aware state and ownership checks
 
 The required native job checks cumulative strategic state, allocation ownership, reinforcement choices, tile construction, stream loading, and word wrapping.
-The correction adds a save-preflight guard and updates the Rebel Command bounds guard.
-The lane runs 90 source invariants across 11 Python checkers against reconstructed source.
+The lane checks save preflight and top-level save-loader failure propagation
+against the reconstructed source.
 These checks inspect source invariants. They do not execute rare allocation failures or establish complete gameplay behavior.
 The development suites and static-analyzer results retain their separate source-checkpoint scopes.
+
+## Focused export checks
+
+The hosted component lane sets `P710_VFS=OFF`. The local export check enables
+bfVFS and builds the crash fixtures before running `debug.native_contracts`,
+`debug.native_crash_reports`, and `debug.native_crash_symbolizer`.
+
+The production-linked export check builds with `P710_MULTIPLAYER=OFF` and
+`P710_VFS=ON`. It checks vehicle, squad, and militia load behavior, top-level
+failure propagation, and the Windows 1.01 profile wire format.
+
+The 334 Debug and 336 strict sanitizer counts in [Status](STATUS.md) are from
+the local full development suites. They are separate from these export
+checks and the hosted test counts.

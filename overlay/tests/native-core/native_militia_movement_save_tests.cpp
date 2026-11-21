@@ -8,8 +8,19 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_militia_movement_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "BufferMan.h"
 #include "GameVersion.h"
+#include "MemMan.h"
 #include "MilitiaSquads.h"
 #include "Strategic Pathing.h"
 #include "mapscreen.h"
@@ -99,6 +110,32 @@ void clearState()
     check(liveStateIsEmpty(), "militia path cleanup leaves an empty table");
 }
 
+void publishSentinelPath()
+{
+    DeleteAllMilitiaPaths();
+    auto* node = static_cast<PathSt*>(MemAlloc(sizeof(PathSt)));
+    *node = pathNode(9 + 9 * MAP_WORLD_X);
+    node->pPrev = nullptr;
+    node->pNext = nullptr;
+    gMilitiaPath[0].path = node;
+    gMilitiaPath[0].sGroupid = 7;
+}
+
+bool sentinelPathIsPublished()
+{
+    const auto* node = gMilitiaPath[0].path;
+    if (node == nullptr || node->pPrev != nullptr || node->pNext != nullptr ||
+        node->uiSectorId != 9 + 9 * MAP_WORLD_X ||
+        gMilitiaPath[0].sGroupid != 7) {
+        return false;
+    }
+    for (UINT32 slot = 1; slot < MILITIA_PATROLS_MAX; ++slot) {
+        if (gMilitiaPath[slot].path != nullptr || gMilitiaPath[slot].sGroupid != -1)
+            return false;
+    }
+    return true;
+}
+
 void longValidPathRegression()
 {
     const UINT32 sector = 9 + 9 * MAP_WORLD_X;
@@ -127,6 +164,7 @@ void longValidPathRegression()
 
 void invalidNodeCountRegression()
 {
+    publishSentinelPath();
     Bytes excessive;
     const UINT8 pathCount = MILITIA_PATROLS_MAX;
     const UINT32 nodeCount = UINT32_MAX;
@@ -136,9 +174,9 @@ void invalidNodeCountRegression()
     check(!load(excessive, consumed), "excessive militia path count is rejected");
     check(gfBufferLoadFailed,
           "path count that cannot fit the payload records a bounded read failure");
-    check(consumed == sizeof(pathCount) + sizeof(nodeCount),
-          "excessive count is rejected at its bounded prefix");
-    check(liveStateIsEmpty(), "excessive count leaves no live militia paths");
+    check(consumed == 0,
+          "excessive count preserves the caller cursor");
+    check(sentinelPathIsPublished(), "excessive count preserves live militia paths");
 }
 
 int finish()
@@ -185,32 +223,39 @@ int main()
 
     auto invalidSector = paths({pathNode(MAP_WORLD_X * MAP_WORLD_Y)}, 7);
     consumed = 0;
+    publishSentinelPath();
     check(!load(invalidSector, consumed), "out-of-map path sector is rejected");
     check(!gfBufferLoadFailed,
           "invalid militia sector is a semantic rejection, not a short read");
-    check(liveStateIsEmpty(), "invalid sector leaves no live militia path");
+    check(consumed == 0, "invalid militia sector preserves the caller cursor");
+    check(sentinelPathIsPublished(), "invalid sector preserves the live militia path");
 
     auto invalidSpeed = paths({pathNode(sector, NORMAL_MVT + 1)}, 7);
     consumed = 0;
+    publishSentinelPath();
     check(!load(invalidSpeed, consumed), "invalid path speed is rejected");
     check(!gfBufferLoadFailed,
           "invalid militia speed is a semantic rejection, not a short read");
-    check(liveStateIsEmpty(), "invalid speed leaves no live militia path");
+    check(consumed == 0, "invalid militia speed preserves the caller cursor");
+    check(sentinelPathIsPublished(), "invalid speed preserves the live militia path");
 
     auto invalidGroup = paths({pathNode(sector)}, 256);
     consumed = 0;
+    publishSentinelPath();
     check(!load(invalidGroup, consumed), "out-of-range militia group ID is rejected");
     check(!gfBufferLoadFailed,
           "invalid militia group is a semantic rejection, not a short read");
-    check(liveStateIsEmpty(), "invalid group ID leaves no live militia path");
+    check(consumed == 0, "invalid militia group preserves the caller cursor");
+    check(sentinelPathIsPublished(), "invalid group ID preserves the live militia path");
 
     auto truncated = valid;
     truncated.resize(1 + sizeof(UINT32) + sizeof(PathSt) / 2);
     consumed = 0;
+    publishSentinelPath();
     check(!load(truncated, consumed), "truncated militia path is rejected");
     check(gfBufferLoadFailed, "truncated path marks the bounded load failure");
-    check(consumed <= truncated.size(), "truncated path cursor remains in bounds");
-    check(liveStateIsEmpty(), "truncated path rolls back all militia ownership");
+    check(consumed == 0, "truncated path preserves the caller cursor");
+    check(sentinelPathIsPublished(), "truncated path preserves all militia ownership");
 
     longValidPathRegression();
     invalidNodeCountRegression();

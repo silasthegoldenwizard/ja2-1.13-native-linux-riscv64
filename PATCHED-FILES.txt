@@ -118,6 +118,7 @@ Strategic/Strategic Event Handler.cpp
 Strategic/Strategic Merc Handler.cpp
 Strategic/Strategic Movement Costs.cpp
 Strategic/Strategic Movement.cpp
+Strategic/Strategic Movement.h
 Strategic/Strategic Pathing.cpp
 Strategic/Strategic Status.cpp
 Strategic/Strategic Town Loyalty.cpp

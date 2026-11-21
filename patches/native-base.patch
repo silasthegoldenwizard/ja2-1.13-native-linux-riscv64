@@ -1471,7 +1471,7 @@
  		gbHighLightedOptionText = -1;
 --- a/Ja2/SaveLoadGame.cpp
 +++ b/Ja2/SaveLoadGame.cpp
-@@ -1,4 +1,57 @@
+@@ -1,4 +1,67 @@
 +/*
 + * P710 native snapshot update: Ja2/SaveLoadGame.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -1512,6 +1512,16 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Ja2/SaveLoadGame.cpp
++ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-21.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <cstddef>
 +#include <climits>
 +#include <cstdint>
@@ -1529,7 +1539,7 @@
  #include "Soldier Profile.h"
  #include "FileMan.h"
  #include <string.h>
-@@ -16,6 +69,7 @@
+@@ -16,6 +79,7 @@
  #include "Game Events.h"
  #include "Game Clock.h"
  #include "Soldier Create.h"
@@ -1537,7 +1547,7 @@
  #include "worlddef.h"
  #include "LaptopSave.h"
  #include "Queen Command.h"
-@@ -473,7 +527,14 @@
+@@ -473,7 +537,14 @@
  
  //CHAR8		gsSaveGameNameWithPath[ 512 ];
  
@@ -1553,7 +1563,7 @@
  
  UINT8			gubSaveGameLoc=0;
  
-@@ -582,97 +643,198 @@
+@@ -582,97 +653,198 @@
  
  extern int gLastLBEUniqueID;
  
@@ -1834,7 +1844,7 @@
  	return TRUE;
  }
  
-@@ -779,14 +941,14 @@
+@@ -779,14 +951,14 @@
  	{
  		//the format has changed and needs to be updated
  		OLD_ARMS_DEALER_STATUS_101 gOldArmsDealerStatus[NUM_ARMS_DEALERS];
@@ -1857,7 +1867,7 @@
  
  		// Elgin was added to the dealers list in Game Version #54, enlarging these 2 tables...
  		// Manny was added to the dealers list in Game Version #55, enlarging these 2 tables...
-@@ -810,7 +972,7 @@
+@@ -810,7 +982,7 @@
  		{
  			return FALSE;
  		}
@@ -1866,7 +1876,7 @@
  		{
  			return FALSE;
  		}
-@@ -835,29 +997,29 @@
+@@ -835,29 +1007,29 @@
  			for ( usItemIndex = 1; usItemIndex < gMAXITEMS_READ; ++usItemIndex )
  			{
  				//some things are much much better stored in status now
@@ -1904,7 +1914,7 @@
  				{
  					if ( !LoadDataFromBuffer(&oldSpecial, *ppBuffer, sizeof(OLD_DEALER_SPECIAL_ITEM_101), "OldDealerSpecialItem") )
  					{
-@@ -865,11 +1027,10 @@
+@@ -865,11 +1037,10 @@
  					}
  					//not all elements alloced are full, some are empty!
  					//convert and add to arms dealer list (if applicable)
@@ -1917,7 +1927,7 @@
  	}
  
  	// we need to refresh our selection at this point, as lua data may depend on campaign specifics
-@@ -877,6 +1038,13 @@
+@@ -877,6 +1048,13 @@
  
  	return(TRUE);
  }
@@ -1931,7 +1941,7 @@
  
  BOOLEAN DEALER_SPECIAL_ITEM::Save(HWFILE hFile)
  {
-@@ -1080,7 +1248,8 @@
+@@ -1080,7 +1258,8 @@
  		if ( guiCurrentSaveGameVersion < NIV_SAVEGAME_DATATYPE_CHANGE )
  		{
  			OLD_MERC_LEAVE_ITEM_101 oldItem;
@@ -1941,7 +1951,7 @@
  			{
  				return FALSE;
  			}
-@@ -1106,7 +1275,8 @@
+@@ -1106,7 +1285,8 @@
  		if ( guiCurrentSaveGameVersion < NIV_SAVEGAME_DATATYPE_CHANGE )
  		{
  			OLD_MERC_LEAVE_ITEM_101 oldItem;
@@ -1951,7 +1961,7 @@
  		{
  			return FALSE;
  		}
-@@ -1218,10 +1388,13 @@
+@@ -1218,10 +1398,13 @@
  	return(FALSE);
  }
  
@@ -1966,7 +1976,7 @@
  		if(dMajorMapVersion < 7.0)
  		{
  			_OLD_SOLDIERCREATE_STRUCT OldSoldierCreateStruct;
-@@ -1231,15 +1404,54 @@
+@@ -1231,15 +1414,54 @@
  		else
  			LOADDATA(this, *hBuffer, SIZEOF_SOLDIERCREATE_STRUCT_POD);
  		this->Inv.Load(hBuffer, dMajorMapVersion, ubMinorMapVersion);
@@ -2022,7 +2032,7 @@
  	return(TRUE);
  }
  
-@@ -1276,11 +1488,24 @@
+@@ -1276,11 +1498,24 @@
  		//first load the data based on what version was stored
  		if ( guiCurrentSaveGameVersion < NIV_SAVEGAME_DATATYPE_CHANGE )
  		{
@@ -2047,7 +2057,7 @@
  		}
  		/*
  		else if ( guiCurrentSaveGameVersion < SECOND_SAVEGAME_DATATYPE_CHANGE )
-@@ -1350,6 +1575,10 @@
+@@ -1350,6 +1585,10 @@
  	UINT32	uiNumBytesRead;
  	INT32	numBytesRead = 0, temp = 0, buffer = 0;
  	UINT8	filler = 0;
@@ -2058,7 +2068,7 @@
  	this->initialize();
  
  	//if we are at the most current version, then fine
-@@ -1440,7 +1669,7 @@
+@@ -1440,7 +1679,7 @@
  			temp = ReadFieldByField( hFile, &this->records.usShotsHit, sizeof(UINT16), sizeof(UINT16), temp);
  			temp = ReadFieldByField( hFile, &this->records.usBattlesTactical, sizeof(UINT16), sizeof(UINT16), temp);
  			temp = ReadFieldByField( hFile, &this->records.usTimesWoundedShot, sizeof(UINT16), sizeof(UINT16), temp);
@@ -2067,7 +2077,7 @@
  		}
  		numBytesRead = ReadFieldByField( hFile, &this->usTotalDaysServed, sizeof(this->usTotalDaysServed), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByField( hFile, &this->sLeadershipGain, sizeof(this->sLeadershipGain), sizeof(INT16), numBytesRead);
-@@ -1834,10 +2063,18 @@
+@@ -1834,10 +2073,18 @@
  				pLoadingFunction = &NewJA2EncryptedFileRead;
  			}
  
@@ -2086,7 +2096,7 @@
  			*this = old;
  		}
  		//skip checksum
-@@ -1850,6 +2087,10 @@
+@@ -1850,6 +2097,10 @@
  	UINT32	uiNumBytesRead;
  	INT32	numBytesRead = 0, temp = 0, buffer = 0;
  	UINT8	filler = 0;
@@ -2097,7 +2107,7 @@
  	this->initialize();
  
  	//if we are at the most current version, then fine
-@@ -1940,7 +2181,7 @@
+@@ -1940,7 +2191,7 @@
  			temp = ReadFieldByFieldFromBuffer(ppBuffer, &this->records.usShotsHit, sizeof(UINT16), sizeof(UINT16), temp);
  			temp = ReadFieldByFieldFromBuffer(ppBuffer, &this->records.usBattlesTactical, sizeof(UINT16), sizeof(UINT16), temp);
  			temp = ReadFieldByFieldFromBuffer(ppBuffer, &this->records.usTimesWoundedShot, sizeof(UINT16), sizeof(UINT16), temp);
@@ -2106,7 +2116,7 @@
  		}
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->usTotalDaysServed, sizeof(this->usTotalDaysServed), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sLeadershipGain, sizeof(this->sLeadershipGain), sizeof(INT16), numBytesRead);
-@@ -2255,10 +2496,22 @@
+@@ -2255,10 +2506,22 @@
  				pLoadingFunction = &NewJA2EncryptedFileReadBuffer;
  			}
  
@@ -2129,7 +2139,7 @@
  			*this = old;
  		}
  		//skip checksum
-@@ -3425,6 +3678,17 @@
+@@ -3425,6 +3688,17 @@
  	return TRUE;
  }
  
@@ -2147,7 +2157,7 @@
  BOOLEAN SOLDIERTYPE::Load(CHAR8** ppBuffer)
  {
  	UINT32 uiNumBytesRead;
-@@ -3456,8 +3720,8 @@
+@@ -3456,8 +3730,8 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bVisible, sizeof(bVisible), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bActive, sizeof(bActive), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bTeam, sizeof(bTeam), sizeof(INT8), numBytesRead);
@@ -2158,7 +2168,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bInSector, sizeof(bInSector), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bFlashPortraitFrame, sizeof(bFlashPortraitFrame), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sFractLife, sizeof(sFractLife), sizeof(INT16), numBytesRead);
-@@ -3518,7 +3782,7 @@
+@@ -3518,7 +3792,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubAttackerID, sizeof(ubAttackerID), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubPreviousAttackerID, sizeof(ubPreviousAttackerID), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sInsertionGridNo, sizeof(sInsertionGridNo), sizeof(INT32), numBytesRead);
@@ -2167,7 +2177,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bSide, sizeof(bSide), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bViewRange, sizeof(bViewRange), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bNewOppCnt, sizeof(bNewOppCnt), sizeof(INT8), numBytesRead);
-@@ -3591,21 +3855,21 @@
+@@ -3591,21 +3865,21 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->VestPal, sizeof(VestPal), 1, numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->SkinPal, sizeof(SkinPal), 1, numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->MiscPal, sizeof(MiscPal), 1, numBytesRead);
@@ -2200,7 +2210,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->usUnblitX, sizeof(usUnblitX), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->usUnblitY, sizeof(usUnblitY), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->usUnblitWidth, sizeof(usUnblitWidth), sizeof(UINT16), numBytesRead);
-@@ -3630,7 +3894,7 @@
+@@ -3630,7 +3904,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sWalkToAttackWalkToCost, sizeof(sWalkToAttackWalkToCost), sizeof(INT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sLocatorOffX, sizeof(sLocatorOffX), sizeof(INT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sLocatorOffY, sizeof(sLocatorOffY), sizeof(INT16), numBytesRead);
@@ -2209,7 +2219,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bDisplayDamageCount, sizeof(bDisplayDamageCount), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sWalkToAttackEndDirection, sizeof(sWalkToAttackEndDirection), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sDamage, sizeof(sDamage), sizeof(INT16), numBytesRead);
-@@ -3660,7 +3924,7 @@
+@@ -3660,7 +3934,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bAimShotLocation, sizeof(bAimShotLocation), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubHitLocation, sizeof(ubHitLocation), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bAimMeleeLocation, sizeof(bAimMeleeLocation), sizeof(UINT8), numBytesRead);
@@ -2218,7 +2228,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubPlannedUIAPCost, sizeof(ubPlannedUIAPCost), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sPlannedTargetX, sizeof(sPlannedTargetX), sizeof(INT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sPlannedTargetY, sizeof(sPlannedTargetY), sizeof(INT16), numBytesRead);
-@@ -3682,7 +3946,7 @@
+@@ -3682,7 +3956,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sSectorY, sizeof(sSectorY), sizeof(INT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bSectorZ, sizeof(bSectorZ), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->iVehicleId, sizeof(iVehicleId), sizeof(INT32), numBytesRead);
@@ -2227,7 +2237,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->usMedicalDeposit, sizeof(usMedicalDeposit), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->usLifeInsurance, sizeof(usLifeInsurance), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->uiStartMovementTime, sizeof(uiStartMovementTime), sizeof(UINT32), numBytesRead);
-@@ -3711,7 +3975,7 @@
+@@ -3711,7 +3985,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubTargetID, sizeof(ubTargetID), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bAIScheduleProgress, sizeof(bAIScheduleProgress), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sOffWorldGridNo, sizeof(sOffWorldGridNo), sizeof(INT32), numBytesRead);
@@ -2236,7 +2246,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bCamo, sizeof(bCamo), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->sAbsoluteFinalDestination, sizeof(sAbsoluteFinalDestination), sizeof(INT32), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubHiResDirection, sizeof(ubHiResDirection), sizeof(UINT8), numBytesRead);
-@@ -3773,7 +4037,7 @@
+@@ -3773,7 +4047,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bPendingActionData5, sizeof(bPendingActionData5), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bDelayedStrategicMoraleMod, sizeof(bDelayedStrategicMoraleMod), sizeof(INT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubDoorOpeningNoise, sizeof(ubDoorOpeningNoise), sizeof(UINT8), numBytesRead);
@@ -2245,7 +2255,7 @@
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->ubLeaveHistoryCode, sizeof(ubLeaveHistoryCode), sizeof(UINT8), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->bOverrideMoveSpeed, sizeof(bOverrideMoveSpeed), sizeof(UINT16), numBytesRead);
  		numBytesRead = ReadFieldByFieldFromBuffer(ppBuffer, &this->uiTimeSoldierWillArrive, sizeof(uiTimeSoldierWillArrive), sizeof(UINT32), numBytesRead);
-@@ -4463,8 +4727,12 @@
+@@ -4463,8 +4737,12 @@
  	return TRUE;
  }
  
@@ -2259,7 +2269,7 @@
  	//when this function is called, the file has been loaded into a buffer using FileRead
  	//if we are at the most current version, then fine
  	//but we can also be loading this from a map that is up to date when the savegame isn't!
-@@ -4476,21 +4744,21 @@
+@@ -4476,21 +4754,21 @@
  		if (dMajorMapVersion >= 8 && ubMinorMapVersion >= MINOR_MAP_VERSION)
  		{
  			// Deal with Increased Team Sizes data
@@ -2287,7 +2297,7 @@
  		}
  		// When saving maps with the new map editor that has weapon overheated feature included!
  		else if (dMajorMapVersion >= 7 && ubMinorMapVersion >= MINOR_MAP_OVERHEATING)
-@@ -4502,91 +4770,49 @@
+@@ -4502,91 +4780,49 @@
  			// Of course, once the ObjectData-Class is altered, this has to be altered as well!
  			//dnl ch74 241013 We cannot change past so hardcode 32 simply because that was sizeof(ObjectData) before current and all future changes ;-)
  			ObjectData_PRE_ITS oldData{};
@@ -2398,7 +2408,7 @@
  }
  
  BOOLEAN StackedObjectData::Save( HWFILE hFile, bool fSavingMap )
-@@ -4626,160 +4852,59 @@
+@@ -4626,160 +4862,59 @@
  
  BOOLEAN OBJECTTYPE::Load( HWFILE hFile )
  {
@@ -2603,7 +2613,7 @@
  			}
  		}
  #endif
-@@ -4787,8 +4912,8 @@
+@@ -4787,8 +4922,8 @@
  	else
  	{
  		OLD_OBJECTTYPE_101 OldSavedObject101;
@@ -2614,7 +2624,7 @@
  	}
  #if 0//dnl ch74 201013 only inseparable attachments should always exist but rather at gun status instead of 100%, if default attachments is missing then problem is map which should be fixed by modders with latest mapeditor or have really old savegame but that should not be fix just by magically add missing default attachment :-)
  	RemoveProhibitedAttachments(NULL, this, (*this).usItem);
-@@ -4805,8 +4930,19 @@
+@@ -4805,8 +4940,19 @@
  		this->AttachObject(NULL,&defaultAttachment, FALSE);
  	}
  #else
@@ -2635,7 +2645,7 @@
  	return TRUE;
  }
  
-@@ -4852,92 +4988,47 @@
+@@ -4852,92 +4998,47 @@
  
  BOOLEAN Inventory::Load( HWFILE hFile )
  {
@@ -2759,7 +2769,7 @@
  	return TRUE;
  }
  
-@@ -4988,12 +5079,16 @@
+@@ -4988,12 +5089,16 @@
  extern bool alreadySaving = false;
  extern bool bHideTopMessage;
  
@@ -2777,7 +2787,7 @@
  	//UINT8		saveDir[100];
  	BOOLEAN	fPausedStateBeforeSaving = gfGamePaused;
  	BOOLEAN	fLockPauseStateBeforeSaving = gfLockPauseState;
-@@ -5096,7 +5191,11 @@
+@@ -5096,7 +5201,11 @@
  	//
  
  	SaveGameHeader.uiSavedGameVersion = SAVE_GAME_VERSION;
@@ -2789,7 +2799,7 @@
  	strcpy( SaveGameHeader.zGameVersionNumber, czVersionString );
  
  	SaveGameHeader.uiFlags;
-@@ -5165,16 +5264,20 @@
+@@ -5165,16 +5274,20 @@
  		guiCurrentQuickSaveNumber++;
  
  		if( gfUseConsecutiveQuickSaveSlots )
@@ -2813,7 +2823,7 @@
  
  	//Check to see if the save directory exists
  	/*if( FileGetAttributes( (STR) saveDir ) ==	0xFFFFFFFF )
-@@ -6207,7 +6310,7 @@
+@@ -6207,7 +6320,7 @@
  	INT16 sLoadSectorX;
  	INT16 sLoadSectorY;
  	INT8 bLoadSectorZ;
@@ -2822,7 +2832,7 @@
  
  	uiRelStartPerc = 0;
  	uiRelEndPerc = 0;
-@@ -6545,7 +6648,10 @@
+@@ -6545,7 +6658,10 @@
  
  	// anv: we need to rebuild ambient sounds now, as those added when loading tileset are removed
  	// in LoadStrategicEventsFromSavedGame
@@ -2834,7 +2844,7 @@
  
  	ReportLoadProgress( L"Laptop Info", 0 );
  
-@@ -6569,8 +6675,7 @@
+@@ -6569,8 +6685,7 @@
  	//
  	// Load all the saved Merc profiles
  	//
@@ -2844,7 +2854,7 @@
  	{
  		DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadSavedMercProfiles failed"));
  		MemFree(gpLoadBufferStart);
-@@ -6588,8 +6693,7 @@
+@@ -6588,8 +6703,7 @@
  	//
  	// Load the soldier structure info
  	// 
@@ -2854,7 +2864,7 @@
  	{
  		DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadSoldierStructure failed"));
  		MemFree(gpLoadBufferStart);
-@@ -6666,8 +6770,7 @@
+@@ -6666,8 +6780,7 @@
  
  
  	// Load the data for the emails
@@ -2864,7 +2874,7 @@
  	{
  		DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadEmailFromSavedGame failed"));
  		MemFree(gpLoadBufferStart);
-@@ -6744,8 +6847,7 @@
+@@ -6744,8 +6857,7 @@
  
  
  	// Load all the squad info from the saved game file 
@@ -2874,7 +2884,7 @@
  	{
  		DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadSquadInfoFromSavedGameFile failed"));
  		MemFree(gpLoadBufferStart);
-@@ -7035,8 +7137,7 @@
+@@ -7035,8 +7147,7 @@
  
  	if( guiCurrentSaveGameVersion	>= 22 )
  	{
@@ -2884,7 +2894,7 @@
  		{
  			DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadVehicleInformationFromSavedGame failed"));
  			MemFree(gpLoadBufferStart);
-@@ -7049,8 +7150,7 @@
+@@ -7049,8 +7160,7 @@
  
  	ReportLoadProgress( L"Militia Movement...", 1 );
  
@@ -2894,7 +2904,7 @@
  	{
  		DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadMilitiaMovementInformationFromSavedGameFile failed"));
  		MemFree(gpLoadBufferStart);
-@@ -7068,8 +7168,7 @@
+@@ -7068,8 +7178,7 @@
  
  	if( guiCurrentSaveGameVersion	>= 24 )
  	{
@@ -2904,7 +2914,42 @@
  		{
  			DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadBulletStructureFromSavedGameFile failed"));
  			MemFree(gpLoadBufferStart);
-@@ -8827,6 +8926,11 @@
+@@ -7386,8 +7495,7 @@
+ 	{
+ 	if( guiCurrentSaveGameVersion < 84 )
+ 	{
+-		LoadVehicleMovementInfoFromSavedGame(&fileBuffer);
+-		if ( gfBufferLoadFailed )
++		if ( !LoadVehicleMovementInfoFromSavedGame(&fileBuffer) || gfBufferLoadFailed )
+ 		{
+ 			DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadVehicleMovementInfoFromSavedGame failed"));
+ 			MemFree(gpLoadBufferStart);
+@@ -7399,8 +7507,7 @@
+ 	}
+ 	else
+ 	{
+-		NewLoadVehicleMovementInfoFromSavedGame(&fileBuffer);
+-		if ( gfBufferLoadFailed )
++		if ( !NewLoadVehicleMovementInfoFromSavedGame(&fileBuffer) || gfBufferLoadFailed )
+ 		{
+ 			DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("NewLoadVehicleMovementInfoFromSavedGame failed"));
+ 			MemFree(gpLoadBufferStart);
+@@ -7587,8 +7694,12 @@
+ 	{
+ 		ReportLoadProgress( L"Load New Vehicles...", 1 );
+ 
+-		// No load check because these are read from XML and we use SKIPDATA inside the function
+-		LoadNewVehiclesFromSaveGame(&fileBuffer);
++		if ( !LoadNewVehiclesFromSaveGame(&fileBuffer) || gfBufferLoadFailed )
++		{
++			DebugMsg(TOPIC_JA2, DBG_LEVEL_3, String("LoadNewVehiclesFromSaveGame failed"));
++			MemFree(gpLoadBufferStart);
++			return(FALSE);
++		}
+ 		#ifdef JA2BETAVERSION
+ 			LoadGameFilePosition(GetBufferPosition(fileBuffer, gpLoadBufferStart), "New Vehicles");
+ 		#endif
+@@ -8827,6 +8938,11 @@
  }
  
  
@@ -2916,7 +2961,7 @@
  BOOLEAN SaveEmailToSavedGame( HWFILE hFile )
  {
  	UINT32	uiNumOfEmails=0;
-@@ -8860,8 +8964,16 @@
+@@ -8860,8 +8976,16 @@
  	pEmail = pEmailList;
  	for( cnt=0; cnt<uiNumOfEmails; ++cnt)
  	{
@@ -2933,7 +2978,7 @@
  
  		//write the length of the current emails subject to the saved game file
  		FileWrite( hFile, &uiStringLength, sizeof( UINT32 ), &uiNumBytesWritten );
-@@ -8871,7 +8983,11 @@
+@@ -8871,7 +8995,11 @@
  		}
  
  		//write the subject of the current email to the saved game file
@@ -2945,7 +2990,7 @@
  		if( uiNumBytesWritten != uiStringLength )
  		{
  			return(FALSE);
-@@ -8942,6 +9058,29 @@
+@@ -8942,6 +9070,29 @@
  	UINT32		cnt;
  	SavedEmailStruct SavedEmail;
  	UINT32		uiNumBytesRead = 0;
@@ -2975,7 +3020,7 @@
  
  	//Delete the existing list of emails
  	ShutDownEmailList();
-@@ -8956,7 +9095,10 @@
+@@ -8956,7 +9107,10 @@
  
  	//read in the number of email messages
  	if ( !LoadDataFromBuffer(&uiNumOfEmails, *ppBuffer, sizeof(UINT32), "Num of emails") )
@@ -2987,7 +3032,7 @@
  
  	//loop through all the emails, add each one individually
  	pEmail = pEmailList;
-@@ -8964,17 +9106,35 @@
+@@ -8964,17 +9118,35 @@
  	{
  		//get the length of the email subject
  		if ( !LoadDataFromBuffer(&uiSizeOfSubject, *ppBuffer, sizeof(UINT32), "Email subject size") )
@@ -3027,7 +3072,7 @@
  
  		//CHRISL: Adjust this so we can change the SavedEmailStruct without hurting savegame compatability
  		//get the rest of the data from the email
-@@ -9003,9 +9163,9 @@
+@@ -9003,9 +9175,9 @@
  			numBytesRead += sizeof(INT16);
  		}
  
@@ -3040,7 +3085,7 @@
  		}
  
  		//
-@@ -9015,7 +9175,7 @@
+@@ -9015,7 +9187,7 @@
  		//if we havent allocated space yet
  		pTempEmail = (EmailPtr)MemAlloc(sizeof(Email));
  		if ( pTempEmail == NULL )
@@ -3049,7 +3094,7 @@
  		memset(pTempEmail, 0, sizeof(Email));
  
  		pTempEmail->usOffset = SavedEmail.usOffset;
-@@ -9044,24 +9204,27 @@
+@@ -9044,24 +9216,27 @@
  			UINT32 uiBodyLen = 0;
  			if( !LoadDataFromBuffer( &uiBodyLen, *ppBuffer, sizeof( UINT32 ), "BobbyR order body len" ) )
  			{
@@ -3085,7 +3130,7 @@
  				}
  			}
  			pTempEmail->uiOrderBodyLen = ( UINT32 ) wcslen( pTempEmail->pOrderBody );
-@@ -9075,6 +9238,8 @@
+@@ -9075,6 +9250,8 @@
  		pEmail = pEmail->Next;
  
  		AddMessageToPages(pTempEmail->iId);
@@ -3094,7 +3139,7 @@
  
  	}
  
-@@ -9732,7 +9897,7 @@
+@@ -9732,7 +9909,7 @@
  #ifdef JA2BETAVERSION
  void InitSaveGameFilePosition()
  {
@@ -3103,7 +3148,7 @@
  
  	sprintf( zFileName, "%s\\SaveGameFilePos%2d.txt", gSaveDir, gubSaveGameLoc );
  
-@@ -9745,7 +9910,7 @@
+@@ -9745,7 +9922,7 @@
  	CHAR8		zTempString[512];
  	UINT32	uiNumBytesWritten;
  	UINT32	uiStrLen=0;
@@ -3112,7 +3157,7 @@
  
  	sprintf( zFileName, "%s\\SaveGameFilePos%2d.txt", gSaveDir, gubSaveGameLoc );
  
-@@ -9776,7 +9941,7 @@
+@@ -9776,7 +9953,7 @@
  
  void InitLoadGameFilePosition()
  {
@@ -3121,7 +3166,7 @@
  
  	sprintf( zFileName, "%s\\LoadGameFilePos%2d.txt", gSaveDir, gubSaveGameLoc );
  
-@@ -9789,7 +9954,7 @@
+@@ -9789,7 +9966,7 @@
  	UINT32	uiNumBytesWritten;
  	UINT32	uiStrLen=0;
  
@@ -3130,7 +3175,7 @@
  
  	sprintf( zFileName, "%s\\LoadGameFilePos%2d.txt", gSaveDir, gubSaveGameLoc );
  
-@@ -10767,7 +10932,7 @@
+@@ -10767,7 +10944,7 @@
  
  void InitShutDownMapTempFileTest( BOOLEAN fInit, STR pNameOfFile, UINT8 ubSaveGameID )
  {
@@ -3139,7 +3184,7 @@
  	HWFILE	hFile;
  	CHAR8		zTempString[512];
  	UINT32	uiStrLen;
-@@ -10822,7 +10987,7 @@
+@@ -10822,7 +10999,7 @@
  	UINT32	uiNumBytesWritten;
  	UINT32	uiStrLen=0;
  
@@ -13068,7 +13113,7 @@
  				report.flagmask |= MILITIA_BATTLEREPORT_FLAG_WOUNDED_COMA;
 --- a/Strategic/MilitiaSquads.cpp
 +++ b/Strategic/MilitiaSquads.cpp
-@@ -1,3 +1,24 @@
+@@ -1,3 +1,34 @@
 +/*
 + * P710 native snapshot update: Strategic/MilitiaSquads.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -13089,11 +13134,21 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/MilitiaSquads.cpp
++ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-21.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#include <cstring>
  	#include "Town Militia.h"
  	#include "Militia Control.h"
  	#include "Campaign Types.h"
-@@ -255,9 +276,9 @@
+@@ -255,9 +286,9 @@
  
  			// Flugente: mobiles take along their gear
  			// move only gear for those who come new into a sector
@@ -13106,7 +13161,7 @@
  
  			MoveMilitiaEquipment(sMapX, sMapY, sTMapX, sTMapY, elites, regulars, greens);
  
-@@ -297,9 +318,9 @@
+@@ -297,9 +328,9 @@
  
  			// Flugente: mobiles take along their gear
  			// move only gear for those who come new into a sector
@@ -13119,7 +13174,7 @@
  
  			MoveMilitiaEquipment(sMapX, sMapY, sTMapX, sTMapY, elites, regulars, greens);
  
-@@ -387,9 +408,9 @@
+@@ -387,9 +418,9 @@
  
  			// Flugente: mobiles take along their gear
  			// move only gear for those who come new into a sector
@@ -13132,7 +13187,7 @@
  			
  			MoveMilitiaEquipment(sMapX, sMapY, sTMapX, sTMapY, elites, regulars, greens);
  
-@@ -937,7 +958,7 @@
+@@ -937,7 +968,7 @@
  	*uiDirNumber = 0;
  
  #ifdef DEBUG_SHOW_RATINGS
@@ -13141,7 +13196,7 @@
  #endif
  
  	if(sMapY > MINIMUM_VALID_Y_COORDINATE && CheckStandardConditionsForDirection( sMapX, sMapY, sMapX, sMapY - 1, fForTraining, fForBattle ) )
-@@ -952,7 +973,7 @@
+@@ -952,7 +983,7 @@
  		pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_NORTH;
  
  #ifdef DEBUG_SHOW_RATINGS
@@ -13150,7 +13205,7 @@
  #endif
  
  		++(*uiDirNumber);
-@@ -969,7 +990,7 @@
+@@ -969,7 +1000,7 @@
  		pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_WEST;
  
  #ifdef DEBUG_SHOW_RATINGS
@@ -13159,7 +13214,7 @@
  #endif
  
  		++(*uiDirNumber);
-@@ -986,7 +1007,7 @@
+@@ -986,7 +1017,7 @@
  		pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_SOUTH;
  
  #ifdef DEBUG_SHOW_RATINGS
@@ -13168,7 +13223,7 @@
  #endif
  
  		++(*uiDirNumber);
-@@ -1003,7 +1024,7 @@
+@@ -1003,7 +1034,7 @@
  		pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_EAST;
  
  #ifdef DEBUG_SHOW_RATINGS
@@ -13177,7 +13232,7 @@
  #endif
  
  		++(*uiDirNumber);
-@@ -1100,7 +1121,7 @@
+@@ -1100,7 +1131,7 @@
  
  void DoMilitiaHelpFromAdjacentSectors( INT16 sMapX, INT16 sMapY )
  {
@@ -13186,7 +13241,7 @@
  	UINT8 uiDirNumber = 0;
  	UINT8 x;
  	UINT16 uiNumGreen = 0, uiNumReg = 0, uiNumElite = 0;
-@@ -1113,7 +1134,7 @@
+@@ -1113,7 +1144,7 @@
  
  	GenerateDirectionInfos( sMapX, sMapY, &uiDirNumber, pMoveDir, FALSE, TRUE );
  
@@ -13195,7 +13250,7 @@
  
  	gpAttackDirs[ guiDirNumber ][0] = uiNumGreen = pSectorInfo->ubNumberOfCivsAtLevel[GREEN_MILITIA];
  	gpAttackDirs[ guiDirNumber ][1] = uiNumReg = pSectorInfo->ubNumberOfCivsAtLevel[REGULAR_MILITIA];
-@@ -1123,7 +1144,8 @@
+@@ -1123,7 +1154,8 @@
  	guiDirNumber = uiDirNumber	+ 1;
  
  	x = 0;
@@ -13205,7 +13260,7 @@
  		( fMoreTroopsLeft[0] || fMoreTroopsLeft[1] || fMoreTroopsLeft[2] || fMoreTroopsLeft[3] || fFirstLoop ) )
  	{
  		fMoreTroopsLeft[ x ] = MoveOneBestMilitiaMan( SECTORX( pMoveDir[ x ][0] ), SECTORY( pMoveDir[ x ][0] ), sMapX, sMapY );
-@@ -1210,7 +1232,7 @@
+@@ -1210,7 +1242,7 @@
  
  	guiDirNumber = 0;
  		
@@ -13214,7 +13269,7 @@
  
  	gpAttackDirs[guiDirNumber][0] = uiNumGreen = MilitiaInSectorOfRank( sTargetMapX, sTargetMapY, GREEN_MILITIA );
  	gpAttackDirs[guiDirNumber][1] = uiNumReg = MilitiaInSectorOfRank( sTargetMapX, sTargetMapY, REGULAR_MILITIA );
-@@ -1220,7 +1242,7 @@
+@@ -1220,7 +1252,7 @@
  	guiDirNumber = insertioncode + 1;
  
  	// we can't move more than we are told, and can't add more than would fit into the sector
@@ -13223,7 +13278,7 @@
  
  	UINT16 sMilitiaMoved = 0;
  	while ( sMilitiaMoved < possibletomove && MoveOneBestMilitiaMan( sSrcMapX, sSrcMapY, sTargetMapX, sTargetMapY ) )
-@@ -1317,7 +1339,7 @@
+@@ -1317,7 +1349,7 @@
  		return FALSE;
  	}
  	
@@ -13232,7 +13287,7 @@
  		
  	guiDirNumber = insertioncode + 1;
  
-@@ -1429,7 +1451,7 @@
+@@ -1429,7 +1461,7 @@
  	}
  
  #ifdef DEBUG_SHOW_RATINGS
@@ -13241,7 +13296,7 @@
  #endif
  
  	// Check north
-@@ -1452,7 +1474,7 @@
+@@ -1452,7 +1484,7 @@
  				pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_NORTH;
  	
  				#ifdef DEBUG_SHOW_RATINGS
@@ -13250,7 +13305,7 @@
  				#endif
  	
  				++(*uiDirNumber);
-@@ -1480,7 +1502,7 @@
+@@ -1480,7 +1512,7 @@
  				pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_WEST;
  
  				#ifdef DEBUG_SHOW_RATINGS
@@ -13259,7 +13314,7 @@
  				#endif
  
  				++(*uiDirNumber);
-@@ -1508,7 +1530,7 @@
+@@ -1508,7 +1540,7 @@
  				pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_SOUTH;
  
  				#ifdef DEBUG_SHOW_RATINGS
@@ -13268,7 +13323,7 @@
  				#endif
  
  				++(*uiDirNumber);
-@@ -1536,7 +1558,7 @@
+@@ -1536,7 +1568,7 @@
  				pMoveDir[ *uiDirNumber ][2] = INSERTION_CODE_EAST;
  
  				#ifdef DEBUG_SHOW_RATINGS
@@ -13277,7 +13332,7 @@
  				#endif
  
  				++(*uiDirNumber);
-@@ -1648,92 +1670,114 @@
+@@ -1648,92 +1680,120 @@
  
  BOOLEAN LoadMilitiaMovementInformationFromSavedGame(CHAR8** ppBuffer, UINT32 uiSavedGameVersion)
  {
@@ -13286,6 +13341,8 @@
 -	PathSt*		pPath = NULL;
 -	UINT8		ubPassengerCnt = 0;
 -	UINT8		numpaths = 0;
+-
+-	DeleteAllMilitiaPaths();
 +	UINT8 numpaths = 0;
 +	MILITIA_PATH loadedPaths[MILITIA_PATROLS_MAX];
 +
@@ -13307,19 +13364,21 @@
 +		}
 +	};
  
- 	DeleteAllMilitiaPaths();
- 
  	// if this is an older savegame, nothing to read
  	if ( uiSavedGameVersion < MILITIA_PATH_PLOTTING )
++	{
++		DeleteAllMilitiaPaths();
  		return TRUE;
-+	if ( ppBuffer == NULL )
++	}
++	if ( ppBuffer == NULL || *ppBuffer == NULL )
 +		return FALSE;
++	CHAR8* cursor = *ppBuffer;
  
  	//Load the number of elements
 -	LoadDataFromBuffer(&numpaths, *ppBuffer, sizeof(UINT8), "MilitiaMovementInfo numpaths");
 -
 -	if ( gfBufferLoadFailed || numpaths != MILITIA_PATROLS_MAX )
-+	if ( !LoadDataFromBuffer(&numpaths, *ppBuffer, sizeof(UINT8), "MilitiaMovementInfo numpaths") ||
++	if ( !LoadDataFromBuffer(&numpaths, cursor, sizeof(UINT8), "MilitiaMovementInfo numpaths") ||
 +		numpaths != MILITIA_PATROLS_MAX )
  		return(FALSE);
  
@@ -13342,8 +13401,8 @@
  
  		//Load the number of the nodes
 -		LoadDataFromBuffer(&uiNumOfNodes, *ppBuffer, sizeof(UINT32), "MilitiaMovementInfo node amount");
-+		if ( !LoadDataFromBuffer(&uiNumOfNodes, *ppBuffer, sizeof(UINT32), "MilitiaMovementInfo node amount") ||
-+			!LoadBufferContainsElements(*ppBuffer, uiNumOfNodes, sizeof(PathSt), sizeof(INT16),
++		if ( !LoadDataFromBuffer(&uiNumOfNodes, cursor, sizeof(UINT32), "MilitiaMovementInfo node amount") ||
++			!LoadBufferContainsElements(cursor, uiNumOfNodes, sizeof(PathSt), sizeof(INT16),
 +				"MilitiaMovementInfo path nodes") )
 +		{
 +			clearLoadedPaths();
@@ -13374,7 +13433,7 @@
 -				pTemp->pPrev = NULL;
 +			PathSt savedNode;
 +			memset(&savedNode, 0, sizeof(savedNode));
-+			if ( !LoadDataFromBuffer(&savedNode, *ppBuffer, sizeof(PathSt), "MilitiaMovementInfo nodes") ||
++			if ( !LoadDataFromBuffer(&savedNode, cursor, sizeof(PathSt), "MilitiaMovementInfo nodes") ||
 +				savedNode.uiSectorId >= MAP_WORLD_X * MAP_WORLD_Y ||
 +				savedNode.fSpeed > NORMAL_MVT )
 +			{
@@ -13434,7 +13493,7 @@
 +			pTail = pNode;
 +		}
 +
-+		if ( !LoadDataFromBuffer(&groupid, *ppBuffer, sizeof(INT16), "MilitiaMovementInfo groupid") ||
++		if ( !LoadDataFromBuffer(&groupid, cursor, sizeof(INT16), "MilitiaMovementInfo groupid") ||
 +			groupid < -1 || groupid > 255 )
 +		{
 +			if ( pHead )
@@ -13447,12 +13506,16 @@
 +		loadedPaths[cnt].sGroupid = groupid;
 +	}
 +
++	// Publish only after the complete route table is valid.  Bad save data must
++	// not remove militia routes that are already active in the running game.
++	DeleteAllMilitiaPaths();
 +	for ( UINT32 cnt = 0; cnt < MILITIA_PATROLS_MAX; ++cnt )
 +	{
 +		gMilitiaPath[cnt] = loadedPaths[cnt];
 +		loadedPaths[cnt].path = NULL;
 +		loadedPaths[cnt].sGroupid = -1;
 +	}
++	*ppBuffer = cursor;
 +
  	return(TRUE);
  }
@@ -15734,7 +15797,7 @@
  #ifdef JA2UB
 --- a/Strategic/Strategic Movement.cpp
 +++ b/Strategic/Strategic Movement.cpp
-@@ -1,3 +1,33 @@
+@@ -1,3 +1,43 @@
 +/*
 + * P710 native snapshot update: Strategic/Strategic Movement.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -15765,10 +15828,44 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Strategic/Strategic Movement.cpp
++ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-21.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include <stdlib.h>
  	#include "Strategic Movement.h"
  	#include "MemMan.h"
-@@ -908,7 +938,7 @@
+@@ -886,6 +926,23 @@
+ //1)	Find the first unused ID (unique)
+ //2)	Assign that ID to the new group
+ //3)	Insert the group at the end of the list.
++BOOLEAN CanAddStrategicMovementGroups( UINT16 usRequiredGroups )
++{
++	UINT16 usFreeGroups = 0;
++
++	for ( UINT16 usGroupID = 1; usGroupID < 256; ++usGroupID )
++	{
++		const UINT32 uiIndex = usGroupID / 32;
++		const UINT32 uiBit = usGroupID % 32;
++		const UINT32 uiMask = ((UINT32)1) << uiBit;
++
++		if ( !(uniqueIDMask[uiIndex] & uiMask) && ++usFreeGroups >= usRequiredGroups )
++			return TRUE;
++	}
++
++	return usRequiredGroups == 0;
++}
++
+ UINT8 AddGroupToList( GROUP *pGroup )
+ {
+ 	GROUP *curr;
+@@ -908,7 +965,7 @@
  
  		index = ID / 32;
  		bit = ID % 32;
@@ -15777,7 +15874,7 @@
  		if( !(uniqueIDMask[ index ] & mask) )
  		{ //found a free ID
  			pGroup->ubGroupID = ID;
-@@ -950,6 +980,59 @@
+@@ -950,6 +1007,59 @@
  	RemoveGroupFromList( pGroup );
  
  }
@@ -15837,7 +15934,7 @@
  //Destroys the waypoint list, detaches group from list, then deallocated the memory for the group
  void RemoveGroupFromList( GROUP *pGroup )
  {
-@@ -983,16 +1066,20 @@
+@@ -983,16 +1093,20 @@
  		//clear the unique group ID
  		index = pGroup->ubGroupID / 32;
  		bit = pGroup->ubGroupID % 32;
@@ -15862,7 +15959,7 @@
  		curr = NULL;
  	}
  }
-@@ -1016,12 +1103,12 @@
+@@ -1016,12 +1130,12 @@
  	if( pSoldier->flags.fMercAsleep )
  	{
  		TacticalCharacterDialogueWithSpecialEvent( pSoldier, QUOTE_ENEMY_PRESENCE, DIALOGUE_SPECIAL_EVENT_SLEEP, 0,0 );
@@ -15877,7 +15974,7 @@
  	}
  }
  
-@@ -1420,7 +1507,7 @@
+@@ -1420,7 +1534,7 @@
  void TriggerPrebattleInterface( UINT8 ubResult )
  {
  	StopTimeCompression();
@@ -15886,7 +15983,7 @@
  	gpInitPrebattleGroup = NULL;
  }
  
-@@ -2496,11 +2583,16 @@
+@@ -2496,11 +2610,16 @@
  	// Flugente: concealed spies are added if a battle occurs
  	if ( pArrivingGroup && !IsGroupTheHelicopterGroup( pArrivingGroup ) )
  	{
@@ -15908,7 +16005,7 @@
  			if ( pSoldier && pSoldier->bActive && pSoldier->stats.bLife >= OKLIFE && SPY_LOCATION( pSoldier->bAssignment ) )
  			{
  				if ( ( pSoldier->sSectorX == ubSectorX ) && ( pSoldier->sSectorY == ubSectorY ) && ( pSoldier->bSectorZ - 10 == ubSectorZ ) )
-@@ -2542,7 +2634,7 @@
+@@ -2542,7 +2661,7 @@
  				&& pGroup->ubNextY == gpPendingSimultaneousGroup->ubSectorY &&
  				!IsGroupTheHelicopterGroup( pGroup ) )
  		{
@@ -15917,7 +16014,7 @@
  			pGroup->uiFlags |= GROUPFLAG_SIMULTANEOUSARRIVAL_APPROVED | GROUPFLAG_MARKER;
  		}
  		pGroup = pGroup->next;
-@@ -3131,14 +3223,14 @@
+@@ -3131,14 +3250,14 @@
  	//clear the unique group ID
  	index = pGroup->ubGroupID / 32;
  	bit = pGroup->ubGroupID % 32;
@@ -15934,7 +16031,7 @@
  
  	if (gpBattleGroup == pGroup) {
  		gpBattleGroup = NULL;
-@@ -3522,7 +3614,7 @@
+@@ -3522,7 +3641,7 @@
  						if ( gGameExternalOptions.fDisease
  							&& gGameExternalOptions.fDiseaseSevereLimitations
  							&& pSoldier->HasDiseaseWithFlag( DISEASE_PROPERTY_LIMITED_USE_LEGS ) )
@@ -15943,7 +16040,7 @@
  
  						if ( iEncumbrance > iHighestEncumbrance )
  						{
-@@ -3539,9 +3631,9 @@
+@@ -3539,9 +3658,9 @@
  						// Well, a slow soldier on foot can slow the whole team down, but one fast soldier won't make the whole team quicker. He is no survivalist after all.
  						// A good driver on the other hand will drive faster and since the team is on the same vehicle, they all will be faster.
  						// A merc with flight experience can pose as co-pilot and provide some assistance to the pilot, so again the whole team profits.
@@ -15956,7 +16053,7 @@
  					}
  
  					curr = curr->next;
-@@ -3624,17 +3716,17 @@
+@@ -3624,17 +3743,17 @@
  		if ( (fSurvivalistHere && !fAir) || (stravelbackground_foot && fFoot) || (stravelbackground_car && (fCar || fTruck || fTracked)) || (stravelbackground_air && fAir) )
  		{
  			// no more than certain number of simultaneous bonuses with diminishing returns
@@ -15980,7 +16077,7 @@
  			}
  			// all other types (except air)
  			else if ( fAir )
-@@ -3644,14 +3736,14 @@
+@@ -3644,14 +3763,14 @@
  //				iBestTraverseTime = max( 10, (iBestTraverseTime * (100 - (fSurvivalistHere * gSkillTraitValues.ubSVGroupTimeSpentForTravellingVehicle)) / 100) );
  
  				// yes, this background allows us to fly faster :-)
@@ -15999,7 +16096,7 @@
  			}
  		}
  	}
-@@ -3661,7 +3753,7 @@
+@@ -3661,7 +3780,7 @@
  		FLOAT dEnemyGeneralsSpeedupFactor = 1.0f;
  		if ( gGameExternalOptions.fEnemyRoles && gGameExternalOptions.fEnemyGenerals )
  		{
@@ -16008,7 +16105,7 @@
  		}
  
  		// rftr: transport groups move slower than normal
-@@ -4144,10 +4236,11 @@
+@@ -4144,10 +4263,11 @@
  
  BOOLEAN LoadStrategicMovementGroupsFromSavedGameFile(CHAR8** ppBuffer)
  {
@@ -16023,7 +16120,7 @@
  	UINT32	cnt;
  	UINT32 bit, index, mask;
  	UINT8	ubNumPlayerGroupsEmpty = 0;
-@@ -4155,28 +4248,32 @@
+@@ -4155,28 +4275,32 @@
  	UINT8	ubNumPlayerGroupsFull = 0;
  	UINT8	ubNumEnemyGroupsFull = 0;
  
@@ -16069,7 +16166,7 @@
  
  		// Flugente: Up to now, GROUPs were either player-controlled (fPlayer = TRUE) or enemy-controlled (fPlayer = FALSE).
  		// As a result, no other team could have any travelling groups (militia, civilians, creatures...)
-@@ -4185,15 +4282,34 @@
+@@ -4185,15 +4309,34 @@
  		// However, 
  		if ( guiCurrentSaveGameVersion < STRATEGIC_TEAM_GROUPS )
  		{
@@ -16112,7 +16209,7 @@
  
  		//
  		// Add either the pointer or the linked list.
-@@ -4204,46 +4320,57 @@
+@@ -4204,46 +4347,57 @@
  			//if there is a player list, add it
  			if ( pTemp->ubGroupSize )
  			{
@@ -16189,7 +16286,7 @@
  	while ( pGroup )
  	{
  		if ( pGroup->usGroupTeam == OUR_TEAM )
-@@ -4274,8 +4401,8 @@
+@@ -4274,8 +4428,8 @@
  		}
  		index = pGroup->ubGroupID / 32;
  		bit = pGroup->ubGroupID % 32;
@@ -16200,7 +16297,7 @@
  		pGroup = pGroup->next;
  	}
  
-@@ -4400,58 +4527,73 @@
+@@ -4400,58 +4554,73 @@
  
  BOOLEAN LoadPlayerGroupListBuffer(CHAR8** ppBuffer, GROUP** ppGroup)
  {
@@ -16302,7 +16399,7 @@
  	return(TRUE);
  }
  
-@@ -4500,15 +4642,16 @@
+@@ -4500,15 +4669,16 @@
  
  BOOLEAN LoadEnemyGroupStructFromSavedGameBuffer(CHAR8** ppBuffer, GROUP* pGroup)
  {
@@ -16325,7 +16422,7 @@
  
  	//Assign the struct to the group list
  	pGroup->pEnemyGroup = pEnemyGroup;
-@@ -4671,50 +4814,45 @@
+@@ -4671,50 +4841,45 @@
  
  BOOLEAN LoadWayPointListBuffer(CHAR8** ppBuffer, GROUP* pGroup)
  {
@@ -16410,7 +16507,7 @@
  	return(TRUE);
  }
  
-@@ -5005,7 +5143,7 @@
+@@ -5005,7 +5170,7 @@
  						MoveSAIGroupToSector( &pGroup, (UINT8)SECTOR( pOtherGroup->ubNextX, pOtherGroup->ubNextY ), DIRECT, PURSUIT );
  
  						// the group has to be delayed - otherwise they could arrive at the same time as the player, resulting in odd behaviour during insertion
@@ -16419,7 +16516,7 @@
  						{
  							DeleteStrategicEvent( EVENT_GROUP_ARRIVAL, pGroup->ubGroupID );
  
-@@ -5248,7 +5386,7 @@
+@@ -5248,7 +5413,7 @@
  {
  	Assert( pSoldier->flags.uiStatusFlags & SOLDIER_VEHICLE );
  	pSoldier->sBreathRed -= sFuelSpent;
@@ -16428,7 +16525,7 @@
  	pSoldier->bBreath = (INT8)((pSoldier->sBreathRed+99) / 100);
  	return( FALSE );
  }
-@@ -5277,7 +5415,7 @@
+@@ -5277,7 +5442,7 @@
  	{ //Fill 'er up.
  		sFuelNeeded = 10000 - pVehicle->sBreathRed;
  		sFuelAvailable = (*pItem)[0]->data.objectStatus * 50;
@@ -16437,7 +16534,7 @@
  		//Add to vehicle
  		pVehicle->sBreathRed += sFuelAdded;
  		pVehicle->bBreath = (INT8)(pVehicle->sBreathRed / 100);
-@@ -5487,7 +5625,7 @@
+@@ -5487,7 +5652,7 @@
  			//come back up to the maximum if left long enough.
  			INT32 iBloodCatDiff;
  			iBloodCatDiff = pSector->bBloodCatPlacements - pSector->bBloodCats;
@@ -16446,7 +16543,7 @@
  		}
  		//Once 0, the bloodcats will never recupe.
  	}
-@@ -5527,16 +5665,16 @@
+@@ -5527,16 +5692,16 @@
  			{ 
  				//At NOVICE/EXPERIENCED difficulty, ensure cats never outnumber mercs by a factor of more than 2.
  				bNumMercMaxCats = (INT8)(PlayerMercsInSector( pGroup->ubSectorX, pGroup->ubSectorY, pGroup->ubSectorZ ) * 2);
@@ -16467,7 +16564,7 @@
  		}
  		else
  		{
-@@ -5861,7 +5999,7 @@
+@@ -5861,7 +6026,7 @@
  	// build string for squad
  	GetSectorIDString( sSectorX, sSectorY, bSectorZ, wSectorName, FALSE );
  
@@ -16476,6 +16573,30 @@
  		swprintf( sString, pLandMarkInSectorString[ 1 ], gSquadNameVector[pGroup->pPlayerList->pSoldier->bAssignment].c_str(), wSectorName );
  	else
  		swprintf( sString, pLandMarkInSectorString[ 0 ], pGroup->pPlayerList->pSoldier->bAssignment + 1, wSectorName );
+--- a/Strategic/Strategic Movement.h
++++ b/Strategic/Strategic Movement.h
+@@ -1,3 +1,13 @@
++/*
++ * P710 native snapshot update: Strategic/Strategic Movement.h
++ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-21.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
+ #ifndef __STRATEGIC_MOVEMENT_H
+ #define __STRATEGIC_MOVEMENT_H
+ 
+@@ -157,6 +167,7 @@
+ //General utility functions
+ void RemoveAllGroups();
+ GROUP* GetGroup( UINT8 ubGroupID );
++BOOLEAN CanAddStrategicMovementGroups( UINT16 usRequiredGroups );
+ 
+ //Remove a group from the list.	This removes all of the waypoints as well as the members of the group.
+ //Calling this function doesn't position them in a sector.	It is up to you to do that.	The event system
 --- a/Strategic/Strategic Pathing.cpp
 +++ b/Strategic/Strategic Pathing.cpp
 @@ -1,3 +1,23 @@
@@ -32344,7 +32465,7 @@
  		for (sYOffset = -sMaxUp; sYOffset <= sMaxDown; sYOffset++)
 --- a/Tactical/Squads.cpp
 +++ b/Tactical/Squads.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Tactical/Squads.cpp
 + * Native Linux source/build/test adaptations captured in the accepted native crash-hardening checkpoint dated 2026-11-17.
@@ -32365,10 +32486,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Squads.cpp
++ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-21.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include "types.h"
  	#include "Squads.h"
  	#include "Strategic Pathing.h"
-@@ -41,6 +61,68 @@
+@@ -41,6 +71,68 @@
  extern void RemoveAllPlayersFromSlot( );
  extern INT32 iHelicopterVehicleId;
  
@@ -32437,7 +32568,7 @@
  
  // update current merc selected in tactical
  void UpdateCurrentlySelectedMerc( SOLDIERTYPE *pSoldier, INT8 bSquadValue );
-@@ -87,6 +169,11 @@
+@@ -87,6 +179,11 @@
  
  BOOLEAN IsThisSquadFull( INT8 bSquadValue )
  {
@@ -32449,7 +32580,7 @@
  	//SQUAD10 FIX:  Number of taken slots should not exceed 6/8/10 depending on resolution
  	if ( NumberOfPeopleInSquad( bSquadValue ) >= gGameOptions.ubSquadSize )
  	{
-@@ -181,6 +268,25 @@
+@@ -181,6 +278,25 @@
  //	BOOLEAN fBetweenSectors = FALSE;
  	GROUP	*pGroup;
  	BOOLEAN fNewSquad;
@@ -32475,7 +32606,7 @@
  
  
  	// add character to squad...return success or failure
-@@ -311,7 +417,7 @@
+@@ -311,7 +427,7 @@
  					GROUP *pGroup;
  
  					// grab group
@@ -32484,7 +32615,7 @@
  					Assert( pGroup );
  
  					if( pGroup )
-@@ -335,15 +441,9 @@
+@@ -335,15 +451,9 @@
  			}
  			else if( IsVehicle(pCharacter) )
  			{
@@ -32503,7 +32634,7 @@
  			}
  			else
  			{
-@@ -412,6 +512,10 @@
+@@ -412,6 +522,10 @@
  	// add character to any squad, if character is assigned to a squad, returns TRUE
  	INT8 bCounter = 0;
  	INT8 bFirstEmptySquad = -1;
@@ -32514,7 +32645,7 @@
  
  
  	// remove them from current squad
-@@ -457,6 +561,10 @@
+@@ -457,6 +571,10 @@
  {
  	// add character to any squad, if character is assigned to a squad, returns TRUE
  	INT8 bCounter = 0;
@@ -32525,7 +32656,7 @@
  
  	// check if character on a squad
  
-@@ -480,6 +588,11 @@
+@@ -480,6 +598,11 @@
  // WDS - make number of mercenaries, etc. be configurable
  void SortSquadByID( INT8 bSquadValue )
  {
@@ -32537,7 +32668,7 @@
  	for(unsigned idx1 = 0; idx1 < NUMBER_OF_SOLDIERS_PER_SQUAD-1; ++idx1) {
  		if (Squad[bSquadValue][idx1]) {
  			for(unsigned idx2 = idx1+1; idx2 < NUMBER_OF_SOLDIERS_PER_SQUAD; ++idx2) {
-@@ -498,6 +611,10 @@
+@@ -498,6 +621,10 @@
  {
  	// run through this squad's slots and find if they ALL are empty
  	INT32 iCounter = 0;
@@ -32548,7 +32679,7 @@
  
  	for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD ; iCounter++ )
  	{
-@@ -518,6 +635,10 @@
+@@ -518,6 +645,10 @@
  	INT32 iCounterA = 0;
  	INT32 iCounter = 0;
  	UINT8 ubGroupId = 0;
@@ -32559,7 +32690,7 @@
  	// find character and remove.. check characters in all squads
  
  
-@@ -580,7 +701,11 @@
+@@ -580,7 +711,11 @@
  BOOLEAN RemoveCharacterFromASquad( SOLDIERTYPE *pCharacter, INT8 bSquadValue )
  {
  
@@ -32572,7 +32703,7 @@
  
  	// remove character from particular squad..return if successful
  	for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD ; iCounter++ )
-@@ -600,7 +725,7 @@
+@@ -600,7 +735,7 @@
  
  			if( pCharacter->stats.bLife == 0 )
  			{
@@ -32581,7 +32712,7 @@
  			}
  
  			RebuildSquad( bSquadValue );
-@@ -620,6 +745,11 @@
+@@ -620,6 +755,11 @@
  BOOLEAN IsCharacterInSquad( SOLDIERTYPE *pCharacter, INT8 bSquadValue )
  {
  	INT32 iCounter =0;
@@ -32593,7 +32724,7 @@
  		// find character in particular squad..return if successful
  	for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD ; iCounter++ )
  	{
-@@ -638,6 +768,10 @@
+@@ -638,6 +778,10 @@
  INT8 SlotCharacterIsInSquad( SOLDIERTYPE *pCharacter, INT8 bSquadValue )
  {
  	INT8 bCounter =0;
@@ -32604,7 +32735,7 @@
  
  	// find character in particular squad..return slot if successful, else -1
  	for( bCounter = 0; bCounter < NUMBER_OF_SOLDIERS_PER_SQUAD ; bCounter++ )
-@@ -658,6 +792,10 @@
+@@ -658,6 +802,10 @@
  {
  	// returns which squad character is in, -1 if none found
  	INT8 iCounterA =0, iCounter = 0;
@@ -32615,7 +32746,7 @@
  
  	// squad?
  	for( iCounterA = 0; iCounterA < NUMBER_OF_SQUADS ; iCounterA++ )
-@@ -684,7 +822,7 @@
+@@ -684,7 +832,7 @@
  	INT8 bCounter = 0;
  	INT8 bSquadCount = 0;
  
@@ -32624,7 +32755,7 @@
  	{
  		return( 0 );
  	}
-@@ -709,7 +847,7 @@
+@@ -709,7 +857,7 @@
  	INT8 bCounter = 0;
  	INT8 bSquadCount = 0;
  
@@ -32633,7 +32764,7 @@
  	{
  		return( 0 );
  	}
-@@ -733,7 +871,7 @@
+@@ -733,7 +881,7 @@
  {
  	INT8 bCounter = 0;
  
@@ -32642,7 +32773,7 @@
  	{
  		return( 0 );
  	}
-@@ -758,7 +896,11 @@
+@@ -758,7 +906,11 @@
  	// returns if there is anyone on the squad and what sector ( strategic ) they are in
  	INT8 bCounter =0;
  
@@ -32655,7 +32786,7 @@
  
  	for( bCounter = 0; bCounter < NUMBER_OF_SOLDIERS_PER_SQUAD ; ++bCounter )
  	{
-@@ -782,6 +924,10 @@
+@@ -782,6 +934,10 @@
  {
  	// copy path from squad to character
  	INT8 bCounter = 0;
@@ -32666,7 +32797,7 @@
  
  	for( bCounter = 0; bCounter < NUMBER_OF_SOLDIERS_PER_SQUAD; ++bCounter )
  	{
-@@ -805,6 +951,10 @@
+@@ -805,6 +961,10 @@
  	// copy path of this character to members of squad
  	BOOLEAN fSuccess = FALSE;
  	INT8 bCounter =0;
@@ -32677,7 +32808,7 @@
  
  	// anyone else on squad?
  	if( NumberOfPeopleInSquad( bSquadValue ) < 2)
-@@ -850,6 +1000,7 @@
+@@ -850,6 +1010,7 @@
  {
  	// set the current tactical squad
  	INT32 iCounter = 0;
@@ -32685,7 +32816,7 @@
  
  
  	// ARM: can't call SetCurrentSquad() in mapscreen, it calls SelectSoldier(), that will initialize interface panels!!!
-@@ -903,8 +1054,19 @@
+@@ -903,8 +1064,19 @@
  		{
  			if(	Squad[ iCurrentTacticalSquad ][ iCounter ] != NULL )
  			{
@@ -32707,7 +32838,7 @@
  			}
  		}
  		SOLDIERTYPE *pDeadSoldier = NULL;
-@@ -923,19 +1085,30 @@
+@@ -923,19 +1095,30 @@
  		}
  	}
  
@@ -32743,7 +32874,7 @@
  	}
  
  	return ( TRUE );
-@@ -969,10 +1142,16 @@
+@@ -969,10 +1152,16 @@
  	{
  		for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounter++ )
  		{
@@ -32764,7 +32895,7 @@
  			}
  		}
  
-@@ -996,12 +1175,20 @@
+@@ -996,12 +1185,20 @@
  void ExamineCurrentSquadLights( void )
  {
  	// OK, we should add lights for any guy currently bInSector who is not bad OKLIFE...
@@ -32791,7 +32922,7 @@
  		}
  	}
  
-@@ -1030,7 +1217,8 @@
+@@ -1030,7 +1227,8 @@
  	// will get the soldiertype pts for every merc in this squad
  
  	// check if valid value passed
@@ -32801,7 +32932,7 @@
  	{
  		// no
  		return ( FALSE );
-@@ -1061,10 +1249,21 @@
+@@ -1061,10 +1259,21 @@
  	// go through memebrs of squad...if anyone on this map, return true
  	for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounter++ )
  	{
@@ -32826,7 +32957,7 @@
  			{
  				return( TRUE );
  			}
-@@ -1130,15 +1329,21 @@
+@@ -1130,15 +1339,21 @@
  void GetSquadPosition( UINT8 *ubNextX, UINT8 *ubNextY, UINT8 *ubPrevX, UINT8 *ubPrevY, UINT32 *uiTraverseTime, UINT32 *uiArriveTime, UINT8 ubSquadValue )
  {
  	// grab the mvt group for this squad and find all this information
@@ -32857,7 +32988,7 @@
  		return;
  	}
  
-@@ -1153,7 +1358,7 @@
+@@ -1153,7 +1368,7 @@
  {
  	// set mvt group position for squad for
  
@@ -32866,7 +32997,7 @@
  	{
  		return;
  	}
-@@ -1212,23 +1417,27 @@
+@@ -1212,48 +1427,52 @@
  BOOLEAN LoadSquadInfoFromSavedGameFile(CHAR8** ppBuffer)
  {
  	SAVE_SQUAD_INFO_STRUCT sSquadSaveStruct[NUMBER_OF_SQUADS][NUMBER_OF_SOLDIERS_PER_SQUAD];
@@ -32874,39 +33005,40 @@
 -	UINT32	uiSaveSize = 0;
 -
 -	//Reset the current squad info
++	SOLDIERTYPE* loadedSquads[NUMBER_OF_SQUADS][NUMBER_OF_SOLDIERS_PER_SQUAD] = {};
 +	INT8 loadedMovementGroups[NUMBER_OF_SQUADS];
 +	UINT32 uiSaveSize = 0;
 +
-+	// Reset the live state before decoding. Nothing is published until the complete
-+	// squad and movement tables have been validated.
  	INT32 iCounterB = 0;
  	INT32 iCounter = 0;
  
 -	// null each list of ptrs.
- 	for ( iCounter = 0; iCounter < NUMBER_OF_SQUADS; iCounter++ )
- 	{
- 		for ( iCounterB = 0; iCounterB < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounterB++ )
- 		{
+-	for ( iCounter = 0; iCounter < NUMBER_OF_SQUADS; iCounter++ )
+-	{
+-		for ( iCounterB = 0; iCounterB < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounterB++ )
+-		{
 -			// squad, soldier
- 			Squad[iCounter][iCounterB] = NULL;
- 		}
- 	}
+-			Squad[iCounter][iCounterB] = NULL;
+-		}
+-	}
 -
-+	memset(SquadMovementGroups, 0, sizeof(SquadMovementGroups));
-+
-+	if (ppBuffer == NULL)
++	if (ppBuffer == NULL || *ppBuffer == NULL)
 +	{
 +		return false;
 +	}
++	CHAR8* cursor = *ppBuffer;
  
  	// Load in the squad info
  	uiSaveSize = sizeof(SAVE_SQUAD_INFO_STRUCT) * NUMBER_OF_SQUADS * NUMBER_OF_SOLDIERS_PER_SQUAD;
-@@ -1237,23 +1446,35 @@
+-	if (!LoadDataFromBuffer(sSquadSaveStruct, *ppBuffer, uiSaveSize, "SAVE_SQUAD_INFO_STRUCT"))
++	if (!LoadDataFromBuffer(sSquadSaveStruct, cursor, uiSaveSize, "SAVE_SQUAD_INFO_STRUCT"))
+ 	{
  		return false;
  	}
  
 -	// Loop through the array loaded in
-+	// Validate every serialized soldier ID before deriving a live pointer.
++	// Validate every serialized soldier ID and build the replacement table
++	// locally. A corrupt tail must not erase the currently published squads.
  	for ( iCounter = 0; iCounter < NUMBER_OF_SQUADS; iCounter++ )
  	{
  		for ( iCounterB = 0; iCounterB < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounterB++ )
@@ -32925,29 +33057,25 @@
 +			{
 +				return false;
 +			}
++			loadedSquads[iCounter][iCounterB] =
++				soldierID == -1 ? NULL : &Menptr[soldierID];
 +		}
 +	}
 +
 +	// Load movement IDs into temporary storage so a truncated tail cannot leave a
 +	// partially published squad table.
-+	if (!LoadDataFromBuffer(loadedMovementGroups, *ppBuffer, sizeof(loadedMovementGroups), "SquadMovementGroups"))
++	if (!LoadDataFromBuffer(loadedMovementGroups, cursor, sizeof(loadedMovementGroups), "SquadMovementGroups"))
  	{
  		return false;
  	}
 +
-+	for ( iCounter = 0; iCounter < NUMBER_OF_SQUADS; iCounter++ )
-+	{
-+		for ( iCounterB = 0; iCounterB < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounterB++ )
-+		{
-+			const INT16 soldierID = sSquadSaveStruct[iCounter][iCounterB].uiID;
-+			Squad[iCounter][iCounterB] = soldierID == -1 ? NULL : &Menptr[soldierID];
-+		}
-+	}
++	memcpy(Squad, loadedSquads, sizeof(Squad));
 +	memcpy(SquadMovementGroups, loadedMovementGroups, sizeof(SquadMovementGroups));
++	*ppBuffer = cursor;
  
  	return(TRUE);
  }
-@@ -1262,6 +1483,11 @@
+@@ -1262,6 +1481,11 @@
  {
  	// run through list of guys, once valid merc found, get his sector x and y and z
  	INT32 iCounter = 0;
@@ -32959,7 +33087,7 @@
  
  	for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounter++ )
  	{
-@@ -1280,6 +1506,10 @@
+@@ -1280,6 +1504,10 @@
  BOOLEAN IsThisSquadOnTheMove( INT8 bSquadValue )
  {
  	INT32 iCounter = 0;
@@ -32970,7 +33098,7 @@
  
  	for( iCounter = 0; iCounter < NUMBER_OF_SOLDIERS_PER_SQUAD; iCounter++ )
  	{
-@@ -1296,6 +1526,10 @@
+@@ -1296,6 +1524,10 @@
  void RebuildSquad( INT8 bSquadValue )
  {
  	INT32 iCounter = 0, iCounterB = 0;
@@ -32981,7 +33109,7 @@
  
  	for( iCounterB = 0; iCounterB <NUMBER_OF_SOLDIERS_PER_SQUAD - 1; iCounterB++ )
  	{
-@@ -1317,6 +1551,11 @@
+@@ -1317,6 +1549,11 @@
  
  void UpdateCurrentlySelectedMerc( SOLDIERTYPE *pSoldier, INT8 bSquadValue )
  {
@@ -32993,7 +33121,7 @@
  	// if this squad is the current one and and the psoldier is the currently selected soldier, get rid of 'em
  	if( bSquadValue != iCurrentTacticalSquad )
  	{
-@@ -1348,7 +1587,7 @@
+@@ -1348,7 +1585,7 @@
  BOOLEAN IsSquadInSector( SOLDIERTYPE *pSoldier, UINT8 ubSquad )
  {
  
@@ -33002,7 +33130,7 @@
  	{
  		return( FALSE );
  	}
-@@ -1378,17 +1617,29 @@
+@@ -1378,17 +1615,29 @@
  		return( FALSE );
  	}
  
@@ -33039,7 +33167,7 @@
  	{
  		return( FALSE );
  	}
-@@ -1402,16 +1653,25 @@
+@@ -1402,16 +1651,25 @@
  {
  	INT32 iCounter = 0;
  
@@ -33070,7 +33198,7 @@
  			{
  				return( TRUE );
  			}
-@@ -1426,7 +1686,10 @@
+@@ -1426,7 +1684,10 @@
  	INT32 iCounter = 0;
  	SOLDIERTYPE *pTempSoldier = NULL;
  
@@ -33082,7 +33210,7 @@
  
  	// is dead guy in any squad
  	if( IsDeadGuyOnAnySquad( pSoldier ) == TRUE )
-@@ -1482,6 +1745,10 @@
+@@ -1482,6 +1743,10 @@
  BOOLEAN IsDeadGuyOnAnySquad( SOLDIERTYPE *pSoldier )
  {
  	INT32 iCounterA = 0, iCounter = 0;
@@ -33093,7 +33221,7 @@
  
  	// squad?
  	for( iCounterA = 0; iCounterA < NUMBER_OF_SQUADS; iCounterA++ )
-@@ -1501,7 +1768,14 @@
+@@ -1501,7 +1766,14 @@
  
  BOOLEAN IsDeadGuyInThisSquadSlot( INT8 bSlotId, INT8 bSquadValue , INT8 *bNumberOfDeadGuysSoFar )
  {
@@ -33109,7 +33237,7 @@
  
  	// see if we have gone too far?
  	if( bSlotId < *bNumberOfDeadGuysSoFar )
-@@ -1515,14 +1789,14 @@
+@@ -1515,14 +1787,14 @@
  		if( sDeadMercs[ bSquadValue ][ iCounter ] != -1 )
  		{
  			// not gone far enough yet
@@ -33128,7 +33256,7 @@
  
  				return( TRUE );
  			}
-@@ -1537,7 +1811,7 @@
+@@ -1537,7 +1809,7 @@
  {
  	INT32 iCounter = 0;
  
@@ -33137,7 +33265,7 @@
  	{
  		return( FALSE );
  	}
-@@ -1556,6 +1830,11 @@
+@@ -1556,6 +1828,11 @@
  
  BOOLEAN ResetDeadSquadMemberList( INT32 iSquadValue )
  {
@@ -33149,7 +33277,7 @@
  	memset( sDeadMercs[ iSquadValue ], -1, sizeof( INT16 ) * NUMBER_OF_SOLDIERS_PER_SQUAD );
  
  	return( TRUE );
-@@ -1582,7 +1861,7 @@
+@@ -1582,7 +1859,7 @@
  	}
  
  	// current squad valid?
@@ -33158,7 +33286,7 @@
  	{
  		// no
  		return( FALSE );
-@@ -1607,7 +1886,7 @@
+@@ -1607,7 +1884,7 @@
  	INT8 bCounter = 0;
  	INT8 bSquadCount = 0;
  
@@ -33167,7 +33295,7 @@
  	{
  		return( 0 );
  	}
-@@ -1641,7 +1920,7 @@
+@@ -1641,7 +1918,7 @@
  	SOLDIERTYPE *pSoldier;
  	INT8 bCounter = 0;
  
@@ -33176,7 +33304,7 @@
  	{
  		return( FALSE );
  	}
-@@ -1681,26 +1960,30 @@
+@@ -1681,26 +1958,30 @@
  			// Set persistent....
  			pGroup = GetGroup( SquadMovementGroups[ iSquad ] );
  			Assert( pGroup );
@@ -34113,7 +34241,7 @@
  	{
 --- a/Tactical/Vehicles.cpp
 +++ b/Tactical/Vehicles.cpp
-@@ -1,3 +1,46 @@
+@@ -1,3 +1,56 @@
 +/*
 + * P710 native snapshot update: Tactical/Vehicles.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -34154,13 +34282,39 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Vehicles.cpp
++ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-21.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
 +#if !defined(_WIN32)
 +#include <cstdint>
 +#endif
  	#include "Vehicles.h"
  	#include "Strategic Pathing.h"
  	#include "Assignments.h"
-@@ -224,7 +267,6 @@
+@@ -179,8 +232,14 @@
+ // Flugente 2013-05-12: saving and loading an array that is read from xml is utterly pointless. The loading function has to remain for compatibility reasons - please remove the next time savegame compatibility is broken
+ BOOLEAN LoadNewVehiclesFromSaveGame(CHAR8** ppBuffer)
+ {
++	if ( ppBuffer == NULL || *ppBuffer == NULL )
++		return FALSE;
++
+ 	NEW_CAR tmp[NUM_PROFILES];
+-	SKIPDATA(*ppBuffer, *ppBuffer, sizeof(tmp));
++	CHAR8* cursor = *ppBuffer;
++	if ( !LoadDataFromBuffer(tmp, cursor, sizeof(tmp), "obsolete vehicle definitions") )
++		return FALSE;
++	*ppBuffer = cursor;
+ 	return(TRUE);
+ }
+ 
+@@ -224,7 +283,6 @@
  	// how many vehicles are there?
  	INT32 iVehicleIdValue = -1;
  	INT32 iCounter = 0, iCount = 0;
@@ -34168,7 +34322,7 @@
  	BOOLEAN fFoundEmpty = FALSE;
  	GROUP *pGroup;
  
-@@ -251,10 +293,13 @@
+@@ -251,10 +309,13 @@
  
  	if( iCount == 0 )
  	{
@@ -34184,7 +34338,7 @@
  
  		ubNumberOfVehicles = 1;
  		iVehicleIdValue		= 0;
-@@ -264,22 +309,12 @@
+@@ -264,22 +325,12 @@
  	{
  
  		// no empty slot found, need to realloc
@@ -34213,7 +34367,7 @@
  
  		// now get the index value
  		iVehicleIdValue = ubNumberOfVehicles;
-@@ -402,8 +437,8 @@
+@@ -402,8 +453,8 @@
  
  		MemFree( pVehicleList );
  		pVehicleList = NULL;
@@ -34224,7 +34378,7 @@
  
  /*
  	// empty out the vehicle list
-@@ -487,7 +522,11 @@
+@@ -487,7 +538,11 @@
  	//CHRISL: Get number of vehicles currently in player team
  	for(int x = 0; x < giMAXIMUM_NUMBER_OF_PLAYER_SLOTS; x++)
  	{
@@ -34237,37 +34391,72 @@
  			vCount ++;
  	}
  
-@@ -2356,6 +2395,11 @@
+@@ -2356,39 +2411,73 @@
  	PathSt* pPath = NULL;
  	UINT8 ubPassengerCnt = 0;
  	PathSt* pTempPath;
-+	const auto failLoad = []() -> BOOLEAN
+-
+-	//Clear out th vehicle list
+-	ClearOutVehicleList();
++	UINT8 ubLoadedVehicleCount = 0;
++	VEHICLETYPE* pLoadedVehicles = NULL;
++	const auto clearLoaded = [&]()
 +	{
-+		ClearOutVehicleList();
++		if ( pLoadedVehicles != NULL )
++		{
++			for ( UINT8 uiVehicle = 0; uiVehicle < ubLoadedVehicleCount; ++uiVehicle )
++			{
++				if ( pLoadedVehicles[uiVehicle].pMercPath != NULL )
++				{
++					pLoadedVehicles[uiVehicle].pMercPath =
++						ClearStrategicPathList(pLoadedVehicles[uiVehicle].pMercPath, 0);
++				}
++			}
++			MemFree(pLoadedVehicles);
++			pLoadedVehicles = NULL;
++		}
++	};
++	const auto failLoad = [&]() -> BOOLEAN
++	{
++		clearLoaded();
 +		return FALSE;
 +	};
++
++	if ( ppBuffer == NULL || *ppBuffer == NULL )
++		return FALSE;
++	CHAR8* cursor = *ppBuffer;
  
- 	//Clear out th vehicle list
- 	ClearOutVehicleList();
-@@ -2363,7 +2407,7 @@
  	//Load the number of elements
- 	if (!LoadDataFromBuffer(&ubNumberOfVehicles, *ppBuffer, sizeof(UINT8), "VehicleInformation"))
- 	{
+-	if (!LoadDataFromBuffer(&ubNumberOfVehicles, *ppBuffer, sizeof(UINT8), "VehicleInformation"))
+-	{
 -		return false;
+-	}
+-
+-	if ( ubNumberOfVehicles != 0 )
++	if (!LoadDataFromBuffer(&ubLoadedVehicleCount, cursor, sizeof(UINT8), "VehicleInformation") ||
++		ubLoadedVehicleCount > MAX_VEHICLES)
++	{
 +		return failLoad();
- 	}
- 
- 	if ( ubNumberOfVehicles != 0 )
-@@ -2371,7 +2415,7 @@
++	}
++
++	if ( ubLoadedVehicleCount != 0 )
+ 	{
  		//allocate memory to hold the vehicle list
- 		pVehicleList = (VEHICLETYPE*)MemAlloc(sizeof(VEHICLETYPE) * ubNumberOfVehicles);
- 		if ( pVehicleList == NULL )
+-		pVehicleList = (VEHICLETYPE*)MemAlloc(sizeof(VEHICLETYPE) * ubNumberOfVehicles);
+-		if ( pVehicleList == NULL )
 -			return(FALSE);
+-		memset(pVehicleList, 0, sizeof(VEHICLETYPE) * ubNumberOfVehicles);
++		pLoadedVehicles = (VEHICLETYPE*)MemAlloc(sizeof(VEHICLETYPE) * ubLoadedVehicleCount);
++		if ( pLoadedVehicles == NULL )
 +			return failLoad();
- 		memset(pVehicleList, 0, sizeof(VEHICLETYPE) * ubNumberOfVehicles);
++		memset(pLoadedVehicles, 0, sizeof(VEHICLETYPE) * ubLoadedVehicleCount);
  
  
-@@ -2382,13 +2426,21 @@
+ 		//loop through all the vehicles and load each one
+-		for ( cnt = 0; cnt < ubNumberOfVehicles; cnt++ )
++		for ( cnt = 0; cnt < ubLoadedVehicleCount; cnt++ )
+ 		{
+ 			if ( gfBufferLoadFailed )
  			{
  				break;
  			}
@@ -34278,60 +34467,81 @@
 +			// Load if the vehicle slot is valid. Keep the saved ownership flag
 +			// separate until the complete vehicle record has been decoded.
 +			BOOLEAN fValid = FALSE;
-+			if (!LoadDataFromBuffer(&fValid, *ppBuffer, sizeof(BOOLEAN), "Valid vehicle spot"))
++			if (!LoadDataFromBuffer(&fValid, cursor, sizeof(BOOLEAN), "Valid vehicle spot") ||
++				(fValid != FALSE && fValid != TRUE))
 +				return failLoad();
 +
 +			if ( fValid )
  			{
  				//load the vehicle info
 -				LoadDataFromBuffer(&pVehicleList[cnt], *ppBuffer, sizeof(VEHICLETYPE), "VEHICLETYPE");
-+				if (!LoadDataFromBuffer(&pVehicleList[cnt], *ppBuffer, sizeof(VEHICLETYPE), "VEHICLETYPE"))
++				if (!LoadDataFromBuffer(&pLoadedVehicles[cnt], cursor, sizeof(VEHICLETYPE), "VEHICLETYPE"))
 +					return failLoad();
-+				pVehicleList[cnt].fValid = TRUE;
++				pLoadedVehicles[cnt].fValid = TRUE;
 +				// This pointer representation came from the save file. Rebuild it
 +				// only from checked path records below.
-+				pVehicleList[cnt].pMercPath = NULL;
++				pLoadedVehicles[cnt].pMercPath = NULL;
  
  				//
  				// Build the passenger list
-@@ -2403,7 +2455,11 @@
+@@ -2399,37 +2488,49 @@
+ 				{
+ 					if ( uiSavedGameVersion < 86 )
+ 					{
+-						if ( pVehicleList[cnt].pPassengers[ubPassengerCnt] != 0 )
++						if ( pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] != 0 )
  						{
  							// ! The id of the soldier was saved in the passenger pointer.	The passenger pointer is converted back
  							// ! to a UINT8 so we can get the REAL pointer to the soldier.
+-							pVehicleList[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID((UINT8)(pVehicleList[cnt].pPassengers[ubPassengerCnt]), FALSE);
 +#if defined(_WIN32)
- 							pVehicleList[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID((UINT8)(pVehicleList[cnt].pPassengers[ubPassengerCnt]), FALSE);
++							pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID((UINT8)(pLoadedVehicles[cnt].pPassengers[ubPassengerCnt]), FALSE);
 +#else
-+							pVehicleList[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID(static_cast<UINT8>(reinterpret_cast<std::uintptr_t>(pVehicleList[cnt].pPassengers[ubPassengerCnt])), FALSE);
++							pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID(static_cast<UINT8>(reinterpret_cast<std::uintptr_t>(pLoadedVehicles[cnt].pPassengers[ubPassengerCnt])), FALSE);
 +#endif
  						}
  					}
  					else
-@@ -2412,7 +2468,11 @@
+ 					{
+-						if ( pVehicleList[cnt].pPassengers[ubPassengerCnt] != (SOLDIERTYPE*)NO_PROFILE )
++						if ( pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] != (SOLDIERTYPE*)NO_PROFILE )
  						{
  							// ! The id of the soldier was saved in the passenger pointer.	The passenger pointer is converted back
  							// ! to a UINT8 so we can get the REAL pointer to the soldier.
+-							pVehicleList[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID((UINT8)(pVehicleList[cnt].pPassengers[ubPassengerCnt]), FALSE);
 +#if defined(_WIN32)
- 							pVehicleList[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID((UINT8)(pVehicleList[cnt].pPassengers[ubPassengerCnt]), FALSE);
++							pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID((UINT8)(pLoadedVehicles[cnt].pPassengers[ubPassengerCnt]), FALSE);
 +#else
-+							pVehicleList[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID(static_cast<UINT8>(reinterpret_cast<std::uintptr_t>(pVehicleList[cnt].pPassengers[ubPassengerCnt])), FALSE);
++							pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] = FindSoldierByProfileID(static_cast<UINT8>(reinterpret_cast<std::uintptr_t>(pLoadedVehicles[cnt].pPassengers[ubPassengerCnt])), FALSE);
 +#endif
  						}
  						else
  						{
-@@ -2423,7 +2483,11 @@
+-							pVehicleList[cnt].pPassengers[ubPassengerCnt] = NULL;
++							pLoadedVehicles[cnt].pPassengers[ubPassengerCnt] = NULL;
+ 						}
+ 					}
+ 				}
  
  
  				//Load the number of nodes
 -				LoadDataFromBuffer(&uiTotalNodeCount, *ppBuffer, sizeof(UINT32), "VehicleInformation node count");
 +				uiTotalNodeCount = 0;
-+				if (!LoadDataFromBuffer(&uiTotalNodeCount, *ppBuffer, sizeof(UINT32), "VehicleInformation node count") ||
-+					!LoadBufferContainsElements(*ppBuffer, uiTotalNodeCount, sizeof(PathSt), 0,
++				if (!LoadDataFromBuffer(&uiTotalNodeCount, cursor, sizeof(UINT32), "VehicleInformation node count") ||
++					!LoadBufferContainsElements(cursor, uiTotalNodeCount, sizeof(PathSt), 0,
 +						"VehicleInformation path nodes"))
 +					return failLoad();
  
  				if ( uiTotalNodeCount != 0 )
  				{
-@@ -2437,11 +2501,15 @@
+ 					pPath = NULL;
+ 
+-					pVehicleList[cnt].pMercPath = NULL;
++					pLoadedVehicles[cnt].pMercPath = NULL;
+ 
+ 					//loop through each node
+ 					for ( uiNodeCount = 0; uiNodeCount < uiTotalNodeCount; uiNodeCount++ )
+@@ -2437,19 +2538,23 @@
  						//allocate memory to hold the vehicle path
  						pTempPath = (PathSt*)MemAlloc(sizeof(PathSt));
  						if ( pTempPath == NULL )
@@ -34341,7 +34551,7 @@
  
  						//Load all the nodes
 -						LoadDataFromBuffer(pTempPath, *ppBuffer, sizeof(PathSt), "VehicleInformation node");
-+						if (!LoadDataFromBuffer(pTempPath, *ppBuffer, sizeof(PathSt), "VehicleInformation node"))
++						if (!LoadDataFromBuffer(pTempPath, cursor, sizeof(PathSt), "VehicleInformation node"))
 +						{
 +							MemFree(pTempPath);
 +							return failLoad();
@@ -34349,16 +34559,158 @@
  
  
  						//
-@@ -2483,7 +2551,7 @@
+ 						//Setup the pointer info
+ 						//
+ 
+-						if ( pVehicleList[cnt].pMercPath == NULL )
+-							pVehicleList[cnt].pMercPath = pTempPath;
++						if ( pLoadedVehicles[cnt].pMercPath == NULL )
++							pLoadedVehicles[cnt].pMercPath = pTempPath;
+ 
+ 
+ 						//if there is a previous node
+@@ -2470,21 +2575,30 @@
+ 				}
+ 				else
+ 				{
+-					pVehicleList[cnt].pMercPath = NULL;
++					pLoadedVehicles[cnt].pMercPath = NULL;
+ 				}
+ 			}
+ 
+ 			// WANNE: This should make savegames before the externalized vehicles compatible.
+-			if ( pVehicleList[cnt].ubVehicleType != pVehicleList[cnt].ubProfileID )
+-				pVehicleList[cnt].ubVehicleType = pVehicleList[cnt].ubProfileID;
++			if ( pLoadedVehicles[cnt].ubVehicleType != pLoadedVehicles[cnt].ubProfileID )
++				pLoadedVehicles[cnt].ubVehicleType = pLoadedVehicles[cnt].ubProfileID;
+ 
+ 		}
+ 	}
  
  	if ( gfBufferLoadFailed )
  	{
 -		return false;
+-	}
 +		return failLoad();
- 	}
++	}
++
++	// Commit the replacement only after the complete list and every owned path
++	// have been decoded.  Failed loads preserve the running vehicle state.
++	ClearOutVehicleList();
++	pVehicleList = pLoadedVehicles;
++	ubNumberOfVehicles = ubLoadedVehicleCount;
++	pLoadedVehicles = NULL;
++	ubLoadedVehicleCount = 0;
++	*ppBuffer = cursor;
  	return(TRUE);
  }
-@@ -2883,7 +2951,11 @@
+ 
+@@ -2627,32 +2741,45 @@
+ 
+ BOOLEAN LoadVehicleMovementInfoFromSavedGame(CHAR8** ppBuffer)
+ {
+-	GROUP* pGroup = NULL;
+-	UINT32	uiNumBytesRead = 0;
+-
+-	for ( int cnt = 0; cnt < 5; ++cnt ) {
+-		if (!LoadDataFromBuffer(&gubVehicleMovementGroups[cnt], *ppBuffer, sizeof(INT8), "VehicleMovementInfo"))
+-		{
+-			break;
+-		}
+-	}
+-
+-	if ( gfBufferLoadFailed )
+-	{
+-		return false;
+-	}
+-
+-	for ( int cnt = 5; cnt < MAX_VEHICLES; cnt++ )
+-	{
+-		// create mvt groups
+-		gubVehicleMovementGroups[cnt] = CreateNewVehicleGroupDepartingFromSector(1, 1, cnt);
+-
+-		// Set persistent....
+-		pGroup = GetGroup(gubVehicleMovementGroups[cnt]);
+-		pGroup->fPersistant = TRUE;
+-	}
+-
+-	return(TRUE);
++	if ( ppBuffer == NULL || *ppBuffer == NULL )
++		return FALSE;
++
++	CHAR8* pCursor = *ppBuffer;
++	std::vector<INT8> loadedGroups(MAX_VEHICLES, 0);
++	for ( int cnt = 0; cnt < 5; ++cnt )
++	{
++		if (!LoadDataFromBuffer(&loadedGroups[cnt], pCursor, sizeof(INT8), "VehicleMovementInfo"))
++			return FALSE;
++	}
++
++	// Older saves only contain the original five vehicle groups. Build the
++	// additional persistent groups privately and publish their IDs only after
++	// every group has been resolved successfully.
++	const UINT16 groupsToCreate = MAX_VEHICLES - 5;
++	if ( !CanAddStrategicMovementGroups(groupsToCreate) )
++		return FALSE;
++
++	GROUP* createdGroups[MAX_VEHICLES - 5] = {};
++	UINT16 createdGroupCount = 0;
++	for ( int cnt = 5; cnt < MAX_VEHICLES; ++cnt )
++	{
++		const UINT8 groupID = CreateNewVehicleGroupDepartingFromSector(1, 1, cnt);
++		GROUP* const pGroup = GetGroup(groupID);
++		if ( pGroup == NULL )
++		{
++			for ( UINT16 groupIndex = 0; groupIndex < createdGroupCount; ++groupIndex )
++				RemovePGroup(createdGroups[groupIndex]);
++			return FALSE;
++		}
++		loadedGroups[cnt] = static_cast<INT8>(groupID);
++		createdGroups[createdGroupCount++] = pGroup;
++	}
++	for ( UINT16 groupIndex = 0; groupIndex < createdGroupCount; ++groupIndex )
++		createdGroups[groupIndex]->fPersistant = TRUE;
++
++	gubVehicleMovementGroups.swap(loadedGroups);
++	*ppBuffer = pCursor;
++	return TRUE;
+ }
+ 
+ BOOLEAN NewSaveVehicleMovementInfoToSavedGameFile( HWFILE hFile )
+@@ -2677,18 +2804,20 @@
+ 
+ BOOLEAN NewLoadVehicleMovementInfoFromSavedGame(CHAR8** ppBuffer)
+ {
+-	for ( int cnt = 0; cnt < MAX_VEHICLES; ++cnt ) {
+-		if (!LoadDataFromBuffer(&gubVehicleMovementGroups[cnt], *ppBuffer, sizeof(INT8), "NewVehicleMovementInfo"))
+-		{
+-			break;
+-		}
+-	}
+-
+-	if ( gfBufferLoadFailed )
+-	{
+-		return false;
+-	}
+-	return(TRUE);
++	if ( ppBuffer == NULL || *ppBuffer == NULL )
++		return FALSE;
++
++	CHAR8* pCursor = *ppBuffer;
++	std::vector<INT8> loadedGroups(MAX_VEHICLES, 0);
++	for ( int cnt = 0; cnt < MAX_VEHICLES; ++cnt )
++	{
++		if (!LoadDataFromBuffer(&loadedGroups[cnt], pCursor, sizeof(INT8), "NewVehicleMovementInfo"))
++			return FALSE;
++	}
++
++	gubVehicleMovementGroups.swap(loadedGroups);
++	*ppBuffer = pCursor;
++	return TRUE;
+ }
+ 
+ BOOLEAN OKUseVehicle( UINT8 ubProfile )
+@@ -2883,7 +3012,11 @@
  	for( SoldierID id = gTacticalStatus.Team[ OUR_TEAM ].bFirstID; id <= gTacticalStatus.Team[ OUR_TEAM ].bLastID; ++id )
  	{
  		// get the current soldier

@@ -1,8 +1,12 @@
 # Changes for the native Linux source preview
 
-## November 21 native crash-report checkpoint
+## November 21 save-load and crash-report checkpoint
 
-Add a local-only native Linux crash reporter for development builds. Reports
+Vehicle, squad, and militia save loaders publish the caller's read position
+after successful validation. The game stops the load when a vehicle-movement
+read or obsolete vehicle-definition read fails.
+
+Add a local-only native Linux crash reporter. Reports
 are written under the selected profile with mode `0600`, include the exact ELF
 build ID, and are never uploaded by the reporter. Normal builds cover
 controlled failures, assertions, uncaught C++ termination, and selected fatal
@@ -16,9 +20,10 @@ passed build-ID validation in the offline symbolizer. A separate automated
 hardware-fault fixture resolves the faulting instruction in its test executable
 to the fixture source line.
 
-This evidence belongs to development source. The crash reporter is newer than
-the source currently reconstructed from public `main`. A public player package,
-RISC-V hardware, Windows, and full-campaign acceptance remain open.
+These full-suite and live-session results belong to development source.
+See [CI scope](CI.md) for hosted and focused export validation.
+The default native build uses bfVFS and an inert network provider.
+A public player package, RISC-V hardware, Windows, and full-campaign acceptance remain open.
 
 ## November 19 source checkpoints
 
