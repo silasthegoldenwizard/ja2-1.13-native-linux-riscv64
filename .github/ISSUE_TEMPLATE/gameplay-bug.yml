@@ -1,0 +1,53 @@
+name: Gameplay bug
+description: Report a crash, save or load problem, or other gameplay bug in the native Linux port.
+title: "[Gameplay] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This report is public. Keep save files, profiles, original JA2 game data,
+        and private details out of the report. If you have a crash report, see
+        the [crash-report guide](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/blob/main/docs/CRASH-REPORTING.md)
+        before sharing any text.
+  - type: input
+    id: build
+    attributes:
+      label: JA2 port build
+      description: Enter the release version or Git commit. Add the build ID if you have it, or enter "Unknown".
+      placeholder: "Example: v0.1.0-alpha.2, commit abc1234"
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Linux system
+      description: Enter your Linux distribution, version, and CPU architecture if known.
+      placeholder: "Example: Debian 13, x86-64"
+    validations:
+      required: false
+  - type: input
+    id: location
+    attributes:
+      label: Sector or screen
+      placeholder: "Example: A9, tactical map, or main menu"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened?
+      description: List the steps up to the bug. Include what you expected and what happened.
+      placeholder: "Example: I moved a medical kit from the sector inventory to a merc and saved. After restarting and loading the save, the kit was gone."
+    validations:
+      required: true
+  - type: dropdown
+    id: repeatability
+    attributes:
+      label: Does it happen again?
+      options:
+        - Every time I repeat the steps
+        - Sometimes
+        - Only happened once
+        - I have not tried again
+    validations:
+      required: true
