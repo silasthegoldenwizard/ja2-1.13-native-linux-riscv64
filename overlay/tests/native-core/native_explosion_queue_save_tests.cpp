@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_explosion_queue_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 21 transactional save-loader checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Genuine original explosion save/load functions and FileMan/bfVFS, with
 // synthetic queue records only. No game assets or existing saves are used.
 #include "FileMan.h"
@@ -172,6 +182,31 @@ void rejectHeaders() {
               "short header leaves cursor, byte count and neighboring flags intact");
     }
 }
+void rejectExplosionHeaders() {
+    for (UINT32 count : {NUM_EXPLOSION_SLOTS + 1u, 0xffffffffu}) {
+        Bytes bytes(4 + sizeof(gExplosionQueue) + 4, 0);
+        put32(bytes, 0);
+        const auto explosionCountOffset = 4 + sizeof(gExplosionQueue);
+        for (unsigned i = 0; i < 4; ++i) {
+            bytes.at(explosionCountOffset + i) = (count >> (8 * i)) & 255;
+        }
+
+        std::memset(gExplosionQueue, 0x5a, sizeof(gExplosionQueue));
+        std::memset(gExplosionData, 0, sizeof(gExplosionData));
+        gubElementsOnExplosionQueue = 7;
+        guiNumExplosions = 23;
+        BufferBounds bounds(bytes);
+        auto* cursor = reinterpret_cast<char*>(bytes.data());
+        check(!LoadExplosionTableFromSavedGame(&cursor),
+              "out-of-capacity active-explosion count rejected");
+        check(cursor == reinterpret_cast<char*>(bytes.data() + bytes.size()),
+              "invalid active-explosion count rejected after its complete header");
+        check(gubElementsOnExplosionQueue == 7 && guiNumExplosions == 23,
+              "invalid active-explosion count leaves published counts unchanged");
+        check(static_cast<unsigned char*>(static_cast<void*>(gExplosionQueue))[0] == 0x5a,
+              "invalid active-explosion count leaves published queue unchanged");
+    }
+}
 }
 int main() {
     try {
@@ -180,6 +215,7 @@ int main() {
         check(InitializeFileManager(nullptr), "original FileMan initialized");
         for (unsigned count : {0u, 1u, queueCapacity}) roundtrip(temporary, count);
         rejectHeaders();
+        rejectExplosionHeaders();
         ShutdownFileManager();
         std::cout << "explosion queue save: " << checks
                   << " checks passed; original save/load + FileMan/VFS, synthetic data only\n";

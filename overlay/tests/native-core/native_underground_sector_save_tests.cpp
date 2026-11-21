@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_underground_sector_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 21 transactional save-loader checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "BufferMan.h"
 #include "Campaign Init.h"
 #include "Queen Command.h"
@@ -66,6 +76,26 @@ UNDERGROUND_SECTORINFO sector(UINT8 x, UINT8 y, UINT8 z, UINT16 troops)
         static_cast<std::uintptr_t>(0x1234));
     return value;
 }
+
+UNDERGROUND_SECTORINFO* seedPublishedSector()
+{
+    TrashUndergroundSectorInfo();
+    auto* node = NewUndergroundNode(2, 3, 1);
+    check(node != nullptr, "published underground-sector seed allocated");
+    node->ubNumTroops = 44;
+    return node;
+}
+
+void checkPublishedSectorUnchanged(UNDERGROUND_SECTORINFO* published,
+                                   const char* message)
+{
+    check(gpUndergroundSectorInfoHead == published &&
+              gpUndergroundSectorInfoTail == published && published &&
+              published->next == nullptr && published->ubSectorX == 2 &&
+              published->ubSectorY == 3 && published->ubSectorZ == 1 &&
+              published->ubNumTroops == 44,
+          message);
+}
 }
 
 int main()
@@ -121,31 +151,31 @@ int main()
     append(truncated, firstRecord);
     append(truncated, secondRecord);
     truncated.resize(truncated.size() - sizeof(UNDERGROUND_SECTORINFO) / 2);
+    auto* published = seedPublishedSector();
     consumed = 0;
     check(!load(truncated, consumed), "truncated underground-sector list is rejected");
     check(gfBufferLoadFailed, "truncated list marks the bounded load failure");
     check(consumed <= truncated.size(), "truncated load keeps the cursor in bounds");
-    check(gpUndergroundSectorInfoHead == nullptr &&
-              gpUndergroundSectorInfoTail == nullptr,
-          "truncated load releases all partial global state");
+    checkPublishedSectorUnchanged(
+        published, "truncated load preserves published underground sectors");
     TrashUndergroundSectorInfo();
 
     Bytes missingRecord;
     append(missingRecord, one);
+    published = seedPublishedSector();
     consumed = 0;
     check(!load(missingRecord, consumed), "missing underground-sector record is rejected");
-    check(gpUndergroundSectorInfoHead == nullptr &&
-              gpUndergroundSectorInfoTail == nullptr,
-          "missing record leaves no global list");
+    checkPublishedSectorUnchanged(published, "missing record preserves global list");
+    TrashUndergroundSectorInfo();
 
     Bytes impossibleCount;
     const UINT32 maximum = UINT32_MAX;
     append(impossibleCount, maximum);
+    published = seedPublishedSector();
     consumed = 0;
     check(!load(impossibleCount, consumed), "unbacked maximum record count is rejected");
-    check(gpUndergroundSectorInfoHead == nullptr &&
-              gpUndergroundSectorInfoTail == nullptr,
-          "maximum count failure leaves no global list");
+    checkPublishedSectorUnchanged(
+        published, "maximum count failure preserves global list");
 
     TrashUndergroundSectorInfo();
     gpLoadBufferStart = nullptr;

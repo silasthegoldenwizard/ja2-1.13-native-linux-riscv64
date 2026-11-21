@@ -190,6 +190,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the November 21 transactional save-loader checkpoint.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-21.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -413,6 +421,24 @@ add_executable(p710_native_explosion_queue_save_tests
 target_link_libraries(p710_native_explosion_queue_save_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME saves.original_explosion_queue_count COMMAND p710_native_explosion_queue_save_tests)
+add_executable(p710_native_bobbyr_mailorder_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_bobbyr_mailorder_save_tests.cpp")
+target_link_libraries(p710_native_bobbyr_mailorder_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME saves.original_bobbyr_mailorder_count
+  COMMAND p710_native_bobbyr_mailorder_save_tests)
+add_executable(p710_native_legacy_effect_save_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_legacy_effect_save_tests.cpp")
+target_link_libraries(p710_native_legacy_effect_save_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME saves.original_legacy_effect_counts
+  COMMAND p710_native_legacy_effect_save_tests)
+add_executable(p710_native_effect_map_temp_tests
+  "${P710_ENGINE_ROOT}/tests/native-core/native_effect_map_temp_tests.cpp")
+target_link_libraries(p710_native_effect_map_temp_tests PRIVATE
+  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+add_test(NAME saves.original_effect_map_temp_counts
+  COMMAND p710_native_effect_map_temp_tests)
 add_executable(p710_native_save_header_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_save_header_tests.cpp")
 target_link_libraries(p710_native_save_header_tests PRIVATE

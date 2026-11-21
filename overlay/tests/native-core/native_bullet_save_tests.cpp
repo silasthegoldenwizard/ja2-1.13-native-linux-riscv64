@@ -8,6 +8,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_bullet_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 21 transactional save-loader checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "BufferMan.h"
 #include "Bullets.h"
 
@@ -62,6 +72,25 @@ void clearLoadedState()
     check(guiNumBullets == 0, "empty bullet table publishes a zero count");
 }
 
+void publishSentinelBullet()
+{
+    guiNumBullets = 1;
+    auto* bullet = GetBulletPtr(0);
+    std::memset(bullet, 0, sizeof(*bullet));
+    bullet->iBullet = 0;
+    bullet->fAllocated = TRUE;
+    bullet->sGridNo = 123;
+    bullet->ubFirerID = NOBODY;
+}
+
+bool sentinelBulletIsPublished()
+{
+    const auto* bullet = GetBulletPtr(0);
+    return guiNumBullets == 1 && bullet != nullptr && bullet->fAllocated &&
+           bullet->iBullet == 0 && bullet->sGridNo == 123 &&
+           bullet->ubFirerID == NOBODY;
+}
+
 int finish()
 {
     guiNumBullets = 0;
@@ -80,6 +109,8 @@ int finish()
 
 void overflowRegression()
 {
+    publishSentinelBullet();
+
     BULLET record{};
     record.ubFirerID = NOBODY;
     record.pFirer = reinterpret_cast<SOLDIERTYPE*>(
@@ -100,11 +131,14 @@ void overflowRegression()
     check(!gfBufferLoadFailed,
           "oversized bullet table is a semantic rejection, not a short read");
     check(consumed == sizeof(count), "oversized count is rejected before records");
-    check(guiNumBullets == 0, "oversized bullet table leaves no live bullets");
+    check(sentinelBulletIsPublished(),
+          "oversized bullet table preserves the previously published bullets");
 }
 
 void invalidSoldierIDRegression()
 {
+    publishSentinelBullet();
+
     BULLET record{};
     record.ubFirerID.i = UINT16_MAX;
     Bytes invalid;
@@ -117,7 +151,8 @@ void invalidSoldierIDRegression()
     check(!gfBufferLoadFailed,
           "invalid bullet firer ID is a semantic rejection, not a short read");
     check(consumed == invalid.size(), "invalid firer record has a bounded extent");
-    check(guiNumBullets == 0, "invalid firer leaves no live bullets");
+    check(sentinelBulletIsPublished(),
+          "invalid firer preserves the previously published bullets");
 }
 }
 
@@ -166,6 +201,7 @@ int main(int argc, char** argv)
     for (auto* node : loaded->pNodes) trailsCleared = trailsCleared && node == nullptr;
     check(trailsCleared, "loaded bullet discards serialized trail-node pointers");
 
+    publishSentinelBullet();
     auto invalidTargetRecord = record;
     invalidTargetRecord.ubTargetID.i = UINT16_MAX;
     Bytes invalidTarget;
@@ -176,8 +212,10 @@ int main(int argc, char** argv)
     check(!gfBufferLoadFailed,
           "invalid bullet target ID is a semantic rejection, not a short read");
     check(consumed == invalidTarget.size(), "invalid target record has a bounded extent");
-    check(guiNumBullets == 0, "invalid target leaves no live bullets");
+    check(sentinelBulletIsPublished(),
+          "invalid target preserves the previously published bullets");
 
+    publishSentinelBullet();
     Bytes truncated;
     append(truncated, one);
     append(truncated, record);
@@ -186,8 +224,10 @@ int main(int argc, char** argv)
     check(!load(truncated, consumed), "truncated bullet record is rejected");
     check(gfBufferLoadFailed, "truncated bullet record marks the bounded load failure");
     check(consumed <= truncated.size(), "truncated bullet cursor remains in bounds");
-    check(guiNumBullets == 0, "truncated bullet table rolls back its live count");
+    check(sentinelBulletIsPublished(),
+          "truncated bullet table preserves the previously published bullets");
 
+    publishSentinelBullet();
     Bytes excessiveCount;
     const UINT32 excessive = kBulletSlots + 1;
     append(excessiveCount, excessive);
@@ -195,7 +235,8 @@ int main(int argc, char** argv)
     check(!load(excessiveCount, consumed), "unbounded bullet count is rejected");
     check(consumed == excessiveCount.size(),
           "unbounded bullet count is rejected before reading a record");
-    check(guiNumBullets == 0, "unbounded bullet count leaves no live table");
+    check(sentinelBulletIsPublished(),
+          "unbounded bullet count preserves the previously published bullets");
 
     clearLoadedState();
     overflowRegression();

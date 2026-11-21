@@ -266,6 +266,7 @@ TileEngine/Explosion Control.cpp
 TileEngine/Explosion Control.h
 TileEngine/Interactive Tiles.cpp
 TileEngine/Isometric Utils.cpp
+TileEngine/LightEffects.cpp
 TileEngine/Map Edgepoints.cpp
 TileEngine/Radar Screen.cpp
 TileEngine/Render Dirty.cpp
