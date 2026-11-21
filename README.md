@@ -67,15 +67,16 @@ Useful reports include:
 - The game screen and sector.
 - The selected game options.
 - Whether the problem occurs again after loading the same save.
-- A screenshot or local crash report, when available.
+- A screenshot or [local crash report](docs/CRASH-REPORTING.md), when available.
 
 Do not upload proprietary game data. Share a minimal saved game privately only
 if a maintainer requests it and you agree.
 
 ## Technical information
 
-- [November 19 repository validation checkpoint](docs/STATUS.md)
+- [Current development status](docs/STATUS.md)
 - [Change history](docs/CHANGELOG.md)
+- [Native Linux crash reports](docs/CRASH-REPORTING.md)
 - [Continuous-integration scope](docs/CI.md)
 - [Alpha.1 component terms and distribution limits](docs/PUBLICATION-LIMITS.md)
 - [Third-party notices](notices/)
