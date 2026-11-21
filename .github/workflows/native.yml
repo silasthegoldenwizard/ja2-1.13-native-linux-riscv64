@@ -139,3 +139,42 @@ jobs:
             ${{ runner.temp }}/attachment-sanitized/ctest.xml
             ${{ runner.temp }}/attachment-sanitized/Testing/Temporary/LastTest.log
             ${{ runner.temp }}/attachment-sanitized/Testing/Temporary/LastTestsFailed.log
+      - name: Find available CTest reports
+        if: ${{ !cancelled() }}
+        id: ctest-reports
+        run: |
+          for mode in debug sanitized; do
+            if [ -f "$RUNNER_TEMP/build-$mode/ctest.xml" ] ||
+               [ -f "$RUNNER_TEMP/attachment-$mode/ctest.xml" ]; then
+              echo "$mode=true" >> "$GITHUB_OUTPUT"
+            fi
+          done
+      - name: Summarize native CTest results
+        if: ${{ !cancelled() && steps.ctest-reports.outputs.debug == 'true' }}
+        uses: test-summary/action@37b508cfee6d4d080eedd00b5bb240a6a784a6a5 # v2.6
+        with:
+          paths: |
+            ${{ runner.temp }}/build-debug/ctest.xml
+            ${{ runner.temp }}/attachment-debug/ctest.xml
+          output: ${{ runner.temp }}/p710-native.md
+      - name: Summarize sanitizer CTest results
+        if: ${{ !cancelled() && steps.ctest-reports.outputs.sanitized == 'true' }}
+        uses: test-summary/action@37b508cfee6d4d080eedd00b5bb240a6a784a6a5 # v2.6
+        with:
+          paths: |
+            ${{ runner.temp }}/build-sanitized/ctest.xml
+            ${{ runner.temp }}/attachment-sanitized/ctest.xml
+          output: ${{ runner.temp }}/p710-sanitizer.md
+      - name: Publish CTest summaries
+        if: ${{ !cancelled() }}
+        run: |
+          for suite in Native Sanitizer; do
+            report="$RUNNER_TEMP/p710-${suite,,}.md"
+            if [ -s "$report" ]; then
+              {
+                printf '## %s CTest\n\n' "$suite"
+                cat "$report"
+                printf '\n\n'
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
