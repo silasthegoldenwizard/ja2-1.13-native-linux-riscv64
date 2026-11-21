@@ -9,7 +9,7 @@ Unchanged engine and vendor source files come from a separate copy.
 The [reconstruction manifest](../RECONSTRUCTION-MANIFEST.json) records the source of each file.
 It records original bytes, reconstructed bytes, and reversible notice insertions.
 Some files keep notices from earlier preparation.
-New file notices record the November 15 snapshot and package date.
+New notices for this checkpoint record November 21, 2026.
 Unchanged previously edited guides retain their exact accepted notice and editorial records.
 They do not invent first-edit dates or independent authorship.
 
@@ -29,7 +29,7 @@ It refuses an output destination that already exists.
 It does not install dependencies, compile source, run the game, or get game assets.
 
 Reconstruction checks cover the selected source files.
-The engine overlay needs the separate RakNet source companion for its complete source-input route.
+The default single-player build uses bfVFS. The optional multiplayer build needs the separate RakNet source companion.
 
 The companion supplies these reviewed inputs:
 
@@ -73,14 +73,9 @@ This overlay does not include an installer or dependency binary.
   bfVFS still supplies the live backend.
   This snapshot does not include the isolated replacement experiments.
 
-## Build the paired source
+## Build the single-player source
 
-Download and extract both source archives from the release.
-Reconstruct the engine into a new directory with the helper described above.
-Copy the companion's `game-headers/` contents into the reconstructed engine's `Multiplayer/raknet/` directory.
-Follow the companion README to verify its source and build `libraknet3401.a`.
-Keep its required `sdk/packaging-notices.json` with `sdk/prepare.py`.
-Use the new SDK build directory as `P710_RAKNET_ROOT`.
+Reconstruct the current source into a new directory with the helper described above.
 Run the following commands from the reconstructed engine directory.
 Specify the matching local dependency prefixes.
 
@@ -90,16 +85,22 @@ cmake -S platform/linux -B /path/to/new-build -G 'Unix Makefiles' \
   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/path/to/pinned-sdl-prefix \
   -DP710_FFMPEG_ROOT=/path/to/pinned-ffmpeg-prefix \
   -DP710_FREETYPE_ROOT=/path/to/pinned-freetype-prefix \
-  -DP710_RAKNET_ROOT=/path/to/reviewed-native-raknet-build
+  -DP710_MULTIPLAYER=OFF -DP710_VFS=ON
 cmake --build /path/to/new-build --target p710_native_game --parallel 2
 cmake --build /path/to/new-build --parallel 2
-cmake --build /path/to/new-build --target p710_native_profile101_tests --parallel 2
 ctest --test-dir /path/to/new-build --output-on-failure
 ```
 
 For the sanitizer lane, configure a separate new build with `-DP710_SANITIZERS=ON`.
-Use the matching instrumented external RakNet archive.
-The profile-test target is excluded from the default all-target build and needs the explicit command above.
+The profile-test target is included in the default build.
+
+For the optional multiplayer build, set `-DP710_MULTIPLAYER=ON`.
+Use the separate RakNet source companion from the v0.1.0-alpha.1 release.
+Copy its `game-headers/` contents into `Multiplayer/raknet/`.
+Follow its README to verify the source and build `libraknet3401.a`.
+Keep `sdk/packaging-notices.json` with `sdk/prepare.py`.
+Set `P710_RAKNET_ROOT` to the reviewed SDK build directory.
+Use the matching instrumented RakNet archive for a multiplayer sanitizer build.
 
 The recorded runs use ASan/UBSan with leak detection and no suppressions.
 The SDL, FFmpeg, and FreeType SDKs do not have sanitizer instrumentation.
@@ -110,7 +111,7 @@ The snapshot-preparation records describe the earlier packaging stage.
 Use [BUILD-RESULTS.json](BUILD-RESULTS.json) for exact evidence scopes.
 The build record describes the earlier paired release package.
 Later source checkpoints have separate development and export evidence in [STATUS.md](STATUS.md).
-No new full exported-game build or gameplay result is claimed by this update.
+The current export checks selected tests. See [CI scope](CI.md).
 The initial native attempt found a missing unchanged `i18n/text.def` reconstruction input.
 The corrected package declares that exact pinned base file.
 Native completion reused valid objects from its initial empty isolated build; the sanitizer lane started fresh.

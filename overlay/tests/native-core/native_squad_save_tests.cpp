@@ -18,6 +18,16 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_squad_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "Assignments.h"
 #include "Auto Bandage.h"
 #include "BufferMan.h"
@@ -117,12 +127,23 @@ bool squadsAreEmpty()
     return true;
 }
 
-bool movementIsEmpty()
+void publishSentinelState()
 {
-    for (const auto value : SquadMovementGroups) {
-        if (value != 0) return false;
+    for (INT32 squad = 0; squad < NUMBER_OF_SQUADS; ++squad) {
+        for (INT32 slot = 0; slot < NUMBER_OF_SOLDIERS_PER_SQUAD; ++slot) {
+            Squad[squad][slot] = nullptr;
+        }
+        SquadMovementGroups[squad] = static_cast<INT8>(40 + squad);
     }
-    return true;
+    Squad[0][0] = &Menptr[0];
+}
+
+bool sentinelStateIsPublished()
+{
+    return Squad[0][0] == &Menptr[0] && Squad[0][1] == nullptr &&
+        SquadMovementGroups[0] == 40 &&
+        SquadMovementGroups[NUMBER_OF_SQUADS - 1] ==
+            static_cast<INT8>(40 + NUMBER_OF_SQUADS - 1);
 }
 
 void clearState()
@@ -136,14 +157,15 @@ void clearState()
 
 void invalidIDRegression(INT16 id)
 {
+    publishSentinelState();
     auto invalid = squadData(id);
     std::size_t consumed = 0;
     check(!load(invalid, consumed), "out-of-range squad member ID is rejected");
     check(!gfBufferLoadFailed,
           "invalid squad member ID is a semantic rejection, not a short read");
-    check(consumed <= invalid.size(), "invalid-ID cursor remains in bounds");
-    check(squadsAreEmpty(), "invalid member ID leaves no live squad pointers");
-    check(movementIsEmpty(), "invalid member ID leaves no movement IDs");
+    check(consumed == 0, "invalid-ID load preserves the caller cursor");
+    check(sentinelStateIsPublished(),
+          "invalid member ID preserves the published squad state");
 }
 
 void queryContractRegression()
@@ -653,18 +675,18 @@ int main(int argc, char** argv)
     consumed = 0;
     check(!load(missingMovement, consumed), "missing movement table is rejected");
     check(gfBufferLoadFailed, "missing movement table marks the bounded load failure");
-    check(consumed <= missingMovement.size(), "missing-movement cursor remains in bounds");
-    check(squadsAreEmpty(), "missing movement table rolls back squad pointers");
-    check(movementIsEmpty(), "missing movement table rolls back movement IDs");
+    check(consumed == 0, "missing movement table preserves the caller cursor");
+    check(Squad[0][0] == &Menptr[0] && SquadMovementGroups[0] == 1,
+          "missing movement table preserves the published squad state");
 
     auto truncatedTable = squadData(-1);
     truncatedTable.resize(truncatedTable.size() / 2);
     consumed = 0;
     check(!load(truncatedTable, consumed), "truncated squad table is rejected");
     check(gfBufferLoadFailed, "truncated squad table marks the bounded load failure");
-    check(consumed <= truncatedTable.size(), "truncated-table cursor remains in bounds");
-    check(squadsAreEmpty(), "truncated squad table leaves no member pointers");
-    check(movementIsEmpty(), "truncated squad table leaves no movement IDs");
+    check(consumed == 0, "truncated squad table preserves the caller cursor");
+    check(Squad[0][0] == &Menptr[0] && SquadMovementGroups[0] == 1,
+          "truncated squad table preserves the published squad state");
 
     invalidIDRegression(INT16_MAX);
     invalidIDRegression(-2);

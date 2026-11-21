@@ -182,6 +182,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-21.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -192,6 +200,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(P710_MULTIPLAYER "Build the native multiplayer client/server and RakNet" OFF)
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   message(FATAL_ERROR "Use the installed clang++-19: its VFS handles original include case without changing engine headers")
 endif()
@@ -207,20 +216,27 @@ add_subdirectory("${P710_ENGINE_ROOT}/ext/lua-5.1.5" lua51)
 add_subdirectory("${P710_ENGINE_ROOT}/ext/libsmacker" smacker)
 find_package(EXPAT REQUIRED)
 find_package(Threads REQUIRED)
-set(P710_RAKNET_ROOT "" CACHE PATH "Approved pinned RakNet3.401 native archive directory")
-if(NOT P710_RAKNET_ROOT)
-  get_filename_component(_p710_project "${P710_ENGINE_ROOT}/../.." ABSOLUTE)
-  if(P710_SANITIZERS)
-    set(_p710_raknet_mode sanitized)
-  else()
-    set(_p710_raknet_mode debug)
+if(P710_MULTIPLAYER)
+  set(P710_RAKNET_ROOT "" CACHE PATH "Approved pinned RakNet3.401 native archive directory")
+  if(NOT P710_RAKNET_ROOT)
+    get_filename_component(_p710_project "${P710_ENGINE_ROOT}/../.." ABSOLUTE)
+    if(P710_SANITIZERS)
+      set(_p710_raknet_mode sanitized)
+    else()
+      set(_p710_raknet_mode debug)
+    endif()
+    set(P710_RAKNET_ROOT "${_p710_project}/build/raknet-3.401-a4c67c6/${_p710_raknet_mode}")
   endif()
-  set(P710_RAKNET_ROOT "${_p710_project}/build/raknet-3.401-a4c67c6/${_p710_raknet_mode}")
+  find_library(P710_RAKNET_LIBRARY NAMES raknet3401 PATHS "${P710_RAKNET_ROOT}" NO_DEFAULT_PATH REQUIRED)
+  add_library(RakNet::RakNet STATIC IMPORTED GLOBAL)
+  set_target_properties(RakNet::RakNet PROPERTIES IMPORTED_LOCATION "${P710_RAKNET_LIBRARY}"
+    INTERFACE_LINK_LIBRARIES Threads::Threads)
+else()
+  # Retain the existing link declarations without resolving or linking RakNet.
+  # The single-player provider below supplies the original engine's inert
+  # network-facing state and call surface.
+  add_library(RakNet::RakNet INTERFACE IMPORTED GLOBAL)
 endif()
-find_library(P710_RAKNET_LIBRARY NAMES raknet3401 PATHS "${P710_RAKNET_ROOT}" NO_DEFAULT_PATH REQUIRED)
-add_library(RakNet::RakNet STATIC IMPORTED GLOBAL)
-set_target_properties(RakNet::RakNet PROPERTIES IMPORTED_LOCATION "${P710_RAKNET_LIBRARY}"
-  INTERFACE_LINK_LIBRARIES Threads::Threads)
 
 
 add_library(p710_engine_contract INTERFACE)
@@ -232,7 +248,8 @@ target_compile_definitions(p710_engine_contract INTERFACE
   ENABLE_MP_FRIENDLY_PLAYERS_SHARE_SAME_FOV "__int64=long long")
 target_compile_options(p710_engine_contract INTERFACE
   -ivfsoverlay "${CMAKE_CURRENT_BINARY_DIR}/include-overlay.json"
-  -Wall -Wextra -Wno-unused-parameter -Wno-writable-strings -ferror-limit=12)
+  -Wall -Wextra -Wno-unused-parameter -Wno-writable-strings -ferror-limit=12
+  -fno-omit-frame-pointer)
 foreach(dir Ja2 ext/VFS/include ext/libsmacker ext/lua-5.1.5/src Utils TileEngine
     TacticalAI ModularizedTacticalAI/include Tactical Strategic sgp Ja2/Res lua
     Laptop Multiplayer Editor i18n/include)
@@ -284,6 +301,29 @@ target_link_libraries(p710_vobject_bridge PRIVATE p710_engine_contract)
 # missing interfaces still fail compilation/linkage rather than acquiring stubs.
 set(GIT_SHA "3394695-native")
 set(GAME_BUILD_INFORMATION "P710 native integration, uncommitted at 3394695")
+set(P710_MAIN_MENU_SOURCE "${P710_ENGINE_ROOT}/Ja2/MainMenuScreen.cpp")
+if(NOT P710_MULTIPLAYER)
+  # MainMenuScreen.cpp is retained in its original ISO-8859 encoding. Generate
+  # a build-tree copy that changes only the multiplayer-button guard; defining
+  # JA113DEMO would also select the demo artwork for the normal New Game button.
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${P710_MAIN_MENU_SOURCE}")
+  file(READ "${P710_MAIN_MENU_SOURCE}" _p710_main_menu_text)
+  string(REPLACE "\r\n" "\n" _p710_main_menu_text "${_p710_main_menu_text}")
+  set(_p710_mp_guard_old
+    "\t#ifdef JA113DEMO\n\t\tDisableButton( iMenuButtons[ NEW_MP_GAME ] );\n\t#endif")
+  set(_p710_mp_guard_new
+    "\t#if defined(JA113DEMO) || defined(P710_SINGLEPLAYER_ONLY)\n\t\tDisableButton( iMenuButtons[ NEW_MP_GAME ] );\n\t#endif")
+  string(REPLACE "${_p710_mp_guard_old}" "${_p710_mp_guard_new}"
+    _p710_main_menu_text_patched "${_p710_main_menu_text}")
+  if(_p710_main_menu_text_patched STREQUAL _p710_main_menu_text)
+    message(FATAL_ERROR "MainMenuScreen multiplayer guard no longer matches the pinned source")
+  endif()
+  set(P710_MAIN_MENU_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/MainMenuScreen.singleplayer.cpp")
+  file(WRITE "${P710_MAIN_MENU_SOURCE}" "${_p710_main_menu_text_patched}")
+  set_source_files_properties("${P710_MAIN_MENU_SOURCE}"
+    PROPERTIES COMPILE_DEFINITIONS P710_SINGLEPLAYER_ONLY)
+endif()
 set(P710_REPLACED_SGP
   "Button System.cpp" "Button Sound Control.cpp" DEBUG.cpp "DirectDraw Calls.cpp" "DirectX Common.cpp"
   "Cursor Control.cpp"
@@ -312,6 +352,10 @@ foreach(module Editor Ja2 Laptop ModularizedTacticalAI sgp Strategic Tactical Ta
       # Compile this genuine original source once through the foundation target
       # shared by focused fixtures and the engine, avoiding duplicate objects.
       set(selection "foundation-original-interface-integration")
+    elseif(module STREQUAL "Ja2" AND name STREQUAL "MainMenuScreen.cpp" AND
+           NOT P710_MULTIPLAYER)
+      list(APPEND selected "${P710_MAIN_MENU_SOURCE}")
+      set(selection "original-engine-object-singleplayer-menu-guard")
     else()
       list(APPEND selected "${source}")
       set(selection "original-engine-object")
@@ -325,19 +369,28 @@ foreach(module Editor Ja2 Laptop ModularizedTacticalAI sgp Strategic Tactical Ta
   endif()
   list(APPEND P710_ENGINE_TARGETS p710_engine_${module})
 endforeach()
-# Original multiplayer callers can be compiled against the bundled headers
-# before admitting their missing external implementation. Never link x86 .lib.
-add_library(p710_engine_Multiplayer OBJECT EXCLUDE_FROM_ALL
-  "${P710_ENGINE_ROOT}/Multiplayer/client.cpp"
-  "${P710_ENGINE_ROOT}/Multiplayer/server.cpp"
-  "${P710_ENGINE_ROOT}/Multiplayer/transfer_rules.cpp")
-target_include_directories(p710_engine_Multiplayer PRIVATE "${P710_ENGINE_ROOT}/Multiplayer/raknet")
-target_link_libraries(p710_engine_Multiplayer PRIVATE p710_engine_contract)
-list(APPEND P710_ENGINE_TARGETS p710_engine_Multiplayer)
-foreach(name client.cpp server.cpp transfer_rules.cpp)
+if(P710_MULTIPLAYER)
+  # Original multiplayer callers can be compiled against the bundled headers
+  # and approved pinned native RakNet. Never link the historical x86 .lib.
+  add_library(p710_engine_Multiplayer OBJECT EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/Multiplayer/client.cpp"
+    "${P710_ENGINE_ROOT}/Multiplayer/server.cpp"
+    "${P710_ENGINE_ROOT}/Multiplayer/transfer_rules.cpp")
+  target_include_directories(p710_engine_Multiplayer PRIVATE "${P710_ENGINE_ROOT}/Multiplayer/raknet")
+  target_link_libraries(p710_engine_Multiplayer PRIVATE p710_engine_contract)
+  list(APPEND P710_ENGINE_TARGETS p710_engine_Multiplayer)
+  foreach(name client.cpp server.cpp transfer_rules.cpp)
+    file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/source-graph.tsv"
+      "Multiplayer\t${P710_ENGINE_ROOT}/Multiplayer/${name}\toriginal-engine-object\n")
+  endforeach()
+else()
+  add_library(p710_engine_SingleplayerNetwork OBJECT EXCLUDE_FROM_ALL
+    "${P710_ENGINE_ROOT}/platform/linux/SingleplayerNetwork.cpp")
+  target_link_libraries(p710_engine_SingleplayerNetwork PRIVATE p710_engine_contract)
+  list(APPEND P710_ENGINE_TARGETS p710_engine_SingleplayerNetwork)
   file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/source-graph.tsv"
-    "Multiplayer\t${P710_ENGINE_ROOT}/Multiplayer/${name}\toriginal-engine-object\n")
-endforeach()
+    "platform\t${P710_ENGINE_ROOT}/platform/linux/SingleplayerNetwork.cpp\tnative-singleplayer-network-provider\n")
+endif()
 add_subdirectory("${P710_ENGINE_ROOT}/lua" engine-lua EXCLUDE_FROM_ALL)
 target_link_libraries(Lua PRIVATE p710_engine_contract)
 add_custom_target(p710_original_engine_objects DEPENDS ${P710_ENGINE_TARGETS} Lua p710_winfont)
@@ -350,8 +403,9 @@ set(P710_NATIVE_LINK_PROVIDERS
   p710_shadow_blitters p710_effect_blitters p710_tile_blitters bfVFS)
 add_executable(p710_native_game EXCLUDE_FROM_ALL "${P710_ENGINE_ROOT}/platform/linux/NativeMain.cpp")
 target_link_libraries(p710_native_game PRIVATE ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+target_link_options(p710_native_game PRIVATE -rdynamic)
 # Genuine original engine graph, with a synthetic wire-format test main only.
-add_executable(p710_native_profile101_tests EXCLUDE_FROM_ALL
+add_executable(p710_native_profile101_tests
   "${P710_ENGINE_ROOT}/tests/native-core/native_profile101_tests.cpp")
 target_link_libraries(p710_native_profile101_tests PRIVATE ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_executable(p710_native_explosion_queue_save_tests
@@ -496,19 +550,23 @@ target_link_libraries(p710_native_militia_pickup_tests PRIVATE
   ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
 add_test(NAME inventory.original_militia_world_pickup
   COMMAND p710_native_militia_pickup_tests)
-add_executable(p710_native_multiplayer_rpc_tests
-  "${P710_ENGINE_ROOT}/tests/native-core/native_multiplayer_rpc_tests.cpp")
-target_link_libraries(p710_native_multiplayer_rpc_tests PRIVATE
-  ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
-add_test(NAME multiplayer.original_rpc_packet_runtime
-  COMMAND p710_native_multiplayer_rpc_tests)
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_executable(p710_native_multiplayer_rpc_fuzzer EXCLUDE_FROM_ALL
-    "${P710_ENGINE_ROOT}/tests/native-core/native_multiplayer_rpc_fuzzer.cpp")
-  target_link_libraries(p710_native_multiplayer_rpc_fuzzer PRIVATE
+if(P710_MULTIPLAYER)
+  add_executable(p710_native_multiplayer_rpc_tests
+    "${P710_ENGINE_ROOT}/tests/native-core/native_multiplayer_rpc_tests.cpp")
+  target_link_libraries(p710_native_multiplayer_rpc_tests PRIVATE
     ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
-  target_compile_options(p710_native_multiplayer_rpc_fuzzer PRIVATE -fsanitize=fuzzer)
-  target_link_options(p710_native_multiplayer_rpc_fuzzer PRIVATE -fsanitize=fuzzer)
+  add_test(NAME multiplayer.original_rpc_packet_runtime
+    COMMAND p710_native_multiplayer_rpc_tests)
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if(P710_MULTIPLAYER)
+    add_executable(p710_native_multiplayer_rpc_fuzzer EXCLUDE_FROM_ALL
+      "${P710_ENGINE_ROOT}/tests/native-core/native_multiplayer_rpc_fuzzer.cpp")
+    target_link_libraries(p710_native_multiplayer_rpc_fuzzer PRIVATE
+      ${P710_ENGINE_TARGETS} Lua ${P710_NATIVE_LINK_PROVIDERS} RakNet::RakNet)
+    target_compile_options(p710_native_multiplayer_rpc_fuzzer PRIVATE -fsanitize=fuzzer)
+    target_link_options(p710_native_multiplayer_rpc_fuzzer PRIVATE -fsanitize=fuzzer)
+  endif()
   add_executable(p710_native_ui_state_fuzzer EXCLUDE_FROM_ALL
     "${P710_ENGINE_ROOT}/tests/native-core/native_ui_state_fuzzer.cpp")
   target_link_libraries(p710_native_ui_state_fuzzer PRIVATE
@@ -861,14 +919,16 @@ add_test(NAME strategic.original_wake_final_merc
   COMMAND p710_native_team_slot_consumer_tests wake-final-merc)
 add_test(NAME tactical.original_update_public_sparse_roster
   COMMAND p710_native_team_slot_consumer_tests update-public-sparse-roster)
-add_test(NAME multiplayer.original_enemy_count_sparse_roster
-  COMMAND p710_native_team_slot_consumer_tests multiplayer-enemy-count-sparse-roster)
-add_test(NAME multiplayer.original_start_battle_sparse_roster
-  COMMAND p710_native_team_slot_consumer_tests multiplayer-start-battle-sparse-roster)
-add_test(NAME multiplayer.original_override_sparse_roster
-  COMMAND p710_native_team_slot_consumer_tests multiplayer-override-sparse-roster)
-add_test(NAME multiplayer.original_end_interrupt_sparse_roster
-  COMMAND p710_native_team_slot_consumer_tests multiplayer-end-interrupt-sparse-roster)
+if(P710_MULTIPLAYER)
+  add_test(NAME multiplayer.original_enemy_count_sparse_roster
+    COMMAND p710_native_team_slot_consumer_tests multiplayer-enemy-count-sparse-roster)
+  add_test(NAME multiplayer.original_start_battle_sparse_roster
+    COMMAND p710_native_team_slot_consumer_tests multiplayer-start-battle-sparse-roster)
+  add_test(NAME multiplayer.original_override_sparse_roster
+    COMMAND p710_native_team_slot_consumer_tests multiplayer-override-sparse-roster)
+  add_test(NAME multiplayer.original_end_interrupt_sparse_roster
+    COMMAND p710_native_team_slot_consumer_tests multiplayer-end-interrupt-sparse-roster)
+endif()
 add_test(NAME tactical.original_obliterate_sector_team_slots
   COMMAND p710_native_team_slot_consumer_tests obliterate-sector)
 add_test(NAME tactical.original_vehicle_roster_slots

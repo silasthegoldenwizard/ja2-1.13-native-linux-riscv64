@@ -8,8 +8,19 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: platform/linux/NativeRuntime.cpp
+ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Native outer entry for the genuine v1.13 engine. Windows sgp.cpp remains intact.
 #include "NativeRuntime.h"
+#include "native_crash_report.h"
 #include "types.h"
 #include "sgp.h"
 #include "FileMan.h"
@@ -25,6 +36,7 @@
 #include "JA2 Splash.h"
 #include "Timer Control.h"
 #include "GameSettings.h"
+#include "GameVersion.h"
 #include "INIReader.h"
 #include "Intro.h"
 #include "Music Control.h"
@@ -441,7 +453,7 @@ void ShutdownWithErrorBox(CHAR8* message) {
 }
 int p710::RunNativeMain(int argc,const char* const* argv) {
     fs::path oldDirectory;
-    bool changedDirectory=false, initializationAttempted=false;
+    bool changedDirectory=false, initializationAttempted=false, crashReportingReady=false;
     int result=0;
     try {
         auto options=ParseNativeOptions(argc,argv);
@@ -452,6 +464,7 @@ int p710::RunNativeMain(int argc,const char* const* argv) {
         (void)profileFile(options,GAME_INI_FILE);
         oldDirectory=fs::current_path();
         fs::current_path(fs::canonical(options.settings)); changedDirectory=true;
+        sgp::InstallNativeCrashReporter(czVersionString); crashReportingReady=true;
         activeOptions=std::move(options); services={};
         std::snprintf(gzCommandLine,sizeof(gzCommandLine),"%s",activeOptions.gameCommandLine.c_str());
         InitializeRandom();
@@ -469,13 +482,26 @@ int p710::RunNativeMain(int argc,const char* const* argv) {
             if(gzErrorMsg[0]) fail(gzErrorMsg);
             SDL_Delay(1);
         }
-    } catch(const std::exception& error) { std::cerr<<"Native startup/runtime failure: "<<error.what()<<'\n'; result=1; }
-      catch(const char* error) { std::cerr<<"Native engine failure: "<<(error?error:"unknown")<<'\n'; result=1; }
-      catch(...) { std::cerr<<"Native engine failure: unknown exception\n"; result=1; }
+    } catch(const std::exception& error) {
+        if(crashReportingReady) sgp::WriteNativeRuntimeFailure("native startup/runtime failure",error.what());
+        std::cerr<<"Native startup/runtime failure: "<<error.what()<<'\n'; result=1;
+    } catch(const char* error) {
+        if(crashReportingReady) sgp::WriteNativeRuntimeFailure("native engine failure",error?error:"unknown");
+        std::cerr<<"Native engine failure: "<<(error?error:"unknown")<<'\n'; result=1;
+    } catch(...) {
+        if(crashReportingReady) sgp::WriteNativeRuntimeFailure("native engine failure","unknown exception");
+        std::cerr<<"Native engine failure: unknown exception\n"; result=1;
+    }
     if(initializationAttempted) {
         try { ShutdownStandardGamingPlatform(); }
-        catch(const std::exception& error) { std::cerr<<"Native shutdown failure: "<<error.what()<<'\n'; result=1; }
-        catch(...) { std::cerr<<"Native shutdown failure\n"; result=1; }
+        catch(const std::exception& error) {
+            if(crashReportingReady) sgp::WriteNativeRuntimeFailure("native shutdown failure",error.what());
+            std::cerr<<"Native shutdown failure: "<<error.what()<<'\n'; result=1;
+        }
+        catch(...) {
+            if(crashReportingReady) sgp::WriteNativeRuntimeFailure("native shutdown failure","unknown exception");
+            std::cerr<<"Native shutdown failure\n"; result=1;
+        }
     }
     if(changedDirectory) { std::error_code error; fs::current_path(oldDirectory,error); if(error) { std::cerr<<"Cannot restore original directory\n"; result=1; } }
     return result;

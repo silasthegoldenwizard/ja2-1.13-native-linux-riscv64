@@ -8,8 +8,19 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_vehicle_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Production vehicle save-load lifecycle tests with synthetic records only.
 #include "BufferMan.h"
+#include "MemMan.h"
 #include "Soldier Profile.h"
 #include "Strategic Pathing.h"
 #include "Vehicles.h"
@@ -76,7 +87,193 @@ Bytes vehicleRecord(UINT32 pathNodes, bool includePathNodes) {
     return bytes;
 }
 
+void publishSentinelVehicle() {
+    ClearOutVehicleList();
+    ubNumberOfVehicles = 1;
+    pVehicleList = static_cast<VEHICLETYPE*>(MemAlloc(sizeof(VEHICLETYPE)));
+    std::memset(pVehicleList, 0, sizeof(VEHICLETYPE));
+    pVehicleList[0].fValid = TRUE;
+    pVehicleList[0].ubProfileID = 3;
+    pVehicleList[0].sGridNo = 1234;
+    auto* path = static_cast<PathSt*>(MemAlloc(sizeof(PathSt)));
+    std::memset(path, 0, sizeof(PathSt));
+    path->uiSectorId = 42;
+    pVehicleList[0].pMercPath = path;
+}
+
+bool sentinelVehicleIsPublished() {
+    return ubNumberOfVehicles == 1 && pVehicleList != nullptr &&
+           pVehicleList[0].fValid && pVehicleList[0].ubProfileID == 3 &&
+           pVehicleList[0].sGridNo == 1234 &&
+           pVehicleList[0].pMercPath != nullptr &&
+           pVehicleList[0].pMercPath->uiSectorId == 42 &&
+           pVehicleList[0].pMercPath->pPrev == nullptr &&
+           pVehicleList[0].pMercPath->pNext == nullptr;
+}
+
+void publishSentinelMovementGroups() {
+    for (std::size_t index = 0; index < gubVehicleMovementGroups.size(); ++index) {
+        gubVehicleMovementGroups[index] = static_cast<INT8>(40 + index);
+    }
+}
+
+bool sentinelMovementGroupsArePublished() {
+    if (gubVehicleMovementGroups.size() != MAX_VEHICLES) return false;
+    for (std::size_t index = 0; index < gubVehicleMovementGroups.size(); ++index) {
+        if (gubVehicleMovementGroups[index] != static_cast<INT8>(40 + index)) return false;
+    }
+    return true;
+}
+
+Bytes movementRecord(std::size_t count) {
+    Bytes bytes;
+    for (std::size_t index = 0; index < count; ++index) {
+        const INT8 group = static_cast<INT8>(70 + index);
+        append(bytes, group);
+    }
+    return bytes;
+}
+
+struct StrategicGroupSnapshot {
+    GROUP* identity;
+    UINT8 groupID;
+};
+
+std::vector<StrategicGroupSnapshot> snapshotStrategicGroups() {
+    std::vector<StrategicGroupSnapshot> snapshot;
+    for (GROUP* group = gpGroupList; group != nullptr; group = group->next) {
+        snapshot.push_back({group, group->ubGroupID});
+    }
+    return snapshot;
+}
+
+bool strategicGroupsMatch(const std::vector<StrategicGroupSnapshot>& snapshot) {
+    GROUP* group = gpGroupList;
+    for (const auto& saved : snapshot) {
+        if (group != saved.identity || group->ubGroupID != saved.groupID) return false;
+        group = group->next;
+    }
+    return group == nullptr;
+}
+
+void truncatedNewMovementTable() {
+    publishSentinelMovementGroups();
+    auto bytes = movementRecord(MAX_VEHICLES - 1);
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+    expect(!NewLoadVehicleMovementInfoFromSavedGame(&cursor),
+           "truncated current vehicle movement table rejects");
+    expect(gfBufferLoadFailed,
+           "truncated current vehicle movement table records the bounded read failure");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "truncated current vehicle movement table preserves the caller cursor");
+    expect(sentinelMovementGroupsArePublished(),
+           "truncated current vehicle movement table preserves the published groups");
+}
+
+void truncatedLegacyMovementTable() {
+    publishSentinelMovementGroups();
+    auto bytes = movementRecord(4);
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+    expect(!LoadVehicleMovementInfoFromSavedGame(&cursor),
+           "truncated legacy vehicle movement table rejects");
+    expect(gfBufferLoadFailed,
+           "truncated legacy vehicle movement table records the bounded read failure");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "truncated legacy vehicle movement table preserves the caller cursor");
+    expect(sentinelMovementGroupsArePublished(),
+           "truncated legacy vehicle movement table preserves the published groups");
+}
+
+void validCurrentMovementTable() {
+    publishSentinelMovementGroups();
+    auto bytes = movementRecord(MAX_VEHICLES);
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+    expect(NewLoadVehicleMovementInfoFromSavedGame(&cursor),
+           "complete current vehicle movement table loads");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data() + bytes.size()),
+           "complete current vehicle movement table consumes its exact extent");
+    expect(gubVehicleMovementGroups.size() == MAX_VEHICLES,
+           "complete current vehicle movement table publishes the fixed runtime size");
+    for (std::size_t index = 0; index < gubVehicleMovementGroups.size(); ++index) {
+        expect(gubVehicleMovementGroups[index] == static_cast<INT8>(70 + index),
+               "complete current vehicle movement table publishes every decoded ID");
+    }
+}
+
+void validLegacyMovementTable() {
+    RemoveAllGroups();
+    publishSentinelMovementGroups();
+    auto bytes = movementRecord(5);
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+    expect(LoadVehicleMovementInfoFromSavedGame(&cursor),
+           "complete legacy vehicle movement table loads");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data() + bytes.size()),
+           "complete legacy vehicle movement table consumes its exact extent");
+    for (std::size_t index = 0; index < 5; ++index) {
+        expect(gubVehicleMovementGroups[index] == static_cast<INT8>(70 + index),
+               "legacy vehicle movement table publishes every saved ID");
+    }
+    for (std::size_t index = 5; index < MAX_VEHICLES; ++index) {
+        GROUP* const group = GetGroup(static_cast<UINT8>(gubVehicleMovementGroups[index]));
+        expect(group != nullptr && group->fPersistant,
+               "legacy vehicle movement table publishes each added persistent group");
+    }
+    RemoveAllGroups();
+}
+
+void legacyMovementTableWithInsufficientGroupCapacity() {
+    RemoveAllGroups();
+    for (UINT16 index = 0; index < 251; ++index) {
+        if (CreateNewVehicleGroupDepartingFromSector(1, 1, index) == 0) {
+            throw std::runtime_error("failed to prepare nearly full strategic group list");
+        }
+    }
+
+    const auto groupsBeforeLoad = snapshotStrategicGroups();
+    publishSentinelMovementGroups();
+    auto bytes = movementRecord(5);
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+
+    expect(!LoadVehicleMovementInfoFromSavedGame(&cursor),
+           "legacy vehicle movement table rejects insufficient strategic group capacity");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "insufficient strategic group capacity preserves the caller cursor");
+    expect(sentinelMovementGroupsArePublished(),
+           "insufficient strategic group capacity preserves the published vehicle groups");
+    expect(strategicGroupsMatch(groupsBeforeLoad),
+           "insufficient strategic group capacity preserves the strategic group list");
+    RemoveAllGroups();
+}
+
+void nullMovementCursor() {
+    publishSentinelMovementGroups();
+    expect(!NewLoadVehicleMovementInfoFromSavedGame(nullptr),
+           "null current vehicle movement cursor rejects");
+    expect(sentinelMovementGroupsArePublished(),
+           "null current vehicle movement cursor preserves the published groups");
+    expect(!LoadVehicleMovementInfoFromSavedGame(nullptr),
+           "null legacy vehicle movement cursor rejects");
+    expect(sentinelMovementGroupsArePublished(),
+           "null legacy vehicle movement cursor preserves the published groups");
+
+    CHAR8* cursor = nullptr;
+    expect(!NewLoadVehicleMovementInfoFromSavedGame(&cursor),
+           "null current vehicle movement buffer rejects");
+    expect(sentinelMovementGroupsArePublished(),
+           "null current vehicle movement buffer preserves the published groups");
+    expect(!LoadVehicleMovementInfoFromSavedGame(&cursor),
+           "null legacy vehicle movement buffer rejects");
+    expect(sentinelMovementGroupsArePublished(),
+           "null legacy vehicle movement buffer preserves the published groups");
+}
+
 void emptyList() {
+    publishSentinelVehicle();
     Bytes bytes{0};
     BufferBounds bounds(bytes);
     auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
@@ -129,6 +326,7 @@ void longValidPath() {
 }
 
 void truncatedPath() {
+    publishSentinelVehicle();
     auto bytes = vehicleRecord(1, false);
     BufferBounds bounds(bytes);
     auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
@@ -136,32 +334,118 @@ void truncatedPath() {
            "truncated vehicle path rejects");
     expect(gfBufferLoadFailed,
            "truncated vehicle path records the bounded read failure");
-    expect(pVehicleList == nullptr && ubNumberOfVehicles == 0,
-           "failed vehicle load releases its partial global state");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "truncated vehicle path preserves the caller cursor");
+    expect(sentinelVehicleIsPublished(),
+           "truncated vehicle path preserves the published vehicle state");
     ClearOutVehicleList();
 }
 
 void truncatedPathCount() {
+    publishSentinelVehicle();
     auto bytes = vehicleRecord(0, false);
     bytes.resize(bytes.size() - sizeof(UINT32));
     BufferBounds bounds(bytes);
     auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
     expect(!LoadVehicleInformationFromSavedGame(&cursor, 100),
            "truncated vehicle path count rejects");
-    expect(pVehicleList == nullptr && ubNumberOfVehicles == 0,
-           "failed path-count load discards serialized pointer ownership");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "truncated vehicle path count preserves the caller cursor");
+    expect(sentinelVehicleIsPublished(),
+           "truncated path-count load preserves published pointer ownership");
     ClearOutVehicleList();
 }
 
 void excessivePathCount() {
+    publishSentinelVehicle();
     auto bytes = vehicleRecord(UINT32_MAX, false);
     BufferBounds bounds(bytes);
     auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
     expect(!LoadVehicleInformationFromSavedGame(&cursor, 100),
            "unbounded vehicle path count rejects");
-    expect(pVehicleList == nullptr && ubNumberOfVehicles == 0,
-           "unbounded path count cannot retain or allocate vehicle state");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "unbounded vehicle path count preserves the caller cursor");
+    expect(sentinelVehicleIsPublished(),
+           "unbounded path count preserves the published vehicle state");
     ClearOutVehicleList();
+}
+
+void nullCursor() {
+    publishSentinelVehicle();
+    expect(!LoadVehicleInformationFromSavedGame(nullptr, 100),
+           "null vehicle cursor rejects");
+    expect(sentinelVehicleIsPublished(),
+           "null vehicle cursor preserves the published vehicle state");
+
+    CHAR8* cursor = nullptr;
+    expect(!LoadVehicleInformationFromSavedGame(&cursor, 100),
+           "null vehicle buffer rejects");
+    expect(cursor == nullptr,
+           "null vehicle buffer preserves the caller cursor");
+    expect(sentinelVehicleIsPublished(),
+           "null vehicle buffer preserves the published vehicle state");
+    ClearOutVehicleList();
+}
+
+void invalidValidFlag() {
+    publishSentinelVehicle();
+    auto bytes = vehicleRecord(0, false);
+    bytes[sizeof(UINT8)] = 2;
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+    expect(!LoadVehicleInformationFromSavedGame(&cursor, 100),
+           "non-Boolean vehicle-valid flag rejects");
+    expect(!gfBufferLoadFailed,
+           "invalid vehicle-valid flag is a semantic rejection");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "invalid vehicle-valid flag preserves the caller cursor");
+    expect(sentinelVehicleIsPublished(),
+           "invalid vehicle-valid flag preserves the published vehicle state");
+    ClearOutVehicleList();
+}
+
+void excessiveVehicleCount() {
+    publishSentinelVehicle();
+    Bytes bytes{static_cast<UINT8>(MAX_VEHICLES + 1)};
+    BufferBounds bounds(bytes);
+    auto* cursor = reinterpret_cast<CHAR8*>(bytes.data());
+    expect(!LoadVehicleInformationFromSavedGame(&cursor, 100),
+           "vehicle count beyond the runtime table rejects");
+    expect(!gfBufferLoadFailed,
+           "excessive vehicle count is a semantic rejection");
+    expect(cursor == reinterpret_cast<CHAR8*>(bytes.data()),
+           "excessive vehicle count preserves the caller cursor");
+    expect(sentinelVehicleIsPublished(),
+           "excessive vehicle count preserves the published vehicle state");
+    ClearOutVehicleList();
+}
+
+void obsoleteVehicleDefinitionPayload() {
+    Bytes complete(sizeof(NEW_CAR) * NUM_PROFILES, 0);
+    BufferBounds completeBounds(complete);
+    auto* completeCursor = reinterpret_cast<CHAR8*>(complete.data());
+    expect(LoadNewVehiclesFromSaveGame(&completeCursor),
+           "complete obsolete vehicle-definition payload is skipped");
+    expect(completeCursor == reinterpret_cast<CHAR8*>(complete.data() + complete.size()),
+           "complete obsolete vehicle-definition payload consumes its exact extent");
+
+    complete.resize(complete.size() - 1);
+    BufferBounds truncatedBounds(complete);
+    auto* truncatedCursor = reinterpret_cast<CHAR8*>(complete.data());
+    expect(!LoadNewVehiclesFromSaveGame(&truncatedCursor),
+           "truncated obsolete vehicle-definition payload rejects");
+    expect(gfBufferLoadFailed,
+           "truncated obsolete vehicle-definition payload records a bounded read failure");
+    expect(truncatedCursor == reinterpret_cast<CHAR8*>(complete.data()),
+           "truncated obsolete vehicle-definition payload preserves the caller cursor");
+
+    expect(!LoadNewVehiclesFromSaveGame(nullptr),
+           "null obsolete vehicle-definition cursor rejects");
+    CHAR8* nullCursor = nullptr;
+    expect(!LoadNewVehiclesFromSaveGame(&nullCursor),
+           "null obsolete vehicle-definition buffer rejects");
+    expect(nullCursor == nullptr,
+           "null obsolete vehicle-definition buffer preserves the caller cursor");
 }
 }
 
@@ -174,7 +458,18 @@ int main() {
         truncatedPath();
         truncatedPathCount();
         excessivePathCount();
+        nullCursor();
+        invalidValidFlag();
+        excessiveVehicleCount();
+        obsoleteVehicleDefinitionPayload();
+        truncatedNewMovementTable();
+        truncatedLegacyMovementTable();
+        validCurrentMovementTable();
+        validLegacyMovementTable();
+        legacyMovementTableWithInsufficientGroupCapacity();
+        nullMovementCursor();
         ClearOutVehicleList();
+        RemoveAllGroups();
         std::cout << "vehicle save: " << checks << " checks, " << failures
                   << " failures\n";
         return failures ? 1 : 0;

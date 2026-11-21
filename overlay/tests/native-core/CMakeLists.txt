@@ -16,6 +16,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: tests/native-core/CMakeLists.txt
+# Native Linux source/build/test adaptations captured in the November 20-21 save-load and crash-report checkpoint.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-21.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_core LANGUAGES C CXX)
 
@@ -87,14 +95,36 @@ if(P710_VFS)
   target_link_libraries(p710_native_vfs_tests PRIVATE p710_fileman p710_fileman_vfs bfVFS)
   list(APPEND P710_NATIVE_TARGETS p710_fileman_vfs p710_native_vfs_tests)
   list(APPEND P710_NATIVE_EXECUTABLES p710_native_vfs_tests)
-  add_library(p710_debug OBJECT "${P710_SOURCE_ROOT}/sgp/NativeDebug.cpp")
+  add_library(p710_debug OBJECT
+    "${P710_SOURCE_ROOT}/sgp/NativeDebug.cpp"
+    "${P710_SOURCE_ROOT}/sgp/NativeCrashReport.cpp")
   target_include_directories(p710_debug PUBLIC "${P710_SOURCE_ROOT}/sgp")
   target_link_libraries(p710_debug PUBLIC bfVFS Threads::Threads)
+  target_compile_options(p710_debug PRIVATE -fno-omit-frame-pointer)
   add_executable(p710_native_debug_tests native_debug_tests.cpp)
   target_link_libraries(p710_native_debug_tests PRIVATE p710_debug bfVFS Threads::Threads)
-  list(APPEND P710_NATIVE_TARGETS p710_debug p710_native_debug_tests)
-  list(APPEND P710_NATIVE_EXECUTABLES p710_native_debug_tests)
+  target_link_options(p710_native_debug_tests PRIVATE -rdynamic)
+  add_executable(p710_native_crash_report_tests native_crash_report_tests.cpp)
+  target_link_libraries(p710_native_crash_report_tests PRIVATE p710_debug bfVFS Threads::Threads)
+  target_compile_options(p710_native_crash_report_tests PRIVATE -g)
+  target_link_options(p710_native_crash_report_tests PRIVATE -rdynamic)
+  add_executable(p710_native_crash_signal_fixture native_crash_signal_fixture.cpp)
+  target_link_libraries(p710_native_crash_signal_fixture PRIVATE p710_debug bfVFS Threads::Threads)
+  target_compile_options(p710_native_crash_signal_fixture PRIVATE -g)
+  target_link_options(p710_native_crash_signal_fixture PRIVATE -rdynamic)
+  list(APPEND P710_NATIVE_TARGETS p710_debug p710_native_debug_tests
+    p710_native_crash_report_tests p710_native_crash_signal_fixture)
+  list(APPEND P710_NATIVE_EXECUTABLES p710_native_debug_tests
+    p710_native_crash_report_tests p710_native_crash_signal_fixture)
   add_test(NAME debug.native_contracts COMMAND p710_native_debug_tests)
+  add_test(NAME debug.native_crash_reports COMMAND p710_native_crash_report_tests)
+  add_test(NAME debug.native_crash_symbolizer
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/check_native_crash_symbolizer.py"
+      "${P710_SOURCE_ROOT}/platform/linux/symbolize_crash_report.py"
+      "$<TARGET_FILE:p710_native_crash_report_tests>"
+      "$<TARGET_FILE:p710_native_crash_signal_fixture>"
+      "$<BOOL:${P710_SANITIZERS}>")
   add_library(p710_memory OBJECT "${P710_SOURCE_ROOT}/sgp/MemMan.cpp")
   target_include_directories(p710_memory PUBLIC "${P710_SOURCE_ROOT}/sgp")
   target_link_libraries(p710_memory PUBLIC p710_debug bfVFS Threads::Threads)
