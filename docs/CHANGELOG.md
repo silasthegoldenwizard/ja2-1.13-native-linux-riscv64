@@ -1,5 +1,25 @@
 # Changes for the native Linux source preview
 
+## November 21 native crash-report checkpoint
+
+Add a local-only native Linux crash reporter for development builds. Reports
+are written under the selected profile with mode `0600`, include the exact ELF
+build ID, and are never uploaded by the reporter. Normal builds cover
+controlled failures, assertions, uncaught C++ termination, and selected fatal
+signals. Sanitizer builds keep sanitizer signal ownership.
+
+The development suites passed 334 of 334 Debug tests and 336 of 336 strict
+AddressSanitizer, UndefinedBehaviorSanitizer, and LeakSanitizer tests. A
+disposable live Linux x86-64 session reached the rendered main menu and wrote a
+validated report after a controlled external `SIGABRT`. The exact game binary
+passed build-ID validation in the offline symbolizer. A separate automated
+hardware-fault fixture resolves the faulting instruction in its test executable
+to the fixture source line.
+
+This evidence belongs to development source. The crash reporter is newer than
+the source currently reconstructed from public `main`. A public player package,
+RISC-V hardware, Windows, and full-campaign acceptance remain open.
+
 ## November 19 source checkpoints
 
 These entries cover the latest strategic slot handling, world teardown, battle-end roster updates, and multiplayer interrupt handling. Each entry gives the development result for that checkpoint.
