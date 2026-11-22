@@ -1,5 +1,24 @@
 # Changes for the native Linux source preview
 
+## November 21 transactional save-loader checkpoint
+
+Decode selected save-game tables into private state and publish them only
+after the complete record set validates. Each selected loader keeps its
+existing table when it rejects a Bobby Ray shipment, strategic event,
+underground sector, bullet, explosion, smoke effect, light effect, or
+leave-item record. The top-level load stops on the reported failure. Earlier
+load-stage state changes remain in effect.
+
+Propagate semantic failure from fourteen selected loaders through the
+top-level save path. Add production-linked synthetic regressions for the new
+rollback behavior and the propagation contract.
+
+Nine focused Debug tests and nine focused AddressSanitizer and
+UndefinedBehaviorSanitizer tests passed. Leak detection was disabled in the
+focused sanitizer rerun because LeakSanitizer cannot run under the host
+tracing layer. Full save compatibility, gameplay, Windows, and RISC-V hardware
+validation remain open.
+
 ## November 21 save-load and crash-report checkpoint
 
 Vehicle, squad, and militia save loaders publish the caller's read position

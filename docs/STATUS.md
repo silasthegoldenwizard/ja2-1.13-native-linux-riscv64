@@ -2,7 +2,8 @@
 
 Updated November 21, 2026.
 
-The current source checkpoint includes the [November 21 save-load and crash-report changes](CHANGELOG.md#november-21-save-load-and-crash-report-checkpoint).
+The current source checkpoint includes the [November 21 transactional save-loader changes](CHANGELOG.md#november-21-transactional-save-loader-checkpoint)
+and the earlier [save-load and crash-report changes](CHANGELOG.md#november-21-save-load-and-crash-report-checkpoint).
 The downloadable source preview is [v0.1.0-alpha.1](https://github.com/silasthegoldenwizard/ja2-1.13-native-linux-riscv64/releases/tag/v0.1.0-alpha.1).
 
 The native Linux build writes local crash reports under the selected profile.
@@ -10,6 +11,13 @@ Each report includes the exact ELF build ID. The reporter sends no reports or te
 
 ## Source changes
 
+- Bobby Ray shipments, strategic events, underground sectors, bullets,
+  explosions, smoke effects, light effects, and leave-item records are decoded
+  into private state. Each selected loader keeps its existing table when it
+  rejects a record. The top-level load stops on the reported failure; earlier
+  load-stage state changes remain in effect.
+- The top-level save loader now propagates semantic failure from fourteen
+  selected loaders instead of relying only on the global short-read flag.
 - Vehicle, squad, and militia loaders publish the read position only after a successful load.
 - The top-level loader stops if a vehicle-movement read or obsolete vehicle-definition read fails.
 - The native crash reporter records local diagnostics. The offline symbolizer checks the exact build ID.
@@ -26,6 +34,12 @@ The engine uses bfVFS and the pinned dependencies.
 The [November 18 native checkpoint](CHANGELOG.md#november-18-native-checkpoint) and the [stream and text record](STREAM-TEXT-OWNERSHIP-20261117.md) describe earlier changes.
 
 ## Validation
+
+The transaction-safe loader checkpoint passed nine focused Debug tests and
+nine focused AddressSanitizer/UndefinedBehaviorSanitizer tests. Leak detection
+was disabled in that focused sanitizer rerun because LeakSanitizer cannot run
+under the host tracing layer. These checks use synthetic save records and do
+not establish full save compatibility or campaign acceptance.
 
 The Owner's latest development summary records 334 of 334 Debug tests and 336
 of 336 strict sanitizer tests. The strict lane used AddressSanitizer,

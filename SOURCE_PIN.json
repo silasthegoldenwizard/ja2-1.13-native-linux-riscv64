@@ -1,8 +1,8 @@
 {
   "schema": 2,
-  "checkpoint": "save-load-and-crash-reports-20261121",
+  "checkpoint": "transaction-safe-save-loaders-20261121",
   "preparation_date": "2026-11-21",
-  "status": "Native Linux source preview with save-load fixes and local crash reports.",
+  "status": "Native Linux source preview with transaction-safe save loaders and semantic failure propagation.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "previous_private_commit": "5c2ede3cb4245a842eca922be9abae4192fa8e20",
@@ -38,9 +38,9 @@
     "status": "The default single-player build does not link RakNet. The optional multiplayer build needs the external v0.1.0-alpha.1 source companion."
   },
   "known_issue": "Broad campaign, full sound and device coverage, valid multiplayer gameplay, and native RISC-V execution remain incomplete.",
-  "verification": "Local development suites passed 334 Debug and 336 strict sanitizer tests. Export tests and hosted counts are separate.",
+  "verification": "Nine focused Debug tests and nine focused AddressSanitizer/UndefinedBehaviorSanitizer tests passed. Leak detection was disabled in the focused sanitizer rerun because LeakSanitizer cannot operate under the host tracing layer.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms.",
-  "previous_public_commit": "409952adb7037bbc766e661de6f792457e17427e",
-  "source_snapshot_sha256": "94cacf751969ec97f05a274f21ad16fb4cfcd9c6bd12975d95d96f9baef5e46d",
-  "accepted_checkpoint_sha256": "94cacf751969ec97f05a274f21ad16fb4cfcd9c6bd12975d95d96f9baef5e46d"
+  "previous_public_commit": "33685c8017207469d58c37feb855516dd5182853",
+  "source_snapshot_sha256": "eb83b6cdffc74282d75f2d6caf6443908a7bc559c82665edff062429528ff533",
+  "accepted_checkpoint_sha256": "eb83b6cdffc74282d75f2d6caf6443908a7bc559c82665edff062429528ff533"
 }

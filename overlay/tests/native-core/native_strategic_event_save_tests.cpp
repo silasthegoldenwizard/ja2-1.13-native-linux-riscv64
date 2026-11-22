@@ -8,9 +8,20 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_strategic_event_save_tests.cpp
+ * Native Linux source/build/test adaptations captured in the November 21 transactional save-loader checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-21.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 #include "BufferMan.h"
 #include "Game Events.h"
 #include "GameSettings.h"
+#include "MemMan.h"
 
 #include <cstdint>
 #include <cstring>
@@ -59,6 +70,24 @@ STRATEGICEVENT event(UINT32 stamp, UINT32 parameter, UINT8 callback)
     value.ubCallbackID = callback;
     return value;
 }
+
+STRATEGICEVENT* seedPublishedEvent()
+{
+    DeleteAllStrategicEvents();
+    gpEventList = static_cast<STRATEGICEVENT*>(MemAlloc(sizeof(STRATEGICEVENT)));
+    check(gpEventList != nullptr, "published strategic-event seed allocated");
+    *gpEventList = event(777, 888, 9);
+    gpEventList->next = nullptr;
+    return gpEventList;
+}
+
+void checkPublishedEventUnchanged(STRATEGICEVENT* published, const char* message)
+{
+    check(gpEventList == published && gpEventList && !gpEventList->next &&
+              gpEventList->uiTimeStamp == 777 && gpEventList->uiParam == 888 &&
+              gpEventList->ubCallbackID == 9,
+          message);
+}
 }
 
 int main()
@@ -91,25 +120,33 @@ int main()
         append(truncated, first);
         const auto truncatedSize = truncated.size() - sizeof(STRATEGICEVENT) / 2;
         truncated.resize(truncatedSize);
+        auto* published = seedPublishedEvent();
         consumed = 0;
         check(!load(truncated, consumed), "truncated event queue is rejected");
         check(gfBufferLoadFailed, "truncated event queue marks the bounded load failure");
-        check(gpEventList == nullptr, "failed event load releases its partial queue");
+        checkPublishedEventUnchanged(
+            published, "failed event load preserves the published queue");
         check(consumed <= truncated.size(), "failed event load keeps the cursor in bounds");
+        DeleteAllStrategicEvents();
 
         Bytes missingRecord;
         const UINT32 one = 1;
         append(missingRecord, one);
+        published = seedPublishedEvent();
         consumed = 0;
         check(!load(missingRecord, consumed), "missing event record is rejected");
-        check(gpEventList == nullptr, "missing record leaves no live event queue");
+        checkPublishedEventUnchanged(published, "missing record preserves live event queue");
+        DeleteAllStrategicEvents();
 
         Bytes impossibleCount;
         const UINT32 maximum = UINT32_MAX;
         append(impossibleCount, maximum);
+        published = seedPublishedEvent();
         consumed = 0;
         check(!load(impossibleCount, consumed), "unbacked maximum event count is rejected");
-        check(gpEventList == nullptr, "maximum count failure leaves no live event queue");
+        checkPublishedEventUnchanged(
+            published, "maximum count failure preserves live event queue");
+        DeleteAllStrategicEvents();
 
         gfBufferLoadFailed = FALSE;
         gGameExternalOptions.fMiniEventsEnabled = savedMiniEvents;
