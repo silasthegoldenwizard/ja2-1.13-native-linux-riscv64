@@ -1,0 +1,116 @@
+name: RISC-V QEMU smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riscv64-qemu-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  headless-components:
+    name: headless components
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Get repository files
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install RISC-V compiler and emulator
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            gcc-riscv64-linux-gnu g++-riscv64-linux-gnu qemu-user
+      - name: Record tools
+        run: |
+          cmake --version
+          clang++ --version
+          riscv64-linux-gnu-g++ --version
+          qemu-riscv64 --version
+      - name: Identify pinned public inputs
+        id: public-inputs
+        run: |
+          digest=$(python3 .github/scripts/reconstruct_ci.py --cache-key)
+          echo "key=p710-public-v1-${{ runner.os }}-${{ runner.arch }}-$digest" >> "$GITHUB_OUTPUT"
+      - name: Restore pinned public inputs
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        id: public-input-cache
+        continue-on-error: true
+        with:
+          path: ${{ runner.temp }}/p710-inputs
+          key: ${{ steps.public-inputs.outputs.key }}
+      - name: Reconstruct pinned public source
+        run: |
+          time python3 .github/scripts/reconstruct_ci.py \
+            --work "$RUNNER_TEMP/p710" --input-cache "$RUNNER_TEMP/p710-inputs"
+      - name: Build and test x86-64 baseline
+        run: |
+          cmake -S "$RUNNER_TEMP/p710/source/tests/native-core" \
+            -B "$RUNNER_TEMP/build-x86-64" \
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=Debug -DP710_SANITIZERS=OFF \
+            -DP710_VFS=OFF -DP710_IMAGES=OFF -DP710_RESOURCE_MANAGERS=OFF \
+            -DP710_SDL_PRESENTATION=OFF
+          cmake --build "$RUNNER_TEMP/build-x86-64" --parallel 2
+          ctest --test-dir "$RUNNER_TEMP/build-x86-64" \
+            --output-on-failure --no-tests=error \
+            --output-junit "$RUNNER_TEMP/build-x86-64/ctest.xml"
+      - name: Build and test RISC-V in QEMU
+        run: |
+          cmake -S "$RUNNER_TEMP/p710/source/tests/native-core" \
+            -B "$RUNNER_TEMP/build-riscv64" \
+            -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/.github/toolchains/riscv64-linux-gnu.cmake" \
+            -DCMAKE_BUILD_TYPE=Debug -DP710_SANITIZERS=OFF \
+            -DP710_VFS=OFF -DP710_IMAGES=OFF -DP710_RESOURCE_MANAGERS=OFF \
+            -DP710_SDL_PRESENTATION=OFF
+          cmake --build "$RUNNER_TEMP/build-riscv64" --parallel 2
+          ctest --test-dir "$RUNNER_TEMP/build-riscv64" \
+            --output-on-failure --no-tests=error \
+            --output-junit "$RUNNER_TEMP/build-riscv64/ctest.xml"
+      - name: Compare raster evidence
+        run: |
+          x86="$RUNNER_TEMP/build-x86-64/artifacts"
+          riscv="$RUNNER_TEMP/build-riscv64/artifacts"
+          cmp "$x86/raster-preview.ppm" "$riscv/raster-preview.ppm"
+          cmp "$x86/raster-preview.rgb565" "$riscv/raster-preview.rgb565"
+          printf '%s  %s\n' \
+            35eef84750a726594923da574d55680da4c147955c2fbdefba1628bf032c43f5 \
+            "$x86/raster-preview.ppm" | sha256sum --check
+          printf '%s  %s\n' \
+            09bff3d790fe86895ae2ada478917efce2189d8cce801ce7b1140cdc4e8ff9e5 \
+            "$x86/raster-preview.rgb565" | sha256sum --check
+          {
+            echo '## RISC-V QEMU smoke'
+            echo
+            echo '- x86-64 Debug headless component suite passed'
+            echo '- RISC-V Debug headless component suite passed in QEMU'
+            echo '- Raster previews: byte-identical across architectures'
+            echo '- Scope: headless components only; no full game, graphics, sanitizers, or hardware acceptance'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload CTest and raster evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: riscv64-qemu-smoke-attempt-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/build-x86-64/ctest.xml
+            ${{ runner.temp }}/build-x86-64/Testing/Temporary/LastTest.log
+            ${{ runner.temp }}/build-x86-64/artifacts/raster-preview.ppm
+            ${{ runner.temp }}/build-x86-64/artifacts/raster-preview.rgb565
+            ${{ runner.temp }}/build-riscv64/ctest.xml
+            ${{ runner.temp }}/build-riscv64/Testing/Temporary/LastTest.log
+            ${{ runner.temp }}/build-riscv64/artifacts/raster-preview.ppm
+            ${{ runner.temp }}/build-riscv64/artifacts/raster-preview.rgb565
+      - name: Summarize CTest results
+        if: ${{ !cancelled() }}
+        uses: test-summary/action@37b508cfee6d4d080eedd00b5bb240a6a784a6a5 # v2.6
+        with:
+          paths: |
+            ${{ runner.temp }}/build-x86-64/ctest.xml
+            ${{ runner.temp }}/build-riscv64/ctest.xml
