@@ -1,0 +1,50 @@
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR riscv64)
+
+if(DEFINED ENV{P710_RISCV64_C_COMPILER})
+  set(CMAKE_C_COMPILER "$ENV{P710_RISCV64_C_COMPILER}")
+else()
+  set(CMAKE_C_COMPILER riscv64-linux-gnu-gcc)
+endif()
+if(DEFINED ENV{P710_RISCV64_CXX_COMPILER})
+  set(CMAKE_CXX_COMPILER "$ENV{P710_RISCV64_CXX_COMPILER}")
+else()
+  set(CMAKE_CXX_COMPILER riscv64-linux-gnu-g++)
+endif()
+set(CMAKE_C_FLAGS_INIT "-march=rv64gc -mabi=lp64d")
+set(CMAKE_CXX_FLAGS_INIT "-march=rv64gc -mabi=lp64d")
+
+if(DEFINED ENV{P710_RISCV64_GUEST_ROOT})
+  set(P710_RISCV64_GUEST_ROOT "$ENV{P710_RISCV64_GUEST_ROOT}")
+else()
+  set(P710_RISCV64_GUEST_ROOT /usr/riscv64-linux-gnu)
+endif()
+
+# The hosted lane uses the GNU cross compiler. These overrides let a local
+# verification reuse an isolated Clang sysroot without changing the workflow.
+if(DEFINED ENV{P710_RISCV64_CLANG_SYSROOT})
+  if(NOT DEFINED ENV{P710_RISCV64_GCC_INSTALL})
+    message(FATAL_ERROR "P710_RISCV64_GCC_INSTALL is required with the Clang sysroot")
+  endif()
+  set(CMAKE_C_COMPILER_TARGET riscv64-linux-gnu)
+  set(CMAKE_CXX_COMPILER_TARGET riscv64-linux-gnu)
+  set(CMAKE_SYSROOT "$ENV{P710_RISCV64_CLANG_SYSROOT}")
+  string(APPEND CMAKE_C_FLAGS_INIT
+    " --gcc-install-dir=$ENV{P710_RISCV64_GCC_INSTALL} -idirafter ${P710_RISCV64_GUEST_ROOT}/include")
+  set(CMAKE_CXX_FLAGS_INIT "${CMAKE_C_FLAGS_INIT}")
+  set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld")
+endif()
+
+if(DEFINED ENV{P710_RISCV64_QEMU})
+  set(P710_QEMU_RISCV64 "$ENV{P710_RISCV64_QEMU}")
+else()
+  find_program(P710_QEMU_RISCV64 qemu-riscv64 REQUIRED)
+endif()
+set(CMAKE_CROSSCOMPILING_EMULATOR
+    "${P710_QEMU_RISCV64}" -cpu rv64,v=false -L "${P710_RISCV64_GUEST_ROOT}")
+
+set(CMAKE_FIND_ROOT_PATH "${P710_RISCV64_GUEST_ROOT}")
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
