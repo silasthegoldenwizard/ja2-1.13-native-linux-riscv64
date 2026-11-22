@@ -2,12 +2,6 @@ name: RISC-V QEMU smoke
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize]
-    paths:
-      - .github/workflows/riscv64-qemu.yml
-      - .github/toolchains/riscv64-linux-gnu.cmake
 
 permissions:
   contents: read
@@ -18,18 +12,10 @@ concurrency:
 
 jobs:
   headless-components:
-    if: >-
-      ${{ github.event_name == 'workflow_dispatch' ||
-          github.event.pull_request.head.repo.full_name == github.repository }}
     name: headless components
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - name: Verify draft test branch
-        if: ${{ github.event_name == 'pull_request' }}
-        env:
-          EXPECTED_HEAD_REF: codex/riscv64-qemu-ci-20261122
-        run: test "$GITHUB_HEAD_REF" = "$EXPECTED_HEAD_REF"
       - name: Get repository files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
