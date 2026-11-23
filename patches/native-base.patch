@@ -29746,7 +29746,7 @@
  				for (std::vector<INVTYPE*>::iterator it = attachments.begin(); it != attachments.end(); it++)
 --- a/Tactical/Rotting Corpses.cpp
 +++ b/Tactical/Rotting Corpses.cpp
-@@ -1,3 +1,23 @@
+@@ -1,3 +1,33 @@
 +/*
 + * P710 native snapshot update: Tactical/Rotting Corpses.cpp
 + * Native Linux source/build/test adaptations captured in the tested experimental source snapshot dated 2026-11-15.
@@ -29767,10 +29767,71 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: Tactical/Rotting Corpses.cpp
++ * Native Linux corpse removal and test changes from the November 23, 2026 checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-23.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  	#include <stdio.h>
  	#include <string.h>
  	#include "WCheck.h"
-@@ -764,7 +784,7 @@
+@@ -678,7 +708,9 @@
+ {
+ 	// Free palettes
+ 	MemFree( pCorpse->p8BPPPalette );
++	pCorpse->p8BPPPalette = NULL;
+ 	MemFree( pCorpse->p16BPPPalette );
++	pCorpse->p16BPPPalette = NULL;
+ 
+ 	for ( INT32 cnt = 0; cnt < NUM_CORPSE_SHADES; ++cnt )
+ 	{
+@@ -706,16 +738,36 @@
+ 
+ void RemoveCorpse( INT32 iCorpseID )
+ {
++	if ( iCorpseID < 0 || iCorpseID >= giNumRottingCorpse || !gRottingCorpse[ iCorpseID ].fActivated )
++	{
++		return;
++	}
++
+ 	// Remove!
+ 	gRottingCorpse[ iCorpseID ].fActivated = FALSE;
+ 
+-	DeleteAniTile( gRottingCorpse[ iCorpseID ].pAniTile );
++	ANITILE* pAniTile = gRottingCorpse[iCorpseID].pAniTile;
++	gRottingCorpse[iCorpseID].pAniTile = NULL;
++	STRUCTURE* pCorpseStructure = NULL;
++	BOOLEAN fAnimationOwnsStructure = FALSE;
++	if ( pAniTile != NULL && pAniTile->pLevelNode != NULL )
++	{
++		pCorpseStructure = pAniTile->pLevelNode->pStructureData;
++		fAnimationOwnsStructure = ( pAniTile->ubLevelID == ANI_STRUCT_LEVEL &&
++			!( pAniTile->uiFlags & ANITILE_EXISTINGTILE ) );
++	}
++
++	DeleteAniTile( pAniTile );
+ 
+ 	FreeCorpsePalettes( &( gRottingCorpse[ iCorpseID ] ) );
+ 
+-	const auto sGridNo = gRottingCorpse[iCorpseID].def.sGridNo;
+-	auto pStructure = FindLastStructure(sGridNo, STRUCTURE_CORPSE);
+-	DeleteStructureFromWorld(pStructure);
++	// Ground corpse animations retire their exact level node and structure.
++	// Roof animations retire only the node, so remove the captured structure
++	// identity instead of whichever corpse happens to be last on the grid.
++	if ( !fAnimationOwnsStructure && pCorpseStructure != NULL )
++	{
++		DeleteStructureFromWorld( pCorpseStructure );
++	}
+ }
+ 
+ BOOLEAN CreateCorpsePalette( ROTTING_CORPSE *pCorpse )
+@@ -764,7 +816,7 @@
  	if ( bBodyTypePalette == -1	)
  	{
  		// Use palette from HVOBJECT, then use substitution for pants, etc
@@ -29779,7 +29840,7 @@
  
  		// Substitute based on head, etc
  		SetPaletteReplacement( pCorpse->p8BPPPalette, pCorpse->def.HeadPal );
-@@ -775,7 +795,7 @@
+@@ -775,7 +827,7 @@
  	else if ( bBodyTypePalette == 0 )
  	{
  		// Use palette from hvobject
@@ -29788,7 +29849,7 @@
  	}
  	else
  	{
-@@ -783,12 +803,12 @@
+@@ -783,12 +835,12 @@
  		if ( CreateSGPPaletteFromCOLFile( Temp8BPPPalette, zColFilename ) )
  		{
  			// Copy into palette
@@ -29803,7 +29864,7 @@
  		}
  	}
  
-@@ -1034,15 +1054,15 @@
+@@ -1034,15 +1086,15 @@
  								if ( gGameExternalOptions.fEnemiesDropAllItems == 2 && pSoldier->bTeam == ENEMY_TEAM && (*pObj).fFlags & OBJECT_UNDROPPABLE )
  								{
  									(*pObj)[0]->data.objectStatus -= 60 + Random( zDiffSetting[gGameOptions.ubDifficultyLevel].usLootStatusModifier );
@@ -29822,7 +29883,7 @@
  							}
  						}
  
-@@ -1602,7 +1622,7 @@
+@@ -1602,7 +1654,7 @@
  			SECTORINFO *pSectorInfo = &( SectorInfo[SECTOR( gWorldSectorX, gWorldSectorY )] );
  
  			if ( pSectorInfo )
@@ -29831,7 +29892,7 @@
  
  			// the population doesn't like it when we blow chunks of people all over the place
  			INT8 bTownId = GetTownIdForSector( gWorldSectorX, gWorldSectorY );
-@@ -2251,7 +2271,7 @@
+@@ -2251,7 +2303,7 @@
  	if ( !pObj || !HasItemFlag(pObj->usItem, CORPSE) )
  		return FALSE;
  
@@ -29840,7 +29901,7 @@
  
  	if ( (*pObj)[0]->data.sObjectFlag & CORPSE_M_BIG )
  	{
-@@ -2504,7 +2524,7 @@
+@@ -2504,7 +2556,7 @@
  			if( gGameExternalOptions.fEnemiesDropAllItems == 2 && pSoldier->bTeam == ENEMY_TEAM && (*pObj).fFlags & OBJECT_UNDROPPABLE )
  			{
  				(*iter)[0]->data.objectStatus -= 60 + Random( zDiffSetting[gGameOptions.ubDifficultyLevel].usLootStatusModifier );
@@ -29849,7 +29910,16 @@
  			}
  
  			if(Item[pObj->usItem].defaultattachments[i] == iter->usItem)
-@@ -3023,7 +3043,7 @@
+@@ -2643,7 +2695,7 @@
+ 
+ ROTTING_CORPSE* GetRottingCorpse( INT16 aNum )
+ {
+-	if ( aNum < giNumRottingCorpse )
++	if ( aNum >= 0 && aNum < giNumRottingCorpse && gRottingCorpse[aNum].fActivated )
+ 		return &(gRottingCorpse[aNum]);
+ 
+ 	return NULL;
+@@ -3023,7 +3075,7 @@
  		// If this corpse has camo, use palette from hvobject
  		if ( pCorpse->def.ubType == ROTTING_STAGE2 )
  		{
@@ -29858,7 +29928,7 @@
  		}
  		else if ( pCorpse->def.usFlags & ROTTING_CORPSE_USE_CAMO_PALETTE )
  		{
-@@ -3256,7 +3276,7 @@
+@@ -3256,7 +3308,7 @@
  	if ( pCorpse->def.ubType == ROTTING_STAGE2 )
  		return 1.0f;
  
@@ -41114,7 +41184,7 @@
  		//Render the mercs
 --- a/TileEngine/Tile Animation.cpp
 +++ b/TileEngine/Tile Animation.cpp
-@@ -1,3 +1,13 @@
+@@ -1,3 +1,23 @@
 +/*
 + * P710 native snapshot update: TileEngine/Tile Animation.cpp
 + * Native Linux source/build/test adaptations captured in the accepted tile-resource ownership checkpoint dated 2026-11-17.
@@ -41125,10 +41195,20 @@
 + * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 + */
 +
++/*
++ * P710 native snapshot update: TileEngine/Tile Animation.cpp
++ * Native Linux roof animation node ownership fix from the November 23, 2026 checkpoint.
++ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
++ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
++ * Update notice inserted during source-only package preparation: 2026-11-23.
++ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
++ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
++ */
++
  #include "worlddef.h"
  #include "Tile Animation.h"
  #include "DEBUG.H"
-@@ -22,7 +32,7 @@
+@@ -22,7 +42,7 @@
  {
  	ANITILE		*pAniNode;
  	ANITILE		*pNewAniNode;
@@ -41137,7 +41217,7 @@
  	INT32			iCachedTile=-1;
  	INT32 sGridNo;
  	UINT8			ubLevel;
-@@ -34,6 +44,11 @@
+@@ -34,6 +54,11 @@
  	LEVELNODE	*pGivenNode;
  	INT16			sX, sY, sZ;
  	UINT8			ubTempDir;
@@ -41149,7 +41229,7 @@
  
  	// Get some parameters from structure sent in...
  	sGridNo			= pAniParams->sGridNo;
-@@ -53,11 +68,21 @@
+@@ -53,11 +78,21 @@
  
  	// Allocate head
  	pNewAniNode = (ANITILE *) MemAlloc( sizeof( ANITILE ) );
@@ -41171,7 +41251,7 @@
  		pNewAniNode->pLevelNode						= pGivenNode;
  		pNewAniNode->pLevelNode->pAniTile = pNewAniNode;
  	}
-@@ -69,6 +94,7 @@
+@@ -69,6 +104,7 @@
  
  			if ( iCachedTile == -1 )
  			{
@@ -41179,7 +41259,7 @@
  				return( NULL );
  			}
  
-@@ -85,36 +111,81 @@
+@@ -85,36 +121,81 @@
  
  		case ANI_SHADOW_LEVEL:
  
@@ -41271,6 +41351,15 @@
  			return( NULL );
  		}
  
+@@ -359,7 +440,7 @@
+ 
+ 				case ANI_ONROOF_LEVEL:
+ 
+-					RemoveOnRoof( pAniNode->sGridNo, pAniNode->usTileIndex );
++					RemoveOnRoofFromLevelNode( pAniNode->sGridNo, pAniNode->pLevelNode );
+ 					break;
+ 
+ 				case ANI_TOPMOST_LEVEL:
 --- a/TileEngine/Tile Cache.h
 +++ b/TileEngine/Tile Cache.h
 @@ -1,3 +1,13 @@

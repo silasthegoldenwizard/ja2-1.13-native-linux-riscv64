@@ -28,12 +28,27 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_world_node_tests.cpp
+ * Native Linux corpse removal and test changes from the November 23, 2026 checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-23.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Actual world-node creation/removal functions; authored metadata only.
 #include "worlddef.h"
 #include "worldman.h"
 #include "TileDat.h"
 #include "SaveLoadMap.h"
+#include "structure.h"
+#include "Tile Animation.h"
+#include "Rotting Corpses.h"
+#include "MemMan.h"
 #include <array>
+#include <cstring>
 #include <cstdlib>
 #include <iostream>
 
@@ -67,6 +82,46 @@ void linkLand(std::initializer_list<LEVELNODE*> nodes, unsigned grid = 0) {
         next = &value->pNext;
     }
     *next = nullptr;
+}
+void linkOnRoof(std::initializer_list<LEVELNODE*> nodes, unsigned grid = 0) {
+    LEVELNODE** next = &gpWorldLevelData[grid].pOnRoofHead;
+    for (auto* value : nodes) { *next = value; next = &value->pNext; }
+    *next = nullptr;
+}
+struct CorpseStructureFixture {
+    DB_STRUCTURE definition{};
+    DB_STRUCTURE_TILE tile{};
+    std::array<DB_STRUCTURE_TILE*, 1> tiles{&tile};
+    DB_STRUCTURE_REF reference{&definition, tiles.data()};
+
+    CorpseStructureFixture() {
+        definition.ubHitPoints = 100;
+        definition.ubNumberOfTiles = 1;
+        definition.fFlags = STRUCTURE_CORPSE;
+        definition.ubWallOrientation = NO_ORIENTATION;
+        tile.sPosRelToBase = 0;
+        tile.fFlags = TILE_PASSABLE;
+    }
+};
+ANITILE* corpseAnimation(LEVELNODE* levelNode, INT32 corpseId, UINT8 levelId, UINT16 tileIndex = 99) {
+    auto* animation = static_cast<ANITILE*>(MemAlloc(sizeof(ANITILE)));
+    expect(animation != nullptr, "corpse animation allocation");
+    std::memset(animation, 0, sizeof(ANITILE));
+    animation->pLevelNode = levelNode;
+    animation->ubLevelID = levelId;
+    animation->sGridNo = 0;
+    animation->usTileIndex = tileIndex;
+    animation->sCachedTileID = -1;
+    animation->uiUserData = static_cast<UINT32>(corpseId);
+    levelNode->pAniTile = animation;
+    levelNode->uiFlags |= LEVELNODE_ROTTINGCORPSE;
+    return animation;
+}
+void resetCorpse(INT32 corpseId, ANITILE* animation) {
+    gRottingCorpse[corpseId] = {};
+    gRottingCorpse[corpseId].def.sGridNo = 0;
+    gRottingCorpse[corpseId].fActivated = TRUE;
+    gRottingCorpse[corpseId].pAniTile = animation;
 }
 void retiredTrail() {
     auto* trail = node(99);
@@ -136,6 +191,97 @@ void malformedLandBackLinkCleanup() {
     expect(!gpWorldLevelData[0].pLandStart, "malformed cleanup clears the full-tile owner");
     expect(guiLevelNodes == 0, "malformed cleanup retires every forward-owned node once");
 }
+void sameGridCorpseRemovalPreservesSurvivor() {
+    CorpseStructureFixture fixture;
+    auto* removedNode = node(99);
+    auto* survivorNode = node(99);
+    link({removedNode, survivorNode});
+    auto* removedAnimation = corpseAnimation(removedNode, 0, ANI_STRUCT_LEVEL);
+    auto* survivorAnimation = corpseAnimation(survivorNode, 1, ANI_STRUCT_LEVEL);
+    removedAnimation->pNext = survivorAnimation;
+    pAniTileHead = removedAnimation;
+    expect(AddStructureToWorld(0, 0, &fixture.reference, removedNode),
+           "first same-grid corpse structure is added through production code");
+    expect(AddStructureToWorld(0, 0, &fixture.reference, survivorNode),
+           "second same-grid corpse structure is added through production code");
+    auto* survivorStructure = survivorNode->pStructureData;
+    expect(survivorStructure != nullptr && survivorStructure != removedNode->pStructureData,
+           "same-grid corpses have distinct structure identities");
+    resetCorpse(0, removedAnimation);
+    resetCorpse(1, survivorAnimation);
+    giNumRottingCorpse = 2;
+
+    RemoveCorpse(0);
+    expect(gpWorldLevelData[0].pStructHead == survivorNode && !survivorNode->pNext,
+           "removing one ground corpse preserves the surviving level node");
+    expect(gpWorldLevelData[0].pStructureHead == survivorStructure &&
+               gpWorldLevelData[0].pStructureTail == survivorStructure,
+           "removing one ground corpse preserves the surviving structure identity");
+    expect(survivorNode->pStructureData == survivorStructure,
+           "surviving ground corpse retains its structure binding");
+    expect(pAniTileHead == survivorAnimation && !survivorAnimation->pNext,
+           "removing one ground corpse preserves the surviving animation");
+
+    RemoveCorpse(1);
+    expect(!gpWorldLevelData[0].pStructHead && !gpWorldLevelData[0].pStructureHead &&
+               !gpWorldLevelData[0].pStructureTail && !pAniTileHead,
+           "ground corpse teardown retires each owned node and structure exactly once");
+    expect(guiLevelNodes == 0, "ground corpse teardown leaves no live level nodes");
+    gRottingCorpse[0] = {};
+    gRottingCorpse[1] = {};
+    giNumRottingCorpse = 0;
+}
+void sameGridRoofCorpseRemovalUsesExactStructure(bool sharedTileIndex = false) {
+    CorpseStructureFixture fixture;
+    constexpr UINT16 removedTileIndex = 101;
+    const UINT16 survivorTileIndex = sharedTileIndex ? removedTileIndex : 102;
+    auto* removedNode = node(removedTileIndex);
+    auto* survivorNode = node(survivorTileIndex);
+    if (sharedTileIndex) {
+        // A newer roof animation is inserted at the head, even if it shares imagery.
+        linkOnRoof({survivorNode, removedNode});
+    } else {
+        linkOnRoof({removedNode, survivorNode});
+    }
+    auto* removedAnimation = corpseAnimation(removedNode, 0, ANI_ONROOF_LEVEL, removedTileIndex);
+    auto* survivorAnimation = corpseAnimation(survivorNode, 1, ANI_ONROOF_LEVEL, survivorTileIndex);
+    auto* firstAnimation = sharedTileIndex ? survivorAnimation : removedAnimation;
+    firstAnimation->pNext = sharedTileIndex ? removedAnimation : survivorAnimation;
+    pAniTileHead = firstAnimation;
+    expect(AddStructureToWorld(0, 1, &fixture.reference, removedNode),
+           "first same-grid roof corpse structure is added through production code");
+    expect(AddStructureToWorld(0, 1, &fixture.reference, survivorNode),
+           "second same-grid roof corpse structure is added through production code");
+    auto* removedStructure = removedNode->pStructureData;
+    auto* survivorStructure = survivorNode->pStructureData;
+    expect(removedStructure != nullptr && survivorStructure != nullptr &&
+               removedStructure != survivorStructure,
+           "same-grid roof corpses have distinct structure identities");
+    resetCorpse(0, removedAnimation);
+    resetCorpse(1, survivorAnimation);
+    giNumRottingCorpse = 2;
+
+    RemoveCorpse(0);
+    expect(gpWorldLevelData[0].pOnRoofHead == survivorNode && !survivorNode->pNext,
+           sharedTileIndex ? "removing one equal-index roof corpse preserves the surviving level node"
+                           : "removing one roof corpse preserves the surviving level node");
+    expect(gpWorldLevelData[0].pStructureHead == survivorStructure &&
+               gpWorldLevelData[0].pStructureTail == survivorStructure,
+           "roof corpse cleanup removes its exact structure and preserves the survivor");
+    expect(survivorNode->pStructureData == survivorStructure,
+           "surviving roof corpse retains its structure binding");
+    expect(pAniTileHead == survivorAnimation && !survivorAnimation->pNext,
+           "removing one roof corpse preserves the surviving animation");
+
+    RemoveCorpse(1);
+    expect(!gpWorldLevelData[0].pOnRoofHead && !gpWorldLevelData[0].pStructureHead &&
+               !gpWorldLevelData[0].pStructureTail && !pAniTileHead,
+           "roof corpse teardown retires each owned node and structure exactly once");
+    expect(guiLevelNodes == 0, "roof corpse teardown leaves no live level nodes");
+    gRottingCorpse[0] = {};
+    gRottingCorpse[1] = {};
+    giNumRottingCorpse = 0;
+}
 }
 int main() {
     std::array<MAP_ELEMENT, 2> world{};
@@ -145,6 +291,9 @@ int main() {
     ApplyMapChangesToMapTempFile(FALSE);
     retiredTrail(); identityRemoval(); completeLandDeletion(); rejectedLandInsertion();
     malformedLandBackLinkCleanup();
+    sameGridCorpseRemovalPreservesSurvivor();
+    sameGridRoofCorpseRemovalUsesExactStructure();
+    sameGridRoofCorpseRemovalUsesExactStructure(true);
     gpWorldLevelData = nullptr;
     std::cout << checks << " original world-node lifetime assertions passed\n";
 }
