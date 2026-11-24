@@ -108,11 +108,23 @@
  * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
  */
 
+/*
+ * P710 native snapshot update: tests/native-core/native_team_slot_consumer_tests.cpp
+ * Native Linux militia promotion repair for sparse rosters from the November 24, 2026 checkpoint.
+ * This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+ * Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+ * Update notice inserted during source-only package preparation: 2026-11-24.
+ * This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+ * Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+ */
+
 // Exercise periodic and strategic team consumers with genuinely empty slots.
 #include "Overhead.h"
 #include "Assignments.h"
 #include "Drugs And Alcohol.h"
 #include "Militia Control.h"
+#include "Town Militia.h"
+#include "mapscreen.h"
 #include "Map Screen Interface Bottom.h"
 #include "Map Screen Interface.h"
 #include "Merc Hiring.h"
@@ -283,6 +295,56 @@ void runRemoveMilitiaScenario()
 	TeamSlotState empty(MILITIA_TEAM, 40);
 	RemoveMilitiaFromTactical();
 	check(true, "militia removal ignores empty militia slots");
+}
+
+void runMilitiaPromotionSparseRosterScenario()
+{
+	TeamSlotState emptyFirst(MILITIA_TEAM, 40);
+	TeamSlotState liveLast(MILITIA_TEAM, 41);
+	gTacticalStatus.Team[MILITIA_TEAM].bFirstID = emptyFirst.slot;
+
+	// Use a different sector so the fixture can check promotion without
+	// rebuilding the tactical militia roster.
+	const INT16 sectorX = gWorldSectorX == 9 ? 10 : 9;
+	const INT16 sectorY = 1;
+	PeacefulSectorState sector(sectorX, sectorY);
+	auto& ranks = SectorInfo[SECTOR(sectorX, sectorY)].ubNumberOfCivsAtLevel;
+	ranks[GREEN_MILITIA] = 1;
+	ranks[REGULAR_MILITIA] = 0;
+	const BOOLEAN previousIndividualMilitia = gGameExternalOptions.fIndividualMilitia;
+	const BOOLEAN previousMilitiaChanged = gfStrategicMilitiaChangesMade;
+	const BOOLEAN previousPanelDirty = fMapPanelDirty;
+	gGameExternalOptions.fIndividualMilitia = FALSE;
+	gfStrategicMilitiaChangesMade = FALSE;
+
+	SOLDIERTYPE militia;
+	militia.initialize();
+	militia.ubID = liveLast.slot;
+	militia.bTeam = MILITIA_TEAM;
+	militia.bActive = TRUE;
+	militia.bInSector = TRUE;
+	militia.stats.bLife = 100;
+	militia.sSectorX = sectorX;
+	militia.sSectorY = sectorY;
+	militia.ubSoldierClass = SOLDIER_CLASS_GREEN_MILITIA;
+	// Four kill points guarantee one legacy promotion from green to regular.
+	militia.ubMilitiaKills = 2;
+	MercPtrs[liveLast.slot.i] = &militia;
+
+	HandleMilitiaPromotions();
+
+	check(MercPtrs[emptyFirst.slot.i] == nullptr,
+	      "militia promotions leave an empty roster slot alone");
+	check(militia.ubSoldierClass == SOLDIER_CLASS_REG_MILITIA,
+	      "militia promotions still process the eligible soldier after an empty slot");
+	check(ranks[GREEN_MILITIA] == 0 && ranks[REGULAR_MILITIA] == 1,
+	      "the strategic roster records the promotion");
+	check(militia.ubMilitiaKills == 0, "promotion consumes the battle kill points");
+
+	MercPtrs[liveLast.slot.i] = liveLast.owner;
+	gGameExternalOptions.fIndividualMilitia = previousIndividualMilitia;
+	gfStrategicMilitiaChangesMade = previousMilitiaChanged;
+	fMapPanelDirty = previousPanelDirty;
 }
 
 void runNumFreeSlotsScenario()
@@ -1538,6 +1600,8 @@ int main(int argc, char** argv)
 		runHourlyDrugScenario();
 	else if (std::strcmp(argv[1], "remove-militia") == 0)
 		runRemoveMilitiaScenario();
+	else if (std::strcmp(argv[1], "militia-promotion-sparse-roster") == 0)
+		runMilitiaPromotionSparseRosterScenario();
 	else if (std::strcmp(argv[1], "free-slots") == 0)
 		runNumFreeSlotsScenario();
 	else if (std::strcmp(argv[1], "militia-trainers") == 0)
