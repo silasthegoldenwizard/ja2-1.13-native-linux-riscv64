@@ -1,8 +1,8 @@
 {
   "schema": 2,
-  "checkpoint": "native-corpse-lifecycle-20261123",
-  "preparation_date": "2026-11-23",
-  "status": "Native Linux source preview with corpse lifecycle and roof node ownership repairs.",
+  "checkpoint": "native-militia-promotion-20261124",
+  "preparation_date": "2026-11-24",
+  "status": "Native Linux source preview with sparse militia roster promotion repair.",
   "upstream_repository": "https://github.com/1dot13/source",
   "upstream_commit": "3394695a387a14c78e92b158cfdcf50e4068c96b",
   "previous_private_commit": "5c2ede3cb4245a842eca922be9abae4192fa8e20",
@@ -38,9 +38,9 @@
     "status": "The default single-player build does not link RakNet. The optional multiplayer build needs the external v0.1.0-alpha.1 source companion."
   },
   "known_issue": "Broad campaign, full sound and device coverage, valid multiplayer gameplay, and native RISC-V execution remain incomplete.",
-  "verification": "Earlier roof and node ownership checks cover both roof tile index orders. The isolated development correction passed 86 world node lifetime assertions in Debug and with strict sanitizers. The focused tests cover live ownership paths.",
+  "verification": "The development fixtures passed three focused tests in Debug and with strict sanitizers. These results apply to the development inputs.",
   "component_terms": "The engine contribution basis is historical and inferred. Its limits still apply. bfVFS keeps LGPL 2.1-or-later terms. Other components keep their own terms.",
-  "previous_public_commit": "8eb04f7fc506502ffdb673dd63063206c1bd0afa",
-  "source_snapshot_sha256": "ba027554a0b28903815c100174478a5aeebb7df996ce2cc47aa54bb55c3b6a3f",
-  "accepted_checkpoint_sha256": "ba027554a0b28903815c100174478a5aeebb7df996ce2cc47aa54bb55c3b6a3f"
+  "previous_public_commit": "396e6a5b48f6bb24638e1b33dcc68d733dc58db8",
+  "source_snapshot_sha256": "eada905e20f9eca9d4b09453a1d370f7e6fa35a450812ea9a590eea3f5b4a815",
+  "accepted_checkpoint_sha256": "eada905e20f9eca9d4b09453a1d370f7e6fa35a450812ea9a590eea3f5b4a815"
 }

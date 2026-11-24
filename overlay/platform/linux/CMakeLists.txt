@@ -198,6 +198,14 @@
 # This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
 # Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
 
+# P710 native snapshot update: platform/linux/CMakeLists.txt
+# Native Linux militia promotion repair for sparse rosters from the November 24, 2026 checkpoint.
+# This file is inherited/adapted or project-added material; a new path does not establish independent authorship.
+# Engine baseline: 1dot13/source@3394695a387a14c78e92b158cfdcf50e4068c96b.
+# Update notice inserted during source-only package preparation: 2026-11-24.
+# This records the snapshot/preparation date, not an asserted first-edit date. Existing notices retained.
+# Exact original bytes, origins and reversible notice changes are recorded in RECONSTRUCTION-MANIFEST.json.
+
 cmake_minimum_required(VERSION 3.20)
 project(p710_native_engine LANGUAGES C CXX)
 enable_testing()
@@ -849,6 +857,8 @@ add_test(NAME tactical.original_hourly_drug_team_slots
   COMMAND p710_native_team_slot_consumer_tests hourly-drug)
 add_test(NAME tactical.original_remove_militia_team_slots
   COMMAND p710_native_team_slot_consumer_tests remove-militia)
+add_test(NAME tactical.original_militia_promotion_sparse_roster
+  COMMAND p710_native_team_slot_consumer_tests militia-promotion-sparse-roster)
 add_test(NAME tactical.original_free_team_slots
   COMMAND p710_native_team_slot_consumer_tests free-slots)
 add_test(NAME strategic.original_militia_trainer_team_slots
